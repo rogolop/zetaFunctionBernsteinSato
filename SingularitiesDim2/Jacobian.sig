@@ -1,4 +1,4 @@
-175,0
+177,0
 S,MilnorNumber,The Milnor number of f,0,1,0,0,0,0,0,0,0,469,,148,-38,-38,-38,-38,-38
 S,MilnorNumber,The Milnor number of a semigroup,1,0,1,82,0,148,1,0,0,0,0,0,0,0,82,,148,-38,-38,-38,-38,-38
 S,MilnorNumber,The Milnor number of a characteristic sequence,1,1,1,82,0,148,2,0,0,0,0,0,0,0,82,,0,0,148,,148,-38,-38,-38,-38,-38

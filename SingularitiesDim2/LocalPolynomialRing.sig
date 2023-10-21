@@ -1,4 +1,4 @@
-175,0
+177,0
 S,SquarefreePart,"Return the squarefree part of f, which is the largest (normalized) divisor g of f which is squarefree",0,1,0,0,0,0,0,0,0,469,,469,-38,-38,-38,-38,-38
 S,SquarefreeFactorization,Factorize into squarefree polynomials the polynomial f,0,1,0,0,0,0,0,0,0,469,,82,-38,-38,-38,-38,-38
 S,JacobianMatrix,"Returns the matrix with (i,j)'th entry the partial derivative of the i'th polynomial in the list with the j'th indeterminate of its parent ring",1,0,1,82,0,469,1,0,0,0,0,0,0,0,82,,178,-38,-38,-38,-38,-38

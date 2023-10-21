@@ -1,4 +1,4 @@
-175,0
+177,0
 S,MonomialCurve,Computes the monomial curve assocaited to a semigroup of a plane curve,1,0,1,82,0,148,1,0,0,0,0,0,0,0,82,,82,-38,-38,-38,-38,-38
 S,MonomialCurve,Computes the monomial curve associated to a characteristic sequence,1,1,1,82,0,148,2,0,0,0,0,0,0,0,82,,0,0,148,,82,-38,-38,-38,-38,-38
 S,DeformationCurve,Computes the deformations of the monomial curve associated to the semigroup G,1,0,1,82,0,148,1,0,0,0,0,0,0,0,82,,82,-38,-38,-38,-38,-38

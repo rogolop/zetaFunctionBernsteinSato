@@ -1,4 +1,4 @@
-175,0
+177,0
 S,allSemigroupCoordinates,Calculate all possible coordinates of v as member of the (additive) semigroup with generators G,1,1,1,82,0,148,2,0,0,0,0,0,0,0,82,,0,0,148,,36,82,-38,-38,-38,-38
 S,allMonomialCurves,"Computes all monomial curves assocaited to a semigroup of a plane curve. Output: eqs = [[possible i-th equations]] A curve is determined by choosing one equation of each eqs[i]. Implementation based on ""MonomialCurve(G::[RngIntElt])"" from ""SingularitiesDim2/Misc.m""",1,0,1,82,0,148,1,0,0,0,0,0,0,0,82,,82,-38,-38,-38,-38,-38
 S,DeformationCurveSpecific,"Computes the deformation of the monomial curve associated to the semigroup ""G"" with the specific choice of equations ""monomialCurve"". Implementation based on ""DeformationCurve(G::[RngIntElt])"" from ""SingularitiesDim2/Misc.m""",2,0,1,82,0,63,1,1,82,0,148,2,0,0,0,0,0,0,0,82,,0,0,82,,82,-38,-38,-38,-38,-38
