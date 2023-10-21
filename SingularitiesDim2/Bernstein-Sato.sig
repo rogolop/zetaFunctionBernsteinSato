@@ -1,4 +1,4 @@
-175,0
+177,0
 S,BExponents,Computes the generating sequence for the generic b-exponents of a characteristic sequence,1,1,1,82,0,148,2,0,0,0,0,0,0,0,82,,0,0,148,,287,-38,-38,-38,-38,-38
 S,BExponents,Computes the generating sequence for the generic b-exponents of a semigroup,1,0,1,82,0,148,1,0,0,0,0,0,0,0,82,,RngSetPuisElt,-38,-38,-38,-38,-38
 S,BernsteinSatoGeneric,Returns the roots of the generic Bernstein-Sato,1,0,1,82,0,148,1,0,0,0,0,0,0,0,82,,82,-38,-38,-38,-38,-38
