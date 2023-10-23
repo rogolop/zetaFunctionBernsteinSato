@@ -3,6 +3,9 @@
 	
 	Computation of examples of stratifications of the Bernstein-Sato polynomial
 	of plane curves, using the residues of the complex zeta function
+	
+	run in background:
+	magma main.m 2>&1 1>err/magma-err_6-14-43.txt &
 */
 
 // ### Basic requirements ###
@@ -36,14 +39,14 @@ nuChoices          := [[], []]; // (if not defaultNus)
 discardTopologial  := true; // (if defaultNus)
 
 // Choose curve
-curve              := "6-9-22_Artal";
+curve              := "_betas";
 // "6-14-43_Artal"; "6-9-22_Artal"; "4-9_example"; "6-14-43_AM"; "5-7"; "4-6-13"; "_betas";
 
 // For "_betas"
-_betas_betas       := [8,18,73];
+_betas_betas       := [6,14,43];
 // [6,9,22]; [10,15,36]; [12,16,50,101]; [12,18,39,79]; [6,14,43]; [5,7]; [4,6,13]; [4,10,21]; [8,18,73]; [6,14,43];
 chosenEqs_betas    := [1, 1]; // choose option for each equation
-parameters_betas   := "[35,36,37,38]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas   := "all"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 neededParamsVars   := []; // parameter needed at each Hi
 interactive_betas  := false;
 interactive_eqs    := false;
@@ -54,10 +57,8 @@ interactive_params := false;
 
 // Setup output
 outFileName := outFileNamePrefix*curve*outFileNameSufix;
-if printToFile then
-	if (curve ne "_betas") or not(interactive_betas or interactive_eqs or interactive_params) then
-		SetOutputFile(outFileName : Overwrite := true);
-	end if;
+if printToFile and (curve ne "_betas") then
+	SetOutputFile(outFileName : Overwrite := true);
 end if;
 
 
