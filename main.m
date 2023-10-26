@@ -5,7 +5,7 @@
 	of plane curves, using the residues of the complex zeta function
 	
 	run in background:
-	magma main.m 2>&1 1>err/magma-err_6-14-43.txt &
+	magma main.m 2>&1 1>err/magma-err.txt &
 */
 
 // ### Basic requirements ###
@@ -40,13 +40,18 @@ discardTopologial  := true; // (if defaultNus)
 
 // Choose curve
 curve              := "_betas";
-// "6-14-43_Artal"; "6-9-22_Artal"; "4-9_example"; "6-14-43_AM"; "5-7"; "4-6-13"; "_betas";
+// "_betas";
+// "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
+// "4-6-13"; "6-14-43_AM";
+// "4-9_example"; "5-7";
 
 // For "_betas"
-_betas_betas       := [6,14,43];
-// [6,9,22]; [10,15,36]; [12,16,50,101]; [12,18,39,79]; [6,14,43]; [5,7]; [4,6,13]; [4,10,21]; [8,18,73]; [6,14,43];
+_betas_betas       := [8,18,73];
+// [5,7];
+// [4,6,13]; [4,10,21]; [6,9,22]; [6,14,43]; [8,18,73]; [10,15,36];
+// [12,16,50,101]; [12,18,39,79];
 chosenEqs_betas    := [1, 1]; // choose option for each equation
-parameters_betas   := "all"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas   := "[1]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 neededParamsVars   := []; // parameter needed at each Hi
 interactive_betas  := false;
 interactive_eqs    := false;
@@ -184,14 +189,17 @@ case curve:
 		R<t> := BaseRing(P);
 		f := (x^3-y^7)^2 + x^4*y^5 + t*x^2*y^10;
 		// -23/86 not root for t = -21/1060 (Artal Singular)
-		gs := [x^3-y^7, f];
-	when "6-9-22_Artal":
+	when "6-9-22_Artal_mod":
 		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 1), 2);
 		R<t> := BaseRing(P);
 		f := (x^2-y^3)^3 + x^6*y^2 + t*y^8*(x^2-y^3);
-		//                   ^   ^ exponentes cambiados (typo Artal supongo)
+		//                   ^   ^ exponentes cambiados ?
+	when "6-9-22_Artal":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 1), 2);
+		R<t> := BaseRing(P);
+		f := (x^2-y^3)^3 + x^2*y^6 + t*y^8*(x^2-y^3);
+		// Runtime error: Argument must be an irreducible series
 		// -23/66 not root for t = -7/10 (Artal Singular)
-		gs := [x^2-y^3, f];
 	when "_betas": // Generic curve construction  
 		// INPUT
 		if (interactive_betas) then
