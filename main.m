@@ -20,7 +20,7 @@ Q := RationalField();
 // ### Input ###
 
 // Whether Magma should quit when the calculations are finished
-quitWhenFinished   := true;
+quitWhenFinished   := false;
 
 // Whether to print into a file, and which one
 printToFile        := false;
@@ -34,9 +34,8 @@ print_betas        := true;
 print_f            := true;
 
 // Which set of nus should be used for each rupture divisor
-defaultNus         := [true, true];
-nuChoices          := [[], []]; // (if not defaultNus)
-discardTopologial  := true; // (if defaultNus)
+defaultNus         := [true, true, true];
+nuChoices          := [[], [], []]; // (if not defaultNus)
 
 // Choose curve
 curve              := "_betas";
@@ -46,12 +45,12 @@ curve              := "_betas";
 // "4-9_example"; "5-7";
 
 // For "_betas"
-_betas_betas       := [8,18,73];
+_betas_betas       := [12,16,50,101];
 // [5,7];
-// [4,6,13]; [4,10,21]; [6,9,22]; [6,14,43]; [8,18,73]; [10,15,36];
+// [4,6,13]; [4,10,21]; [6,9,22]; [6,14,43]; [8,18,73]; [10,15,36]; [10,24,121];
 // [12,16,50,101]; [12,18,39,79];
-chosenEqs_betas    := [1, 1]; // choose option for each equation
-parameters_betas   := "[1]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+chosenEqs_betas    := [1, 1, 1]; // choose option for each equation
+parameters_betas   := "[]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 neededParamsVars   := []; // parameter needed at each Hi
 interactive_betas  := false;
 interactive_eqs    := false;
@@ -494,7 +493,7 @@ _betas := SemiGroup(f); // minimal set of generators of the semigroup
 semiGroupInfo := SemiGroupInfo(_betas);
 g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
 // Variables in the for-loop
-n, q, Np, kp, N, k, nus, L_all, sigma_all, epsilon_all := Explode(["not yet assigned" : i in [1..100]]);
+L_all, sigma_all, epsilon_all := Explode(["not yet assigned" : i in [1..100]]);
 
 topologicalRoots := []; // [ [topological roots of divisor r] ]
 ignoreDivisor := [ (not defaultNus[i]) and (nuChoices[i] eq []) : i in [1..g] ]; // ignore the divisor if no "nus" should be checked
@@ -502,7 +501,7 @@ ignoreDivisor := [ (not defaultNus[i]) and (nuChoices[i] eq []) : i in [1..g] ];
 
 // Find duplicate root candidates (-> monodromy has repeated eigenvalues)
 allSigmas := {Q| };
-sigmaToIndexing := AssociativeArray();
+sigmaToIndexing := AssociativeArray(); // map sigma_{r,nu} -> <r,nu>
 for r in [1..g] do
 	Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
 	nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=false);
@@ -518,6 +517,9 @@ for r in [1..g] do
 	end for;
 end for;
 printf "\n";
+
+
+///////////////////////////////// THEORY OK ////////////////////////////////////
 
 
 
@@ -566,7 +568,7 @@ for r in [1..g] do
 	// end for;
 	
 	// Interesting values of nu
-	nus, topologicalNus := Nus(_betas, semiGroupInfo, NP, KP, r : discardTopologial:=discardTopologial);
+	nus, topologicalNus := Nus(_betas, semiGroupInfo, NP, KP, r : discardTopologial:=true);
 	topologicalRoots[r] := [<nu, Sigma(NP, KP, nu)> : nu in topologicalNus];
 	if not defaultNus[r] then
 		nus := nuChoices[r];
