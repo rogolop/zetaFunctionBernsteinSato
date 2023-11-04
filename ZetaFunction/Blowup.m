@@ -21,7 +21,7 @@ intrinsic SemiGroupInfo(_betas::[]) -> Tup
 	g := #_betas - 1; // Number of characteristic exponents (see PHD-Guillem, p.25)
 	n := _betas[1]; // Multiplicity of the curve at the origin (see PHD-Guillem, p.24)
 	
-	charExpsData := CharExponents(_betas); // [<beta_i,e_i>] with e_i at basepoint and rupture divisors
+	charExpsData := CharExponents(_betas); // [<beta_i,e_i>] with e_i at starting point and rupture divisors
 	betas := [cExp[1] : cExp in charExpsData]; // defining beta_0=0
 	es := [cExp[2] : cExp in charExpsData];
 	
@@ -204,10 +204,16 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyExp_w::[], uni
 		(total transform of f) = x^xExp_f * y^yExp_f * units_f * strictTransform_f
 		(pullback of dx^dy)    = x^xExp_w * y^yExp_w * units_w
 		
-		pointType:  0 -> basepoint, 1 -> free point, 2 -> satellite point
-		(0,lambda): intersection of rupture divisor and strict transform
+		pointType:  0 -> starting point, 1 -> free point, 2 -> satellite point
+		(0,lambda): intersection of rupture divisor and strict transform after last blowup
 		e:          multiplicity of the strict transform
 		PI_blowup:  blowup morphism from one rupture divisor to the next one
+		
+		Assumptions and conventions:
+		- point to blow up: (0,0)
+		- previous exceptional divisor (at free and satellite points): x=0
+		- the other crossing exceptional divsor (at satellite points): y=0
+		- strictTransform_f may have any tangent
 	}
 	P := Parent(strictTransform_f); x := P.1; y := P.2; R := BaseRing(P);
 	xExp_f, yExp_f := Explode(xyExp_f);
@@ -285,7 +291,7 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyExp_w::[], uni
 			e := Degree(tan, y);
 			C := MonomialCoefficient(tan, x^e);
 			// tan = C*x^e - C*e*lambda*x^(e-1)*y + ...
-			lambda := R!( MonomialCoefficient(tan, x^(e-1)*y) / (- C * e) );
+			lambda := MonomialCoefficient(tan, x^(e-1)*y) / (- C * e);
 			
 			pi := [x, x*y];
 			

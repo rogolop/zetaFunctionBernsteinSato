@@ -34,8 +34,8 @@ print_betas        := true;
 print_f            := true;
 
 // Which set of nus should be used for each rupture divisor
-defaultNus         := [true, true, true];
-nuChoices          := [[], [], []]; // (if not defaultNus)
+defaultNus         := [true, false, false];
+nuChoices          := [[], [1,3,4], [1, 2, 4, 5, 6, 8, 9, 10]]; // (if not defaultNus)
 
 // Choose curve
 curve              := "_betas";
@@ -45,12 +45,16 @@ curve              := "_betas";
 // "4-9_example"; "5-7";
 
 // For "_betas"
-_betas_betas       := [12,16,50,101];
+_betas_betas       := [36,96,292,881];
 // [5,7];
 // [4,6,13]; [4,10,21]; [6,9,22]; [6,14,43]; [8,18,73]; [10,15,36]; [10,24,121];
-// [12,16,50,101]; [12,18,39,79];
+// [8,12,26,53];   -> 2-3|2-3|2-3
+// [12,16,50,101]; -> 3-4|2-3|2-3
+// [12,18,38,115]; -> 2-3|3-4|2-3
+// [12,18,39,79];  -> 2-3|2-3|3-4
+// [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 chosenEqs_betas    := [1, 1, 1]; // choose option for each equation
-parameters_betas   := "[]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas   := "[1,258,877]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 neededParamsVars   := []; // parameter needed at each Hi
 interactive_betas  := false;
 interactive_eqs    := false;
@@ -519,36 +523,39 @@ end for;
 printf "\n";
 
 
-///////////////////////////////// THEORY OK ////////////////////////////////////
 
 
 
+// (total transform of f) = x^xExp_f * y^yExp_f * units_f * strictTransform_f
+// (pullback of dx^dy)    = x^xExp_w * y^yExp_w * units_w
 strictTransform_f := f;
 xyExp_f := [0,0];
 xyExp_w := [0,0];
 units_f := {* P!1 *};
 units_w := {* P!1 *};
-pointType := 0; // 0 -> basepoint, 1 -> free point, 2 -> satellite point
-PI_TOTAL := [x, y];
+pointType := 0; // 0 -> starting point, 1 -> free point, 2 -> satellite point
+PI_TOTAL := [x, y]; // Total blowup morphism since starting point
 
 // ### For each rupture divisor ###
-// Non-rupture divisors don't have to be ckecked (see TFG-Roger, p.28, Cor.4.2.5)
+// Non-rupture divisors don't contribute (see TFG-Roger, p.28, Cor.4.2.5 or PHD-Guillem p.87 Th.8.10)
 for r in [1..g] do
 	print "-----------------------------------------------------------------------";
 	if (printType ne "none" and not ignoreDivisor[r]) then printf "Divisor E_%o\n", r; end if;
 	
+	///////////////////////////////// THEORY OK ////////////////////////////////////
+	
 	// Blowup
-	// From: (0,0) singular point of the strict transform of the curve (basepoint or a free point on last rupture divisor)
+	// From: (0,0) singular point of the strict transform of the curve (starting point or a free point on the last rupture divisor)
 	// To: next rupture divisor
 	strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType, lambda, ep, PI_blowup := Blowup(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType);
-	// Total blowup morphism since basepoint
+	// Total blowup morphism since starting point
 	PI_TOTAL := [Evaluate(t, PI_blowup) : t in PI_TOTAL];
 	// Units
-	U := &*[t^m : t->m in units_f] * strictTransform_f;
-	V := &*[t^m : t->m in units_w];
+	u := &*[t^m : t->m in units_f] * strictTransform_f;
+	v := &*[t^m : t->m in units_w];
 	// Multiplicities of rupture divisor x=0
-	NP := xyExp_f[1];
-	KP := xyExp_w[1];
+	Np := xyExp_f[1];
+	Kp := xyExp_w[1];
 	// Multiplicities of y=0
 	N1 := xyExp_f[2];
 	K1 := xyExp_w[2];
@@ -556,8 +563,8 @@ for r in [1..g] do
 	// 1) proximate non-rupture divisor through (0,0): y=0
 	// 2) proximate non-rupture divisor through (0,infinity)
 	// 3) the curve
-	NN := [N1, NP-N1-ep, ep];
-	KK := [K1, KP-K1-1, 0];
+	N := [N1, Np-N1-ep, ep];
+	k := [K1, Kp-K1-1, 0];
 	
 	// // Find the maximum nu in this and following rupture divisors => maximum power needed in series expansions in x (?????????)
 	// // Don't discard topological roots to have enough terms for a blowup
@@ -568,8 +575,8 @@ for r in [1..g] do
 	// end for;
 	
 	// Interesting values of nu
-	nus, topologicalNus := Nus(_betas, semiGroupInfo, NP, KP, r : discardTopologial:=true);
-	topologicalRoots[r] := [<nu, Sigma(NP, KP, nu)> : nu in topologicalNus];
+	nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
+	topologicalRoots[r] := [<nu, Sigma(Np, Kp, nu)> : nu in topologicalNus];
 	if not defaultNus[r] then
 		nus := nuChoices[r];
 	end if;
@@ -596,7 +603,7 @@ for r in [1..g] do
 		SetOutputFile(outFileName : Overwrite := false);
 	end if;
 	
-	L_all, sigma_all, epsilon_all := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], U, V, lambda, ep, NP, KP, NN, KK, nus, r, neededParamsVars, printToFile, outFileName> : printType:=printType);
+	L_all, sigma_all, epsilon_all := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], u, v, lambda, ep, Np, Kp, N, k, nus, r, neededParamsVars, printToFile, outFileName > : printType:=printType);
 	
 	// Flush to file
 	if printToFile then
@@ -610,7 +617,7 @@ for r in [1..g] do
 		print "Center singular point";
 		
 		strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center := CenterOriginOnCurve(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, lambda);
-		// Total blowup morphism since basepoint
+		// Total blowup morphism since starting point
 		PI_TOTAL := [Evaluate(t, PI_center) : t in PI_TOTAL];
 		
 		printf "lambda = %o\n\n", lambda;
