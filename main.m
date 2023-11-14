@@ -35,7 +35,7 @@ print_f            := true;
 
 // Which set of nus should be used for each rupture divisor
 defaultNus         := [true, false, false];
-nuChoices          := [[], [1,3,4], [1, 2, 4, 5, 6, 8, 9, 10]]; // (if not defaultNus)
+nuChoices          := [[], [3,4], [1,2,4]]; // (if not defaultNus)
 
 // Choose curve
 curve              := "_betas";
