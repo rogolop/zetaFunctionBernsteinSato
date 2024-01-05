@@ -34,11 +34,11 @@ print_betas        := true;
 print_f            := true;
 
 // Which set of nus should be used for each rupture divisor
-defaultNus         := [true, false, false];
-nuChoices          := [[], [3,4], [1,2,4]]; // (if not defaultNus)
+defaultNus         := [true, true];
+nuChoices          := [[], []]; // (if not defaultNus)
 
 // Choose curve
-curve              := "_betas";
+curve              := "Maria_6-7_w(5,2)_extra2";
 // "_betas";
 // "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
 // "4-6-13"; "6-14-43_AM";
@@ -203,6 +203,179 @@ case curve:
 		f := (x^2-y^3)^3 + x^2*y^6 + t*y^8*(x^2-y^3);
 		// Runtime error: Argument must be an irreducible series
 		// -23/66 not root for t = -7/10 (Artal Singular)
+	when "Maria_6-7_w(5,2)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (5,2)
+		// f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + A_34*x^3*y^4;
+		// f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + (63*A_43^2-20)/56*x^3*y^4 + A_44*x^4*y^4;
+		f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + A_34*x^3*y^4 + A_44*x^4*y^4;
+		// f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + A_34*x^3*y^4 + A_44*x^4*y^4 + A_53*x^5*y^3 + A_54*x^5*y^4; // irrellevants
+		
+	when "Maria_6-7_w(5,2)_extra1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (5,2)
+		f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + A_34*x^3*y^4;
+		
+	when "Maria_6-7_w(5,2)_extra2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (5,2)
+		f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + (63*A_43^2-20)/56*x^3*y^4 + A_44*x^4*y^4;
+		
+	when "Maria_6-7_w(4,3)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (4,3)
+		// f := y^6 - x^7 + x^4*y^3 + A_34*x^3*y^4 + A_44*x^4*y^4; // irrellevant
+		f := y^6 - x^7 + x^4*y^3 + A_34*x^3*y^4;
+		
+	when "Maria_6-7_w(3,4)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (3,4)
+		f := y^6 - x^7 + x^3*y^4 + A_53*x^5*y^3;
+		
+	when "Maria_6-7_w(5,3)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (5,3)
+		f := y^6 - x^7 + x^5*y^3 + A_44*x^4*y^4;
+		
+	when "Maria_6-7_w(4,4)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (4,4)
+		f := y^6 - x^7 + x^4*y^4;
+		
+	when "Maria_6-7_w(5,4)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (5,4)
+		f := y^6 - x^7 + x^5*y^4;
+		
+	when "Maria_6-7_wInf":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = Inf
+		f := y^6 - x^7;
+		
+	when "Maria_17-6":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 + A_12_2*x^12*y^2 + A_15_1*x^15*y + A_10_3*x^10*y^3 +
+			A_13_2*x^13*y^2 + A_11_3*x^11*y^3 + A_14_2*x^14*y^2 + A_12_3*x^12*y^3 + A_15_2*x^15*y^2 +
+			A_13_3*x^13*y^3 + A_14_3*x^14*y^3 + A_15_3*x^15*y^3;
+		
+	when "Maria_17-6_1.1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.1
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 + A_12_2*x^12*y^2 + A_15_1*x^15*y + A_10_3*x^10*y^3 +
+			A_13_2*x^13*y^2 + A_11_3*x^11*y^3 + A_14_2*x^14*y^2 + A_15_2*x^15*y^2;
+		
+	when "Maria_17-6_1.2.1.1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.1.1
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			A_15_1*x^15*y +
+			A_10_3*x^10*y^3 +
+			A_13_2*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			A_14_2*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			A_13_3*x^13*y^3;
+		
+	when "Maria_17-6_1.2.1.2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.1.2
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			A_15_1*x^15*y +
+			A_10_3*x^10*y^3 +
+			1/1020*(
+				-450*A_15_1^2 + 275*A_10_3*A_9_3 + 540*A_15_1*A_9_3 - 162*A_9_3^2 +
+				1215*A_15_1*A_9_3^3 - 729*A_9_3^4 - 6561/8*A_9_3^6)*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			A_14_2*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			A_13_3*x^13*y^3 + 
+			A_14_3*x^14*y^3;
+	
+	when "Maria_17-6_1.2.2.1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.2.1
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			(27/20*A_9_3^3 + 3/5*A_9_3)*x^15*y +
+			A_10_3*x^10*y^3 +
+			A_13_2*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			A_14_2*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			A_15_2*x^15*y^2;
+	
+	when "Maria_17-6_1.2.2.2.1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.2.2.1
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			(27/20*A_9_3^3 + 3/5*A_9_3)*x^15*y +
+			A_10_3*x^10*y^3 +
+			(27/20*A_9_3)*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			A_14_2*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			A_15_2*x^15*y^2 +
+			A_13_3*x^13*y^3;
+	
+	when "Maria_17-6_1.2.2.2.2.1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.2.2.2.1
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			(27/20*A_9_3^3 + 3/5*A_9_3)*x^15*y +
+			A_10_3*x^10*y^3 +
+			(27/20*A_9_3)*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			(45/32*A_9_3*A_11_3)*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			A_15_2*x^15*y^2 +
+			A_13_3*x^13*y^3 +
+			A_14_3*x^14*y^3;
+	
+	when "Maria_17-6_1.2.2.2.2.2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.2.2.2.2
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			(27/20*A_9_3^3 + 3/5*A_9_3)*x^15*y +
+			A_10_3*x^10*y^3 +
+			(27/20*A_9_3)*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			(45/32*A_9_3*A_11_3)*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			(63/44*A_9_3*A_12_3)*x^15*y^2 +
+			A_13_3*x^13*y^3 +
+			A_14_3*x^14*y^3 +
+			A_15_3*x^15*y^3;
+		
 	when "_betas": // Generic curve construction  
 		// INPUT
 		if (interactive_betas) then
