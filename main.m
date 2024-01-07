@@ -23,13 +23,13 @@ Q := RationalField();
 quitWhenFinished   := false;
 
 // Whether to print into a file, and which one
-printToFile        := false;
+printToFile        := true;
 outFileNamePrefix  := "output/out_";
 outFileNameSufix   := ".txt";
 // Output format: "table", "CSV", "Latex", "none"
 printType          := "table";
 // Whether to print
-printTopologial    := false;
+printTopologial    := true;
 print_betas        := true;
 print_f            := true;
 
@@ -38,7 +38,7 @@ defaultNus         := [true, true];
 nuChoices          := [[], []]; // (if not defaultNus)
 
 // Choose curve
-curve              := "Maria_6-7_w(5,2)_extra2";
+curve              := "Maria_6-7_general";
 // "_betas";
 // "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
 // "4-6-13"; "6-14-43_AM";
@@ -203,6 +203,12 @@ case curve:
 		f := (x^2-y^3)^3 + x^2*y^6 + t*y^8*(x^2-y^3);
 		// Runtime error: Argument must be an irreducible series
 		// -23/66 not root for t = -7/10 (Artal Singular)
+		
+	when "Maria_6-7_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_43,A_34,A_44,A_52,A_53,A_54> := BaseRing(P);
+		f := y^6 - x^7 + A_52*x^5*y^2 + A_43*x^4*y^3 + A_34*x^3*y^4 + A_44*x^4*y^4 + A_53*x^5*y^3 + A_54*x^5*y^4;
+		
 	when "Maria_6-7_w(5,2)":
 		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
 		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
