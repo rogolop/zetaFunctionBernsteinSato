@@ -1,0 +1,413 @@
+Semigroup: [ 6, 14, 43 ]
+Possible undeformed equations in space:
+Equation 1 options:
+[
+    -u0^7 + u1^3
+]
+Equation 2 options:
+[
+    -u0^5*u1^4 + u2^2,
+    -u0^12*u1 + u2^2
+]
+Chosen equation indexes: [ 1, 1 ]
+Chosen equations:
+[
+    -u0^7 + u1^3,
+    -u0^5*u1^4 + u2^2
+]
+
+############################################################
+############################################################
+
+g = 2
+R =
+    Graded Polynomial ring of rank 3 over Rational Field
+    Order: Grevlex with weights [6, 14, 43]
+    Variables: u0, u1, u2
+    Variable weights: [6, 14, 43]
+ZZ =
+    Integer Ring
+Ei =
+    [ 6, 2, 1 ]
+Ni =
+    [ 0, 3, 2 ]
+nB =
+    [ -42, -86 ]
+
+M =
+    Free Embedded Module R^2 with grading [-42, -86]
+    Order: Module TOP with column weights [-42, -86]: Grevlex with weights [6, 
+    14, 43]
+N =
+    Embedded Submodule of R^2 with grading [-42, -86]
+    Order: Module TOP with column weights [-42, -86]: Grevlex with weights [6, 
+    14, 43]
+    Basis:
+    [     -u0^7 + u1^3,                 0],
+    [                0,      -u0^7 + u1^3],
+    [-u0^5*u1^4 + u2^2,                 0],
+    [                0, -u0^5*u1^4 + u2^2]
+J =
+    [     -7*u0^6 -5*u0^4*u1^4]
+    [      3*u1^2 -4*u0^5*u1^3]
+    [           0         2*u2]
+T_1 =
+    Embedded Submodule of R^2 with grading [-42, -86]
+    Order: Module TOP with column weights [-42, -86]: Grevlex with weights [6, 
+    14, 43]
+    Basis:
+    [     -u0^7 + u1^3,                 0],
+    [                0,      -u0^7 + u1^3],
+    [-u0^5*u1^4 + u2^2,                 0],
+    [                0, -u0^5*u1^4 + u2^2],
+    [          -7*u0^6,      -5*u0^4*u1^4],
+    [           3*u1^2,      -4*u0^5*u1^3],
+    [                0,              2*u2]
+
+T_1 =
+    Embedded Submodule of R^2 with grading [-42, -86]
+    Order: Module TOP with column weights [-42, -86]: Grevlex with weights [6, 
+    14, 43]
+    Groebner basis:
+    [          u2^2,              0],
+    [       u0^6*u2,              0],
+    [       u1^2*u2,              0],
+    [     u0^6*u1^2,              0],
+    [          u0^7,              0],
+    [          u1^3,              0],
+    [-3/4*u0^2*u1^2,           u1^6],
+    [      7/5*u0^6,      u0^4*u1^4],
+    [     -3/4*u1^2,      u0^5*u1^3],
+    [             0,             u2],
+    [             0,    u0^7 - u1^3]
+LT =
+    [
+    [u2^2, 0],
+    [u0^6*u2, 0],
+    [u1^2*u2, 0],
+    [u0^6*u1^2, 0],
+    [u0^7, 0],
+    [u1^3, 0],
+    [0, u1^6],
+    [0, u0^4*u1^4],
+    [0, u0^5*u1^3],
+    [0, u2],
+    [0, u0^7]
+    ]
+
+
+### for loop -> step 1 of 2
+LT_i =
+    Ideal of Graded Polynomial ring of rank 3 over Rational Field
+    Order: Grevlex with weights [6, 14, 43]
+    Variables: u0, u1, u2
+    Variable weights: [6, 14, 43]
+    Homogeneous
+    Basis:
+    [
+    u2^2,
+    u0^6*u2,
+    u1^2*u2,
+    u0^6*u1^2,
+    u0^7,
+    u1^3
+    ]
+M_i =
+    [
+    [1, 0],
+    [u0, 0],
+    [u0^2, 0],
+    [u1, 0],
+    [u0^3, 0],
+    [u0*u1, 0],
+    [u0^4, 0],
+    [u0^2*u1, 0],
+    [u1^2, 0],
+    [u0^5, 0],
+    [u0^3*u1, 0],
+    [u0*u1^2, 0],
+    [u0^6, 0],
+    [u0^4*u1, 0],
+    [u0^2*u1^2, 0],
+    [u2, 0],
+    [u0^5*u1, 0],
+    [u0^3*u1^2, 0],
+    [u0*u2, 0],
+    [u0^6*u1, 0],
+    [u0^4*u1^2, 0],
+    [u0^2*u2, 0],
+    [u1*u2, 0],
+    [u0^5*u1^2, 0],
+    [u0^3*u2, 0],
+    [u0*u1*u2, 0],
+    [u0^4*u2, 0],
+    [u0^2*u1*u2, 0],
+    [u0^5*u2, 0],
+    [u0^3*u1*u2, 0],
+    [u0^4*u1*u2, 0],
+    [u0^5*u1*u2, 0]
+    ]
+D_mu =
+    [
+    [u2, 0],
+    [u0^5*u1, 0],
+    [u0^3*u1^2, 0],
+    [u0*u2, 0],
+    [u0^6*u1, 0],
+    [u0^4*u1^2, 0],
+    [u0^2*u2, 0],
+    [u1*u2, 0],
+    [u0^5*u1^2, 0],
+    [u0^3*u2, 0],
+    [u0*u1*u2, 0],
+    [u0^4*u2, 0],
+    [u0^2*u1*u2, 0],
+    [u0^5*u2, 0],
+    [u0^3*u1*u2, 0],
+    [u0^4*u1*u2, 0],
+    [u0^5*u1*u2, 0]
+    ]
+
+### for loop -> step 2 of 2
+LT_i =
+    Ideal of Graded Polynomial ring of rank 3 over Rational Field
+    Order: Grevlex with weights [6, 14, 43]
+    Variables: u0, u1, u2
+    Variable weights: [6, 14, 43]
+    Homogeneous
+    Basis:
+    [
+    u1^6,
+    u0^4*u1^4,
+    u0^5*u1^3,
+    u2,
+    u0^7
+    ]
+M_i =
+    [
+    [0, 1],
+    [0, u0],
+    [0, u0^2],
+    [0, u1],
+    [0, u0^3],
+    [0, u0*u1],
+    [0, u0^4],
+    [0, u0^2*u1],
+    [0, u1^2],
+    [0, u0^5],
+    [0, u0^3*u1],
+    [0, u0*u1^2],
+    [0, u0^6],
+    [0, u0^4*u1],
+    [0, u0^2*u1^2],
+    [0, u1^3],
+    [0, u0^5*u1],
+    [0, u0^3*u1^2],
+    [0, u0*u1^3],
+    [0, u0^6*u1],
+    [0, u0^4*u1^2],
+    [0, u0^2*u1^3],
+    [0, u1^4],
+    [0, u0^5*u1^2],
+    [0, u0^3*u1^3],
+    [0, u0*u1^4],
+    [0, u0^6*u1^2],
+    [0, u0^4*u1^3],
+    [0, u0^2*u1^4],
+    [0, u1^5],
+    [0, u0^3*u1^4],
+    [0, u0*u1^5],
+    [0, u0^2*u1^5],
+    [0, u0^3*u1^5]
+    ]
+D_mu =
+    [
+    [u2, 0],
+    [u0^5*u1, 0],
+    [u0^3*u1^2, 0],
+    [u0*u2, 0],
+    [u0^6*u1, 0],
+    [u0^4*u1^2, 0],
+    [u0^2*u2, 0],
+    [u1*u2, 0],
+    [u0^5*u1^2, 0],
+    [u0^3*u2, 0],
+    [u0*u1*u2, 0],
+    [u0^4*u2, 0],
+    [u0^2*u1*u2, 0],
+    [u0^5*u2, 0],
+    [u0^3*u1*u2, 0],
+    [u0^4*u1*u2, 0],
+    [u0^5*u1*u2, 0],
+    [0, u0^3*u1^5]
+    ]
+D_mu =
+    [
+    [u2, 0],
+    [u0^5*u1, 0],
+    [u0^3*u1^2, 0],
+    [u0*u2, 0],
+    [u0^6*u1, 0],
+    [u0^4*u1^2, 0],
+    [u0^2*u2, 0],
+    [u1*u2, 0],
+    [u0^5*u1^2, 0],
+    [u0^3*u2, 0],
+    [u0*u1*u2, 0],
+    [u0^4*u2, 0],
+    [u0^2*u1*u2, 0],
+    [u0^5*u2, 0],
+    [u0^3*u1*u2, 0],
+    [u0^4*u1*u2, 0],
+    [u0^5*u1*u2, 0],
+    [0, u0^3*u1^5]
+    ]
+
+RR =
+    Localization of polynomial ring of rank 21 over Rational Field
+    Order: Local Graded Lexicographical
+    Variables: t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, 
+    t15, t16, t17, u0, u1, u2
+phi =
+    Mapping from: RngMPol: R to RngMPolLoc: RR
+II =
+    [
+    u1^3 - u0^7,
+    u2^2 - u0^5*u1^4
+    ]
+
+
+### for loop -> step 1 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 - u0^7,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 2 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 - u0^7 + t1*u0^5*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 3 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 + t2*u0^3*u1^2 - u0^7 + t1*u0^5*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 4 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 + t3*u0*u2 + t2*u0^3*u1^2 - u0^7 + t1*u0^5*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 5 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 + t3*u0*u2 + t2*u0^3*u1^2 - u0^7 + t1*u0^5*u1 + t4*u0^6*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 6 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 + t3*u0*u2 + t2*u0^3*u1^2 - u0^7 + t5*u0^4*u1^2 + t1*u0^5*u1 + 
+    t4*u0^6*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 7 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 + t3*u0*u2 + t6*u0^2*u2 + t2*u0^3*u1^2 - u0^7 + t5*u0^4*u1^2 + 
+    t1*u0^5*u1 + t4*u0^6*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 8 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 + t7*u1*u2 + t3*u0*u2 + t6*u0^2*u2 + t2*u0^3*u1^2 - u0^7 + 
+    t5*u0^4*u1^2 + t1*u0^5*u1 + t4*u0^6*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 9 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 + t7*u1*u2 + t3*u0*u2 + t6*u0^2*u2 + t2*u0^3*u1^2 - u0^7 + 
+    t5*u0^4*u1^2 + t1*u0^5*u1 + t8*u0^5*u1^2 + t4*u0^6*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 10 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 + t7*u1*u2 + t3*u0*u2 + t6*u0^2*u2 + t9*u0^3*u2 + t2*u0^3*u1^2 
+    - u0^7 + t5*u0^4*u1^2 + t1*u0^5*u1 + t8*u0^5*u1^2 + t4*u0^6*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 11 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 + t7*u1*u2 + t3*u0*u2 + t10*u0*u1*u2 + t6*u0^2*u2 + t9*u0^3*u2 
+    + t2*u0^3*u1^2 - u0^7 + t5*u0^4*u1^2 + t1*u0^5*u1 + t8*u0^5*u1^2 + 
+    t4*u0^6*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 12 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 + t7*u1*u2 + t3*u0*u2 + t10*u0*u1*u2 + t6*u0^2*u2 + t9*u0^3*u2 
+    + t11*u0^4*u2 + t2*u0^3*u1^2 - u0^7 + t5*u0^4*u1^2 + t1*u0^5*u1 + 
+    t8*u0^5*u1^2 + t4*u0^6*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 13 of 18
+e_i =
+    1
+II =
+    [
+    t0*u2 + u1^3 + t7*u1*u2 + t3*u0*u2 + t10*u0*u1*u2 + t6*u0^2*u2 + 
+    t12*u0^2*u1*u2 + t9*u0^3*u2 + t11*u0^4*u2 + t2*u0^3*u1^2 - u0^7 + 
+    t5*u0^4*u1^2 + t1*u0^5*u1 + t8*u0^5*u1^2 + t4*u0^6*u1,
+    u2^2 - u0^5*u1^4
+    ]
+
+### for loop -> step 14 of 18
+e_i =
+    1
+II =
+    [
+    t

@@ -1,0 +1,421 @@
+Semigroup: [ 6, 9, 22 ]
+Possible undeformed equations in space:
+Equation 1 options:
+[
+    -u0^3 + u1^2
+]
+Equation 2 options:
+[
+    -u0^2*u1^6 + u2^3,
+    -u0^5*u1^4 + u2^3,
+    -u0^8*u1^2 + u2^3,
+    -u0^11 + u2^3
+]
+Chosen equation indexes: [ 1, 4 ]
+Chosen equations:
+[
+    -u0^3 + u1^2,
+    -u0^11 + u2^3
+]
+
+############################################################
+############################################################
+
+g = 2
+R =
+    Graded Polynomial ring of rank 3 over Rational Field
+    Order: Grevlex with weights [6, 9, 22]
+    Variables: u0, u1, u2
+    Variable weights: [6, 9, 22]
+ZZ =
+    Integer Ring
+Ei =
+    [ 6, 3, 1 ]
+Ni =
+    [ 0, 2, 3 ]
+nB =
+    [ -18, -66 ]
+
+M =
+    Free Embedded Module R^2 with grading [-18, -66]
+    Order: Module TOP with column weights [-18, -66]: Grevlex with weights [6, 
+    9, 22]
+N =
+    Embedded Submodule of R^2 with grading [-18, -66]
+    Order: Module TOP with column weights [-18, -66]: Grevlex with weights [6, 
+    9, 22]
+    Basis:
+    [ -u0^3 + u1^2,             0],
+    [            0,  -u0^3 + u1^2],
+    [-u0^11 + u2^3,             0],
+    [            0, -u0^11 + u2^3]
+J =
+    [  -3*u0^2 -11*u0^10]
+    [     2*u1         0]
+    [        0    3*u2^2]
+T_1 =
+    Embedded Submodule of R^2 with grading [-18, -66]
+    Order: Module TOP with column weights [-18, -66]: Grevlex with weights [6, 
+    9, 22]
+    Basis:
+    [ -u0^3 + u1^2,             0],
+    [            0,  -u0^3 + u1^2],
+    [-u0^11 + u2^3,             0],
+    [            0, -u0^11 + u2^3],
+    [      -3*u0^2,     -11*u0^10],
+    [         2*u1,             0],
+    [            0,        3*u2^2]
+
+T_1 =
+    Embedded Submodule of R^2 with grading [-18, -66]
+    Order: Module TOP with column weights [-18, -66]: Grevlex with weights [6, 
+    9, 22]
+    Groebner basis:
+    [       u2^3,           0],
+    [  u0^2*u2^2,           0],
+    [          0,        u1^8],
+    [       u0^3,           0],
+    [  3/11*u0^2,     u0*u1^6],
+    [         u1,           0],
+    [          0,        u2^2],
+    [          0, u0^3 - u1^2]
+LT =
+    [
+    [u2^3, 0],
+    [u0^2*u2^2, 0],
+    [0, u1^8],
+    [u0^3, 0],
+    [0, u0*u1^6],
+    [u1, 0],
+    [0, u2^2],
+    [0, u0^3]
+    ]
+
+
+### for loop -> step 1 of 2
+LT_i =
+    Ideal of Graded Polynomial ring of rank 3 over Rational Field
+    Order: Grevlex with weights [6, 9, 22]
+    Variables: u0, u1, u2
+    Variable weights: [6, 9, 22]
+    Homogeneous
+    Basis:
+    [
+    u2^3,
+    u0^2*u2^2,
+    u0^3,
+    u1
+    ]
+M_i =
+    [
+    [1, 0],
+    [u0, 0],
+    [u0^2, 0],
+    [u2, 0],
+    [u0*u2, 0],
+    [u0^2*u2, 0],
+    [u2^2, 0],
+    [u0*u2^2, 0]
+    ]
+D_mu =
+    [
+    [u2, 0],
+    [u0*u2, 0],
+    [u0^2*u2, 0],
+    [u2^2, 0],
+    [u0*u2^2, 0]
+    ]
+
+### for loop -> step 2 of 2
+LT_i =
+    Ideal of Graded Polynomial ring of rank 3 over Rational Field
+    Order: Grevlex with weights [6, 9, 22]
+    Variables: u0, u1, u2
+    Variable weights: [6, 9, 22]
+    Homogeneous
+    Basis:
+    [
+    u1^8,
+    u0*u1^6,
+    u2^2,
+    u0^3
+    ]
+M_i =
+    [
+    [0, 1],
+    [0, u0],
+    [0, u1],
+    [0, u0^2],
+    [0, u0*u1],
+    [0, u1^2],
+    [0, u0^2*u1],
+    [0, u2],
+    [0, u0*u1^2],
+    [0, u1^3],
+    [0, u0*u2],
+    [0, u0^2*u1^2],
+    [0, u1*u2],
+    [0, u0*u1^3],
+    [0, u0^2*u2],
+    [0, u1^4],
+    [0, u0*u1*u2],
+    [0, u0^2*u1^3],
+    [0, u1^2*u2],
+    [0, u0*u1^4],
+    [0, u0^2*u1*u2],
+    [0, u1^5],
+    [0, u0*u1^2*u2],
+    [0, u0^2*u1^4],
+    [0, u1^3*u2],
+    [0, u0*u1^5],
+    [0, u0^2*u1^2*u2],
+    [0, u1^6],
+    [0, u0*u1^3*u2],
+    [0, u0^2*u1^5],
+    [0, u1^4*u2],
+    [0, u0^2*u1^3*u2],
+    [0, u1^7],
+    [0, u0*u1^4*u2],
+    [0, u1^5*u2],
+    [0, u0^2*u1^4*u2],
+    [0, u0*u1^5*u2],
+    [0, u1^6*u2],
+    [0, u0^2*u1^5*u2],
+    [0, u1^7*u2]
+    ]
+D_mu =
+    [
+    [u2, 0],
+    [u0*u2, 0],
+    [u0^2*u2, 0],
+    [u2^2, 0],
+    [u0*u2^2, 0],
+    [0, u1^5*u2],
+    [0, u0^2*u1^4*u2],
+    [0, u0*u1^5*u2],
+    [0, u1^6*u2],
+    [0, u0^2*u1^5*u2],
+    [0, u1^7*u2]
+    ]
+D_mu =
+    [
+    [u2, 0],
+    [u0*u2, 0],
+    [u0^2*u2, 0],
+    [u2^2, 0],
+    [u0*u2^2, 0],
+    [0, u1^5*u2],
+    [0, u0^2*u1^4*u2],
+    [0, u0*u1^5*u2],
+    [0, u1^6*u2],
+    [0, u0^2*u1^5*u2],
+    [0, u1^7*u2]
+    ]
+
+RR =
+    Localization of polynomial ring of rank 14 over Rational Field
+    Order: Local Graded Lexicographical
+    Variables: t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, u0, u1, u2
+phi =
+    Mapping from: RngMPol: R to RngMPolLoc: RR
+II =
+    [
+    u1^2 - u0^3,
+    u2^3 - u0^11
+    ]
+
+
+### for loop -> step 1 of 11
+e_i =
+    1
+II =
+    [
+    u1^2 + t0*u2 - u0^3,
+    u2^3 - u0^11
+    ]
+
+### for loop -> step 2 of 11
+e_i =
+    1
+II =
+    [
+    u1^2 + t0*u2 - u0^3 + t1*u0*u2,
+    u2^3 - u0^11
+    ]
+
+### for loop -> step 3 of 11
+e_i =
+    1
+II =
+    [
+    u1^2 + t0*u2 - u0^3 + t1*u0*u2 + t2*u0^2*u2,
+    u2^3 - u0^11
+    ]
+
+### for loop -> step 4 of 11
+e_i =
+    1
+II =
+    [
+    u1^2 + t0*u2 - u0^3 + t3*u2^2 + t1*u0*u2 + t2*u0^2*u2,
+    u2^3 - u0^11
+    ]
+
+### for loop -> step 5 of 11
+e_i =
+    1
+II =
+    [
+    u1^2 + t0*u2 - u0^3 + t3*u2^2 + t1*u0*u2 + t4*u0*u2^2 + t2*u0^2*u2,
+    u2^3 - u0^11
+    ]
+
+### for loop -> step 6 of 11
+e_i =
+    2
+II =
+    [
+    u1^2 + t0*u2 - u0^3 + t3*u2^2 + t1*u0*u2 + t4*u0*u2^2 + t2*u0^2*u2,
+    u2^3 + t5*u1^5*u2 - u0^11
+    ]
+
+### for loop -> step 7 of 11
+e_i =
+    2
+II =
+    [
+    u1^2 + t0*u2 - u0^3 + t3*u2^2 + t1*u0*u2 + t4*u0*u2^2 + t2*u0^2*u2,
+    u2^3 + t5*u1^5*u2 + t6*u0^2*u1^4*u2 - u0^11
+    ]
+
+### for loop -> step 8 of 11
+e_i =
+    2
+II =
+    [
+    u1^2 + t0*u2 - u0^3 + t3*u2^2 + t1*u0*u2 + t4*u0*u2^2 + t2*u0^2*u2,
+    u2^3 + t5*u1^5*u2 + t7*u0*u1^5*u2 + t6*u0^2*u1^4*u2 - u0^11
+    ]
+
+### for loop -> step 9 of 11
+e_i =
+    2
+II =
+    [
+    u1^2 + t0*u2 - u0^3 + t3*u2^2 + t1*u0*u2 + t4*u0*u2^2 + t2*u0^2*u2,
+    u2^3 + t5*u1^5*u2 + t8*u1^6*u2 + t7*u0*u1^5*u2 + t6*u0^2*u1^4*u2 - u0^11
+    ]
+
+### for loop -> step 10 of 11
+e_i =
+    2
+II =
+    [
+    u1^2 + t0*u2 - u0^3 + t3*u2^2 + t1*u0*u2 + t4*u0*u2^2 + t2*u0^2*u2,
+    u2^3 + t5*u1^5*u2 + t8*u1^6*u2 + t7*u0*u1^5*u2 + t6*u0^2*u1^4*u2 + 
+    t9*u0^2*u1^5*u2 - u0^11
+    ]
+
+### for loop -> step 11 of 11
+e_i =
+    2
+II =
+    [
+    u1^2 + t0*u2 - u0^3 + t3*u2^2 + t1*u0*u2 + t4*u0*u2^2 + t2*u0^2*u2,
+    u2^3 + t5*u1^5*u2 + t8*u1^6*u2 + t7*u0*u1^5*u2 + t6*u0^2*u1^4*u2 + 
+    t10*u1^7*u2 + t9*u0^2*u1^5*u2 - u0^11
+    ]
+
+############################################################
+############################################################
+
+Deformation =
+    [
+    u1^2 + t0*u2 - u0^3 + t3*u2^2 + t1*u0*u2 + t4*u0*u2^2 + t2*u0^2*u2,
+    u2^3 + t5*u1^5*u2 + t8*u1^6*u2 + t7*u0*u1^5*u2 + t6*u0^2*u1^4*u2 + 
+    t10*u1^7*u2 + t9*u0^2*u1^5*u2 - u0^11
+    ]
+PDeformation =
+    Localization of polynomial ring of rank 14 over Rational Field
+    Order: Local Graded Lexicographical
+    Variables: t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, u0, u1, u2
+Parameters:
+    Optional at E1: [ 1, 2, 3, 4 ]
+    Optional at E2: [ 5, 6, 7, 8, 9, 10 ]
+    Needed at E1: 0
+Chosen parameters: [ 0, 6 ]
+Chosen deformation:
+[
+    -u0^3 + u1^2 + t0*u2,
+    -u0^11 + t6*u0^2*u1^4*u2 + u2^3
+]
+I =
+    Ideal of Polynomial ring of rank 5 over Rational Field
+    Order: Lexicographical
+    Variables: t0, t6, u0, u1, u2
+    Basis:
+    [
+    t0*u2 - u0^3 + u1^2,
+    t6*u0^2*u1^4*u2 - u0^11 + u2^3
+    ]
+J =
+    Ideal of Polynomial ring of rank 5 over Rational Field
+    Order: Lexicographical
+    Variables: t0, t6, u0, u1, u2
+    Basis:
+    [
+    t0^3*u0^11 - t0^2*t6*u0^5*u1^4 + t0^2*t6*u0^2*u1^6 - u0^9 + 3*u0^6*u1^2 - 
+    3*u0^3*u1^4 + u1^6
+    ]
+ff = t0^3*u0^11 - t0^2*t6*u0^5*u1^4 + t0^2*t6*u0^2*u1^6 - u0^9 + 3*u0^6*u1^2 - 
+3*u0^3*u1^4 + u1^6
+
+
+f = x^9 - t0^3*x^11 - 3*x^6*y^2 + 3*x^3*y^4 + t0^2*t6*x^5*y^4 - y^6 - 
+t0^2*t6*x^2*y^6
+MaxContactElements = [
+t0,
+t6,
+-t0^3 + t6^2
+]
+
+Curve: 6-9-22
+
+f = x^9 - t0^3*x^11 - 3*x^6*y^2 + 3*x^3*y^4 + t0^2*t6*x^5*y^4 - y^6 - 
+t0^2*t6*x^2*y^6
+
+
+-----------------------------------------------------------------------
+Divisor E_1
+nus = []
+
+-----------------------------------------------------------------------
+ZetaFunctionResidue
+
+-----------------------------------------------------------------------
+Center singular point
+lambda = 1
+
+-----------------------------------------------------------------------
+Divisor E_2
+nus = [ 1, 4, 7, 10, 13, 16, 19 ]
+
+-----------------------------------------------------------------------
+ZetaFunctionResidue
+ nu  │     sigma_{2,nu}     │ residue=0 => sigma NOT root & (sigma-1) root
+─────┼──────────────────────┼──────────────────────────
+   1 │  -20/66   =   -10/33 [ 0
+   4 │  -23/66   =   -23/66 ─ 
+                                (11*t0 - 7*t6)
+   7 │  -26/66   =   -13/33 [ 0
+  10 │  -29/66   =   -29/66 ─ 
+                                (11*t0 - 5*t6)
+  13 │  -32/66   =   -16/33 ─ 
+                                (t6)
+  16 │  -35/66   =   -35/66 ┬ 
+                                (11*t0 - 3*t6)
+     │                      └
+                                (t6)
+  19 │  -38/66   =   -19/33 ─ 
+                                (t6)
+

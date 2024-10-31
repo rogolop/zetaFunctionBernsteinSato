@@ -9,8 +9,8 @@
 */
 
 // ### Basic requirements ###
-AttachSpec("./ZetaFunction/ZetaFunction.spec");
-AttachSpec("./SingularitiesDim2/IntegralClosureDim2.spec");
+AttachSpec("SingularitiesDim2/IntegralClosureDim2.spec");
+AttachSpec("ZetaFunction/ZetaFunction.spec");
 //import "./testSemigroup.m" : MonomialCurveOptions, DeformationCurveSpecific;
 Z := IntegerRing();
 Q := RationalField();
@@ -20,16 +20,16 @@ Q := RationalField();
 // ### Input ###
 
 // Whether Magma should quit when the calculations are finished
-quitWhenFinished   := false;
+quitWhenFinished   := true;
 
 // Whether to print into a file, and which one
-printToFile        := true;
+printToFile        := false;
 outFileNamePrefix  := "output/out_";
 outFileNameSufix   := ".txt";
 // Output format: "table", "CSV", "Latex", "none"
 printType          := "table";
 // Whether to print
-printTopologial    := true;
+printTopologial    := false;
 print_betas        := true;
 print_f            := true;
 
@@ -38,23 +38,25 @@ defaultNus         := [true, true];
 nuChoices          := [[], []]; // (if not defaultNus)
 
 // Choose curve
-curve              := "Maria_6-7_general";
+curve              := "_betas";
 // "_betas";
 // "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
 // "4-6-13"; "6-14-43_AM";
 // "4-9_example"; "5-7";
 
 // For "_betas"
-_betas_betas       := [36,96,292,881];
+_betas_betas       := [6,14,43]; //[10,15,36]; //[4,6,13]; //[6,9,22]; //[10,24,121]; // [9,15,47];
 // [5,7];
+// [6,17];
 // [4,6,13]; [4,10,21]; [6,9,22]; [6,14,43]; [8,18,73]; [10,15,36]; [10,24,121];
 // [8,12,26,53];   -> 2-3|2-3|2-3
 // [12,16,50,101]; -> 3-4|2-3|2-3
 // [12,18,38,115]; -> 2-3|3-4|2-3
 // [12,18,39,79];  -> 2-3|2-3|3-4
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
-chosenEqs_betas    := [1, 1, 1]; // choose option for each equation
-parameters_betas   := "[1,258,877]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+// [36,96,292,881];
+chosenEqs_betas    := [1, 1]; // choose option for each equation
+parameters_betas   := "all"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 neededParamsVars   := []; // parameter needed at each Hi
 interactive_betas  := false;
 interactive_eqs    := false;
@@ -381,7 +383,41 @@ case curve:
 			A_13_3*x^13*y^3 +
 			A_14_3*x^14*y^3 +
 			A_15_3*x^15*y^3;
+	when "dos_monomis":
+		// [6,14,43]
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<t1,t2> := BaseRing(P);
+		f := (-x^7+y^3)^2 + t1*x^5*y^4 + t2*x^12*y;
+		// f := (-x^7+y^3)^2 + 1*x^5*y^4;
+		// f := (-x^7+y^3)^2 + t2*x^12*y;
 		
+	when "set_monomis":
+		// [10,15,36]
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 7), 2);
+		R<t1,t2,t3,t4,t5,t6,t7> := BaseRing(P);
+		// f := (-x^3 + y^2)^5 + t1*y^12 + t2*x^3*y^10 + t3*x^6*y^8 + t4*x^9*y^6 + t5*x^12*y^4 + t6*x^15*y^2 + t7*x^18;
+		// f := (-x^3 + y^2)^5 + 1*y^12;
+		// f := (-x^3 + y^2)^5 + 1*x^3*y^10;
+		f := (-x^3 + y^2)^5 + t1*y^12 + t2*x^3*y^10;
+
+	when "2_monomis":
+		// [10,24,121]
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<t1,t2> := BaseRing(P);
+		
+		f := (-x^12+y^5)^2 + t1*x^5*y^8 + t2*x^17*y^3;
+		// f := (-x^12+y^5)^2 + 1*x^5*y^8 + 0*x^17*y^3;
+		// f := (-x^12+y^5)^2 + 0*x^5*y^8 + 1*x^17*y^3;
+		
+	when "4_monomis":
+		// [6,9,22]
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 4), 2);
+		R<t1,t2,t3,t4> := BaseRing(P);
+		
+		f := (-x^3+y^2)^3 + t1*x^2*y^6 + t2*x^5*y^4 + t3*x^8*y^2 + t4*x^11;
+		// f := (-x^3+y^2)^3 + x^11;
+		// f := (-x^3+y^2)^3 + x^2*y^6;
+
 	when "_betas": // Generic curve construction  
 		// INPUT
 		if (interactive_betas) then
@@ -437,40 +473,47 @@ case curve:
 		if (print_betas) then print "Chosen equation indexes:", chosenEqs; end if;
 		if (print_betas) then print "Chosen equations:"; end if;
 		if (print_betas) then print monomialCurve; end if;
-
+		
+		printf "\n############################################################\n";
+		printf "############################################################\n\n";
 		// Deform the chosen monomial curve equations
 		Deformation := DeformationCurveSpecific(monomialCurve, _betas);
+		printf "\n############################################################\n";
+		printf "############################################################\n\n";
+		// printf "Deformation =\n"; IndentPush(); printf "%o\n", Deformation; IndentPop();
+		// printf "DeformationCurveSpecific\n%o\n", Deformation;
 		
 		PDeformation := Universe(Deformation); // Q[t_0, ..., t_{T-1}, u_0, ..., u_g] (localization)
+		// printf "PDeformation =\n"; IndentPush(); printf "%o\n", PDeformation; IndentPop();
 		totalDim := Rank(PDeformation);
 		g := #Deformation; // g = # of equations in space (H_1, ..., H_g), g+1 = # variables (u_0, ..., u_g)
 		T := totalDim-(g+1); // # of parameters (t_0, ..., t_{T-1})
 		
-		// Restrict deformation such that it can be turned explicitly to plane curve (see TFG-Roger, p.21)
-		completeDeformation := true;
-		for i in [1..g-1] do
-			Hi := Deformation[i];
-			// Find and save disallowed terms
-			termsToRemove := PDeformation!0;
-			for term in Terms(Hi) do
-				if &+( Exponents(term)[(T+i+2 +1)..(T+g +1)] ) gt 0 then // u_{i+2}, ..., u_g not allowed in Hi (see TFG-Roger, p.21)
-					termsToRemove +:= term;
-				elif Exponents(term)[T+i+1 +1] gt 1 then // Allowed degree of u_{i+1} in Hi at most 1 (see TFG-Roger, p.21)
-					termsToRemove +:= term;
-				end if;
-			end for;
-			// Remove disallowed terms
-			Deformation[i] -:= termsToRemove;
-			// Store whether any terms have been removed (in total)
-			if termsToRemove ne 0 then
-				completeDeformation := false;
-			end if;
-		end for;
-		if (print_betas) then
-			print "Can use complete deformation:", completeDeformation;
-			print "Usable deformation:";
-			print Deformation;
-		end if;
+		// // Restrict deformation such that it can be turned explicitly to plane curve (see TFG-Roger, p.21)
+		// completeDeformation := true;
+		// for i in [1..g-1] do
+		// 	Hi := Deformation[i];
+		// 	// Find and save disallowed terms
+		// 	termsToRemove := PDeformation!0;
+		// 	for term in Terms(Hi) do
+		// 		if &+( Exponents(term)[(T+i+2 +1)..(T+g +1)] ) gt 0 then // u_{i+2}, ..., u_g not allowed in Hi (see TFG-Roger, p.21)
+		// 			termsToRemove +:= term;
+		// 		elif Exponents(term)[T+i+1 +1] gt 1 then // Allowed degree of u_{i+1} in Hi at most 1 (see TFG-Roger, p.21)
+		// 			termsToRemove +:= term;
+		// 		end if;
+		// 	end for;
+		// 	// Remove disallowed terms
+		// 	Deformation[i] -:= termsToRemove;
+		// 	// Store whether any terms have been removed (in total)
+		// 	if termsToRemove ne 0 then
+		// 		completeDeformation := false;
+		// 	end if;
+		// end for;
+		// if (print_betas) then
+		// 	print "Can use complete deformation:", completeDeformation;
+		// 	print "Usable deformation:";
+		// 	print Deformation;
+		// end if;
 		
 		// Determine, separate and show the needed and optional deformation parameters
 		if (print_betas) then print "Parameters:"; end if;
@@ -582,6 +625,24 @@ case curve:
 			print Deformation;
 		end if;
 		
+		// // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
+		// PP := PolynomialRing(CoefficientRing(PDeformation),totalDim);
+		// AssignNames(~PP, Names(PDeformation));
+		// I := ideal<PP| Deformation>;
+		// // printf "I =\n"; IndentPush(); printf "%o\n", I; IndentPop();
+		// J := EliminationIdeal(I, {1..(T+2)});
+		// // printf "J =\n"; IndentPush(); printf "%o\n", J; IndentPop();
+		// ff := Basis(J)[1];
+		// // printf "ff = %o\n\n", ff;
+		// // PPP := PolynomialRing(CoefficientRing(PDeformation),T+2);
+		// // AssignNames(~PPP, Names(PDeformation)[1..T] cat ["x","y"]);
+		// // printf "PPP =\n"; IndentPush(); printf "%o\n", PPP; IndentPop();
+		// // ff := Evaluate(ff, [PPP.i : i in [1..(T+2)]] cat [0 : i in [3..(g+1)]]);
+		// // printf "ff = %o\n\n", ff;
+		// f := Normalize(ff);
+		// printf "\n";
+		// // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
+		
 		// Switch to rational fraction field
 		PDefNoLocal := PolynomialRing(BaseRing(PDeformation), totalDim); // Q[t_0, ..., t_{T-1}, u_0, ..., u_g] but non-localized to enable division/fractions
 		FP := FieldOfFractions(PDefNoLocal); // Q(t_0, ..., t_{T-1}, u_0, ..., u_g)
@@ -631,9 +692,12 @@ case curve:
 			AssignNames(~R, tNames);
 			ts := [P | R.i : i in [1..T]];
 		end if;
-		gs := [Evaluate(pol, ts cat [x,y] cat [0 : i in [2..g]]) : pol in gs];
+		// gs := [Evaluate(pol, ts cat [x,y] cat [0 : i in [2..g]]) : pol in gs];
 		//gUnits := [Evaluate(pol, ts cat [x,y] cat [0 : i in [2..g]]) : pol in gUnits];
 		f := Evaluate(f, ts cat [x,y] cat [0 : i in [2..g]]);
+		f /:= LeadingCoefficient(f);
+		// printf "f = %o\n", f;
+		// printf "MaxContactElements = %o\n", MaxContactElements(f);
 		
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
