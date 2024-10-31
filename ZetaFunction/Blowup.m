@@ -21,7 +21,7 @@ intrinsic SemiGroupInfo(_betas::[]) -> Tup
 	g := #_betas - 1; // Number of characteristic exponents (see PHD-Guillem, p.25)
 	n := _betas[1]; // Multiplicity of the curve at the origin (see PHD-Guillem, p.24)
 	
-	charExpsData := CharExponents(_betas); // [<beta_i,e_i>]
+	charExpsData := CharExponents(_betas); // [<beta_i,e_i>] with e_i at starting point and rupture divisors
 	betas := [cExp[1] : cExp in charExpsData]; // defining beta_0=0
 	es := [cExp[2] : cExp in charExpsData];
 	
@@ -46,12 +46,12 @@ intrinsic MultiplicitiesAtAllRuptureDivisors(f::RngMPolLocElt) -> [], [], [], []
 	}
 	// All multiplicities
 	ProxMat, e := ProximityMatrix(f : ExtraPoint := true); // e: strict transform multiplicities
-	N := e*Transpose(ProxMat^-1); // (see TFG-Roger, p.16, Prop.2.3.21)
-	N := MatToSeq(N); // N: total transform multiplicities
+	N := e*Transpose(ProxMat^(-1)); // (see TFG-Roger, p.16, Prop.2.3.21)
 	ones := Matrix([[1 : i in [1..Ncols(ProxMat)]]]); // row matrix (1,...,1)
-	k := ones*Transpose(ProxMat^-1); // (see TFG-Roger, p.17, Prop.2.3.22)
-	k := MatToSeq(k); // k: canonical divisor multiplicities
+	k := ones*Transpose(ProxMat^(-1)); // (see TFG-Roger, p.17, Prop.2.3.22)
 	e := MatToSeq(e); // e: strict transform multiplicities
+	N := MatToSeq(N); // N: total transform multiplicities
+	k := MatToSeq(k); // k: canonical divisor multiplicities
 	
 	// Multiplicities at rupture divisors
 	E := -Transpose(ProxMat)*ProxMat; // Dual graph matrix / intersection matrix (see TFG-Roger, p.18, Def.2.3.23)
@@ -59,7 +59,7 @@ intrinsic MultiplicitiesAtAllRuptureDivisors(f::RngMPolLocElt) -> [], [], [], []
 	Rup := [i : i in [1..Ncols(ProxMat)] | &+EE[i] ge 3]; // Rupture divisors' indexes (divisors with >=3 intersections)
 	Nps := N[Rup]; // N of rupture divisors
 	kps := k[Rup]; // k of rupture divisor
-		
+	
 	// Multiplicities of divisors adjacent to each rupture divisor
 	Ns := [];
 	ks := [];
@@ -67,8 +67,8 @@ intrinsic MultiplicitiesAtAllRuptureDivisors(f::RngMPolLocElt) -> [], [], [], []
 		Adj_p := [i : i in [1..Ncols(ProxMat)] | E[p][i] eq 1]; // indexes of divisors adjacent to each rupture divisor (they intersect)
 		Append(~Ns, N[Adj_p]); // N's of adjacent divisors
 		Append(~ks, k[Adj_p]); // k's of adjacent divisors
-		Ns[#Ns,3] := e[p]; //e[Adj_p[3]]; // e of the curve (see TFG-Roger, p.27, Def.4.2.1)
-		ks[#ks,3] := 0; // k of the curve (see TFG-Roger, p.27, Def.4.2.1)
+		Ns[#Ns,3] := e[p]; // e of the curve (see TFG-Roger, p.27, Def.4.2.1, from PHD-Guillem p.81 Def 8.2 together with p.89 at eq. 9.2)
+		ks[#ks,3] := 0; // k of the curve (see TFG-Roger, p.27, Def.4.2.1, from PHD-Guillem p.81 Def 8.2 together with p.89 at eq. 9.2)
 	end for;
 	
 	return Nps, kps, Ns, ks;
@@ -103,14 +103,36 @@ intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [],
 	Z := IntegerRing();
 	nus := [nu : nu in nus | _betas[r+1]*Sigma(Np,kp,nu) notin Z and es[r]*Sigma(Np,kp,nu) notin Z ];
 	
-	// Topological roots of Bernstein-Sato polynomial (they are always roots of the Bernstein-Sato polynomial, they give unit (=> nonzero) residues of the complex zeta function) (see TFG-Roger, p.28-29)
-	// They are the nus corresponding to:
-	//   semigroup of the divisorial valuation of Er == semigroup of the (r+1)-th maximal contact element
-	// (see PHD-Guillem p.120 Theorem 12.3, p.26 Lemma 2.10, p.26 eq.2.22, beware the inconsistent notation Gamma_i)
-	r := r+1;
-	G_r := [ &*(ns[[(j+1)..r]]) * _ms[j] : j in [1..r] ];
-	while 0 in G_r do Exclude(~G_r, 0); end while; // Remove all 0's in G_r
-	topologicalNus := [nu : nu in nus | SemiGroupMembership(nu, G_r)];
+	// Topological roots of Bernstein-Sato polynomial: 
+	// - they are roots for any topologically trivial deformation
+	// - they give unit (=> nonzero) residues of the complex zeta function (see TFG-Roger, p.28-29)
+	//
+	// Their nus correspond to:
+	//   semigroup of the divisorial valuation of Er
+	//   == semigroup of the (r+1)-th maximal contact element
+	// 
+	// Beware the inconsistent notation Gamma_i:
+	// 1) PHD-Guillem p.120 Theorem 12.3 -> top. roots sigma_i -> Gamma_i: Ei
+	// 2) PHD-Guillem p.26 eq.2.22 -> Gamma_i: fi i-th max contact
+	//    PHD-Guillem p.26 Lemma 2.10 -> Gamma_i: fi i-th max contact, E_{i-1}
+	//    PHD-Guillem p.31 eq.2.43) -> Gamma_{i+1}: Ei => Gamma_i: fi
+	// 3) TFG-Roger p.28 eq.4.2.9 AND ALL FOLLOWING RESULTS -> Gamma_i: Ei
+	// 4) TFG-Roger p.29 eq.4.2.10 -> Gamma_i: fi => WRONG DEFINITION
+	//
+	// Define as in 1) and 3) -> Gamma_i: Ei
+	//
+	// Gamma_r = < 
+	//   (n_1*n_2*...*n_r) * _m_0,
+	//       (n_2*...*n_r) * _m_1,
+	//                 ...
+	//               (n_r) * _m_{r-1},
+	//                  () * _m_r
+	// >
+	// = < n_{j+1}*...*n_r * _m_j | j = 0,...,r >
+	//
+	Gamma_r := [ &*(ns[[(j+2)..(r+1)]]) * _ms[j+1] : j in [0..r] ];
+	while 0 in Gamma_r do Exclude(~Gamma_r, 0); end while; // Remove all 0's in Gamma_r
+	topologicalNus := [nu : nu in nus | SemiGroupMembership(nu, Gamma_r)];
 	
 	if discardTopologial then
 		nus := [nu : nu in nus | nu notin topologicalNus];
@@ -182,10 +204,16 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyExp_w::[], uni
 		(total transform of f) = x^xExp_f * y^yExp_f * units_f * strictTransform_f
 		(pullback of dx^dy)    = x^xExp_w * y^yExp_w * units_w
 		
-		pointType:  0 -> basepoint, 1 -> free point, 2 -> satellite point
-		(0,lambda): intersection of rupture divisor and strict transform
+		pointType:  0 -> starting point, 1 -> free point, 2 -> satellite point
+		(0,lambda): intersection of rupture divisor and strict transform after last blowup
 		e:          multiplicity of the strict transform
 		PI_blowup:  blowup morphism from one rupture divisor to the next one
+		
+		Assumptions and conventions:
+		- point to blow up: (0,0)
+		- previous exceptional divisor (at free and satellite points): x=0
+		- the other crossing exceptional divsor (at satellite points): y=0
+		- strictTransform_f may have any tangent
 	}
 	P := Parent(strictTransform_f); x := P.1; y := P.2; R := BaseRing(P);
 	xExp_f, yExp_f := Explode(xyExp_f);
@@ -263,7 +291,7 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyExp_w::[], uni
 			e := Degree(tan, y);
 			C := MonomialCoefficient(tan, x^e);
 			// tan = C*x^e - C*e*lambda*x^(e-1)*y + ...
-			lambda := R!( MonomialCoefficient(tan, x^(e-1)*y) / (- C * e) );
+			lambda := MonomialCoefficient(tan, x^(e-1)*y) / (- C * e);
 			
 			pi := [x, x*y];
 			

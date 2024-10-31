@@ -3,6 +3,9 @@
 	
 	Computation of examples of stratifications of the Bernstein-Sato polynomial
 	of plane curves, using the residues of the complex zeta function
+	
+	run in background:
+	magma main.m 2>&1 1>err/magma-err.txt &
 */
 
 // ### Basic requirements ###
@@ -33,17 +36,26 @@ print_f            := true;
 // Which set of nus should be used for each rupture divisor
 defaultNus         := [true, true];
 nuChoices          := [[], []]; // (if not defaultNus)
-discardTopologial  := true; // (if defaultNus)
 
 // Choose curve
-curve              := "6-9-22_Artal";
-// "6-14-43_Artal"; "6-9-22_Artal"; "4-9_example"; "6-14-43_AM"; "5-7"; "4-6-13"; "_betas";
+curve              := "_betas";
+// "_betas";
+// "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
+// "4-6-13"; "6-14-43_AM";
+// "4-9_example"; "5-7";
 
 // For "_betas"
-_betas_betas       := [8,18,73];
-// [6,9,22]; [10,15,36]; [12,16,50,101]; [12,18,39,79]; [6,14,43]; [5,7]; [4,6,13]; [4,10,21]; [8,18,73]; [6,14,43];
+_betas_betas       := [6,14,43];
+//[36,96,292,881];
+// [5,7];
+// [4,6,13]; [4,10,21]; [6,9,22]; [6,14,43]; [8,18,73]; [10,15,36]; [10,24,121];
+// [8,12,26,53];   -> 2-3|2-3|2-3
+// [12,16,50,101]; -> 3-4|2-3|2-3
+// [12,18,38,115]; -> 2-3|3-4|2-3
+// [12,18,39,79];  -> 2-3|2-3|3-4
+// [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 chosenEqs_betas    := [1, 1]; // choose option for each equation
-parameters_betas   := "[35,36,37,38]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas   := "[]"; //"[1,258,877]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 neededParamsVars   := []; // parameter needed at each Hi
 interactive_betas  := false;
 interactive_eqs    := false;
@@ -54,10 +66,8 @@ interactive_params := false;
 
 // Setup output
 outFileName := outFileNamePrefix*curve*outFileNameSufix;
-if printToFile then
-	if (curve ne "_betas") or not(interactive_betas or interactive_eqs or interactive_params) then
-		SetOutputFile(outFileName : Overwrite := true);
-	end if;
+if printToFile and (curve ne "_betas") then
+	SetOutputFile(outFileName : Overwrite := true);
 end if;
 
 
@@ -183,14 +193,197 @@ case curve:
 		R<t> := BaseRing(P);
 		f := (x^3-y^7)^2 + x^4*y^5 + t*x^2*y^10;
 		// -23/86 not root for t = -21/1060 (Artal Singular)
-		gs := [x^3-y^7, f];
-	when "6-9-22_Artal":
+	when "6-9-22_Artal_mod":
 		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 1), 2);
 		R<t> := BaseRing(P);
 		f := (x^2-y^3)^3 + x^6*y^2 + t*y^8*(x^2-y^3);
 		//                   ^   ^ exponentes cambiados (typo Artal supongo)
 		// -23/66 not root for t = -7/10 (Artal Singular)
-		gs := [x^2-y^3, f];
+	when "6-9-22_Artal":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 1), 2);
+		R<t> := BaseRing(P);
+		f := (x^2-y^3)^3 + x^2*y^6 + t*y^8*(x^2-y^3);
+		// Runtime error: Argument must be an irreducible series
+		// -23/66 not root for t = -7/10 (Artal Singular)
+		
+	when "Maria_6-7_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_43,A_34,A_44,A_52,A_53,A_54> := BaseRing(P);
+		f := y^6 - x^7 + A_52*x^5*y^2 + A_43*x^4*y^3 + A_34*x^3*y^4 + A_44*x^4*y^4 + A_53*x^5*y^3 + A_54*x^5*y^4;
+		
+	when "Maria_6-7_w(5,2)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (5,2)
+		// f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + A_34*x^3*y^4;
+		// f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + (63*A_43^2-20)/56*x^3*y^4 + A_44*x^4*y^4;
+		f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + A_34*x^3*y^4 + A_44*x^4*y^4;
+		// f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + A_34*x^3*y^4 + A_44*x^4*y^4 + A_53*x^5*y^3 + A_54*x^5*y^4; // irrellevants
+		
+	when "Maria_6-7_w(5,2)_extra1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (5,2)
+		f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + A_34*x^3*y^4;
+		
+	when "Maria_6-7_w(5,2)_extra2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (5,2)
+		f := y^6 - x^7 + x^5*y^2 + A_43*x^4*y^3 + (63*A_43^2-20)/56*x^3*y^4 + A_44*x^4*y^4;
+		
+	when "Maria_6-7_w(4,3)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (4,3)
+		// f := y^6 - x^7 + x^4*y^3 + A_34*x^3*y^4 + A_44*x^4*y^4; // irrellevant
+		f := y^6 - x^7 + x^4*y^3 + A_34*x^3*y^4;
+		
+	when "Maria_6-7_w(3,4)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (3,4)
+		f := y^6 - x^7 + x^3*y^4 + A_53*x^5*y^3;
+		
+	when "Maria_6-7_w(5,3)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (5,3)
+		f := y^6 - x^7 + x^5*y^3 + A_44*x^4*y^4;
+		
+	when "Maria_6-7_w(4,4)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (4,4)
+		f := y^6 - x^7 + x^4*y^4;
+		
+	when "Maria_6-7_w(5,4)":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = (5,4)
+		f := y^6 - x^7 + x^5*y^4;
+		
+	when "Maria_6-7_wInf":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 5), 2);
+		R<A_43,A_34,A_44,A_53,A_54> := BaseRing(P);
+		// w = Inf
+		f := y^6 - x^7;
+		
+	when "Maria_17-6":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 + A_12_2*x^12*y^2 + A_15_1*x^15*y + A_10_3*x^10*y^3 +
+			A_13_2*x^13*y^2 + A_11_3*x^11*y^3 + A_14_2*x^14*y^2 + A_12_3*x^12*y^3 + A_15_2*x^15*y^2 +
+			A_13_3*x^13*y^3 + A_14_3*x^14*y^3 + A_15_3*x^15*y^3;
+		
+	when "Maria_17-6_1.1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.1
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 + A_12_2*x^12*y^2 + A_15_1*x^15*y + A_10_3*x^10*y^3 +
+			A_13_2*x^13*y^2 + A_11_3*x^11*y^3 + A_14_2*x^14*y^2 + A_15_2*x^15*y^2;
+		
+	when "Maria_17-6_1.2.1.1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.1.1
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			A_15_1*x^15*y +
+			A_10_3*x^10*y^3 +
+			A_13_2*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			A_14_2*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			A_13_3*x^13*y^3;
+		
+	when "Maria_17-6_1.2.1.2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.1.2
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			A_15_1*x^15*y +
+			A_10_3*x^10*y^3 +
+			1/1020*(
+				-450*A_15_1^2 + 275*A_10_3*A_9_3 + 540*A_15_1*A_9_3 - 162*A_9_3^2 +
+				1215*A_15_1*A_9_3^3 - 729*A_9_3^4 - 6561/8*A_9_3^6)*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			A_14_2*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			A_13_3*x^13*y^3 + 
+			A_14_3*x^14*y^3;
+	
+	when "Maria_17-6_1.2.2.1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.2.1
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			(27/20*A_9_3^3 + 3/5*A_9_3)*x^15*y +
+			A_10_3*x^10*y^3 +
+			A_13_2*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			A_14_2*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			A_15_2*x^15*y^2;
+	
+	when "Maria_17-6_1.2.2.2.1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.2.2.1
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			(27/20*A_9_3^3 + 3/5*A_9_3)*x^15*y +
+			A_10_3*x^10*y^3 +
+			(27/20*A_9_3)*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			A_14_2*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			A_15_2*x^15*y^2 +
+			A_13_3*x^13*y^3;
+	
+	when "Maria_17-6_1.2.2.2.2.1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.2.2.2.1
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			(27/20*A_9_3^3 + 3/5*A_9_3)*x^15*y +
+			A_10_3*x^10*y^3 +
+			(27/20*A_9_3)*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			(45/32*A_9_3*A_11_3)*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			A_15_2*x^15*y^2 +
+			A_13_3*x^13*y^3 +
+			A_14_3*x^14*y^3;
+	
+	when "Maria_17-6_1.2.2.2.2.2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 12), 2);
+		R<A_9_3, A_12_2, A_15_1, A_10_3, A_13_2, A_11_3, A_14_2, A_12_3, A_15_2, A_13_3, A_14_3, A_15_3> := BaseRing(P);
+		// w = (6,4)
+		// 1.2.2.2.2.2
+		f := y^6 - x^17 + x^6*y^4 + A_9_3*x^9*y^3 +
+			(1/3 + 9/8*A_9_3^2)*x^12*y^2 + 
+			(27/20*A_9_3^3 + 3/5*A_9_3)*x^15*y +
+			A_10_3*x^10*y^3 +
+			(27/20*A_9_3)*x^13*y^2 +
+			A_11_3*x^11*y^3 + 
+			(45/32*A_9_3*A_11_3)*x^14*y^2 +
+			A_12_3*x^12*y^3 +
+			(63/44*A_9_3*A_12_3)*x^15*y^2 +
+			A_13_3*x^13*y^3 +
+			A_14_3*x^14*y^3 +
+			A_15_3*x^15*y^3;
+		
 	when "_betas": // Generic curve construction  
 		// INPUT
 		if (interactive_betas) then
@@ -484,7 +677,7 @@ _betas := SemiGroup(f); // minimal set of generators of the semigroup
 semiGroupInfo := SemiGroupInfo(_betas);
 g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
 // Variables in the for-loop
-n, q, Np, kp, N, k, nus, L_all, sigma_all, epsilon_all := Explode(["not yet assigned" : i in [1..100]]);
+L_all, sigma_all, epsilon_all := Explode(["not yet assigned" : i in [1..100]]);
 
 topologicalRoots := []; // [ [topological roots of divisor r] ]
 ignoreDivisor := [ (not defaultNus[i]) and (nuChoices[i] eq []) : i in [1..g] ]; // ignore the divisor if no "nus" should be checked
@@ -492,7 +685,7 @@ ignoreDivisor := [ (not defaultNus[i]) and (nuChoices[i] eq []) : i in [1..g] ];
 
 // Find duplicate root candidates (-> monodromy has repeated eigenvalues)
 allSigmas := {Q| };
-sigmaToIndexing := AssociativeArray();
+sigmaToIndexing := AssociativeArray(); // map sigma_{r,nu} -> <r,nu>
 for r in [1..g] do
 	Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
 	nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=false);
@@ -511,32 +704,38 @@ printf "\n";
 
 
 
+
+
+// (total transform of f) = x^xExp_f * y^yExp_f * units_f * strictTransform_f
+// (pullback of dx^dy)    = x^xExp_w * y^yExp_w * units_w
 strictTransform_f := f;
 xyExp_f := [0,0];
 xyExp_w := [0,0];
 units_f := {* P!1 *};
 units_w := {* P!1 *};
-pointType := 0; // 0 -> basepoint, 1 -> free point, 2 -> satellite point
-PI_TOTAL := [x, y];
+pointType := 0; // 0 -> starting point, 1 -> free point, 2 -> satellite point
+PI_TOTAL := [x, y]; // Total blowup morphism since starting point
 
 // ### For each rupture divisor ###
-// Non-rupture divisors don't have to be ckecked (see TFG-Roger, p.28, Cor.4.2.5)
+// Non-rupture divisors don't contribute (see TFG-Roger, p.28, Cor.4.2.5 or PHD-Guillem p.87 Th.8.10)
 for r in [1..g] do
 	print "-----------------------------------------------------------------------";
 	if (printType ne "none" and not ignoreDivisor[r]) then printf "Divisor E_%o\n", r; end if;
 	
+	///////////////////////////////// THEORY OK ////////////////////////////////////
+	
 	// Blowup
-	// From: (0,0) singular point of the strict transform of the curve (basepoint or a free point on last rupture divisor)
+	// From: (0,0) singular point of the strict transform of the curve (starting point or a free point on the last rupture divisor)
 	// To: next rupture divisor
 	strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType, lambda, ep, PI_blowup := Blowup(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType);
-	// Total blowup morphism since basepoint
+	// Total blowup morphism since starting point
 	PI_TOTAL := [Evaluate(t, PI_blowup) : t in PI_TOTAL];
 	// Units
-	U := &*[t^m : t->m in units_f] * strictTransform_f;
-	V := &*[t^m : t->m in units_w];
+	u := &*[t^m : t->m in units_f] * strictTransform_f;
+	v := &*[t^m : t->m in units_w];
 	// Multiplicities of rupture divisor x=0
-	NP := xyExp_f[1];
-	KP := xyExp_w[1];
+	Np := xyExp_f[1];
+	Kp := xyExp_w[1];
 	// Multiplicities of y=0
 	N1 := xyExp_f[2];
 	K1 := xyExp_w[2];
@@ -544,8 +743,8 @@ for r in [1..g] do
 	// 1) proximate non-rupture divisor through (0,0): y=0
 	// 2) proximate non-rupture divisor through (0,infinity)
 	// 3) the curve
-	NN := [N1, NP-N1-ep, ep];
-	KK := [K1, KP-K1-1, 0];
+	N := [N1, Np-N1-ep, ep];
+	k := [K1, Kp-K1-1, 0];
 	
 	// // Find the maximum nu in this and following rupture divisors => maximum power needed in series expansions in x (?????????)
 	// // Don't discard topological roots to have enough terms for a blowup
@@ -556,8 +755,8 @@ for r in [1..g] do
 	// end for;
 	
 	// Interesting values of nu
-	nus, topologicalNus := Nus(_betas, semiGroupInfo, NP, KP, r : discardTopologial:=discardTopologial);
-	topologicalRoots[r] := [<nu, Sigma(NP, KP, nu)> : nu in topologicalNus];
+	nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
+	topologicalRoots[r] := [<nu, Sigma(Np, Kp, nu)> : nu in topologicalNus];
 	if not defaultNus[r] then
 		nus := nuChoices[r];
 	end if;
@@ -584,7 +783,7 @@ for r in [1..g] do
 		SetOutputFile(outFileName : Overwrite := false);
 	end if;
 	
-	L_all, sigma_all, epsilon_all := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], U, V, lambda, ep, NP, KP, NN, KK, nus, r, neededParamsVars, printToFile, outFileName> : printType:=printType);
+	L_all, sigma_all, epsilon_all := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], u, v, lambda, ep, Np, Kp, N, k, nus, r, neededParamsVars, printToFile, outFileName > : printType:=printType);
 	
 	// Flush to file
 	if printToFile then
@@ -598,7 +797,7 @@ for r in [1..g] do
 		print "Center singular point";
 		
 		strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center := CenterOriginOnCurve(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, lambda);
-		// Total blowup morphism since basepoint
+		// Total blowup morphism since starting point
 		PI_TOTAL := [Evaluate(t, PI_center) : t in PI_TOTAL];
 		
 		printf "lambda = %o\n\n", lambda;
