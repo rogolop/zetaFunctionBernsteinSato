@@ -38,8 +38,8 @@ defaultNus         := [true, true];
 nuChoices          := [[], []]; // (if not defaultNus)
 
 // Choose curve
-curve              := "_betas";
-// "_betas";
+curve              := "deformation_cassou";
+// "deformation_restricted"; "deformation_GroebnerElimination"; "deformation_cassou";
 // "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
 // "4-6-13"; "6-14-43_AM";
 // "4-9_example"; "5-7";
@@ -418,7 +418,555 @@ case curve:
 		// f := (-x^3+y^2)^3 + x^11;
 		// f := (-x^3+y^2)^3 + x^2*y^6;
 
-	when "_betas": // Generic curve construction  
+	when "deformation_restricted": // Generic curve construction  
+		// INPUT
+		if (interactive_betas) then
+			print "\nINPUT: Choose curve semigroup";
+			print "Examples: [6,14,43]";
+			read _betas, "INPUT>";
+			error if (_betas eq ""), "Please define a valid curve semigroup";
+			_betas := eval _betas;
+			error if (ExtendedType(_betas) ne SeqEnum[RngIntElt]), "Please define a valid curve semigroup";
+		else
+			_betas := _betas_betas;
+		end if;
+		error if (not IsPlaneCurveSemiGroup(_betas)), "Please define a valid curve semigroup, given input is not a plane curve semigroup";
+		
+		// Name
+		curve := &*[Sprint(_b)*"-" : _b in _betas];
+		curve := curve[1..#curve-1];
+		outFileName := outFileNamePrefix*curve*outFileNameSufix;
+		if printToFile then
+			SetOutputFile(outFileName : Overwrite := true);
+		end if;
+		
+		if (print_betas) then print "Semigroup:", _betas; end if;
+
+		// Topological information
+		semiGroupInfo := SemiGroupInfo(_betas);
+		g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+		
+		// Choice of monomial curve equations and their deformations
+		eqs := allMonomialCurves(_betas); // [ [i-th equation options] ]
+		if (print_betas) then
+			print "Possible undeformed equations in space:";
+			for i in [1..#_betas-1] do
+				printf "Equation %o options:\n", i;
+				print eqs[i];
+			end for;
+		end if;
+		// INPUT
+		chosenEqs := [];
+		if (interactive_eqs) then
+			print "\nINPUT: equation indexes";
+			print "Examples: [1,1]";
+			read chosenEqs, "INPUT>";
+			error if (chosenEqs eq ""), "Please define a valid list of equation indexes";
+			chosenEqs := eval chosenEqs;
+		else
+			chosenEqs := chosenEqs_betas;
+		end if;
+		error if (ExtendedType(chosenEqs) ne SeqEnum[RngIntElt]), "Please define a valid list of equation indexes";
+		error if (#chosenEqs ne (#_betas-1)), "Please define a valid list of equation indexes, wrong # of indexes";
+		error if (&or[ (eqIdx le 0) or (eqIdx gt #(eqs[i])) : i -> eqIdx in chosenEqs ]), "Please define a valid list of equation indexes, index out of bounds";
+		monomialCurve := [eqs[i, chosenEqs[i]] : i in [1..#_betas-1]]; // Select the chosen equations
+		if (print_betas) then print "Chosen equation indexes:", chosenEqs; end if;
+		if (print_betas) then print "Chosen equations:"; end if;
+		if (print_betas) then print monomialCurve; end if;
+
+		// Deform the chosen monomial curve equations
+		Deformation := DeformationCurveSpecific(monomialCurve, _betas);
+		
+		PDeformation := Universe(Deformation); // Q[t_0, ..., t_{T-1}, u_0, ..., u_g] (localization)
+		totalDim := Rank(PDeformation);
+		g := #Deformation; // g = # of equations in space (H_1, ..., H_g), g+1 = # variables (u_0, ..., u_g)
+		T := totalDim-(g+1); // # of parameters (t_0, ..., t_{T-1})
+		
+		// Restrict deformation such that it can be turned explicitly to plane curve (see TFG-Roger, p.21)
+		completeDeformation := true;
+		for i in [1..g-1] do
+			Hi := Deformation[i];
+			// Find and save disallowed terms
+			termsToRemove := PDeformation!0;
+			for term in Terms(Hi) do
+				if &+( Exponents(term)[(T+i+2 +1)..(T+g +1)] ) gt 0 then // u_{i+2}, ..., u_g not allowed in Hi (see TFG-Roger, p.21)
+					termsToRemove +:= term;
+				elif Exponents(term)[T+i+1 +1] gt 1 then // Allowed degree of u_{i+1} in Hi at most 1 (see TFG-Roger, p.21)
+					termsToRemove +:= term;
+				end if;
+			end for;
+			// Remove disallowed terms
+			Deformation[i] -:= termsToRemove;
+			// Store whether any terms have been removed (in total)
+			if termsToRemove ne 0 then
+				completeDeformation := false;
+			end if;
+		end for;
+		if (print_betas) then
+			print "Can use complete deformation:", completeDeformation;
+			print "Usable deformation:";
+			print Deformation;
+		end if;
+		
+		// Determine, separate and show the needed and optional deformation parameters
+		if (print_betas) then print "Parameters:"; end if;
+		neededParams := []; // parameter needed at each Hi
+		optionalParams := []; // [ [optional parameters for Hi] ]
+		ones := [1 : j in [0..g]]; // [1, ..., 1] corresponding to (u_0, ..., u_g)
+		// Parameters of H_1, ..., H_{g-1}
+		// H_i = h_i(u_0,...,u_i) - t_?*u_{i+1} + sum_r( t_?*phi_{r,i}(u_0,...,u_g) )
+		for i in [1..g-1] do
+			Hi := Deformation[i];
+			ei := [ (j eq i+1) select 1 else 0 : j in [0..g] ]; // [0, ..., 0, 1, 0, ..., 0] at position corresponding to u_{i+1} among "u"s
+			optionalParams[i] := [];
+			for term in Terms(Hi) do
+				exps := Exponents(term); // exponents of ts and us
+				tExps := exps[1..T]; // exponents of (t_0, ..., t_{T-1})
+				uExps := exps[T+1..T+g+1]; // exponents of (u_0, ..., u_g)
+				if uExps eq ei then // Term t_?*u_{i+1} is necesaryly nonzero, save t_? as needed parameter
+					tIndex := Explode([j : j in [0..T-1] | tExps[j+1] gt 0]); // index of t_?
+					Append(~neededParams, tIndex);
+				else // Term is optional, save the new optional parameters of this divisor
+					for j in [0..T-1] do
+						if (tExps[j+1] gt 0) and (j notin neededParams) and (j notin &cat(optionalParams)) then
+							Append(~optionalParams[i], j);
+						end if;
+					end for;
+				end if;
+			end for;
+			Sort(~optionalParams[i]);
+			if (print_betas) then printf "    Optional at E%o: %o\n", i, optionalParams[i]; end if;
+		end for;
+		// H_g treated separately, no neededParams
+		// H_g = h_g(u_0,...,u_g) + sum_r( t_?*phi_{r,g}(u_0,...,u_g) )
+		Hg := Deformation[g];
+		optionalParams[g] := [];
+		for term in Terms(Hg) do
+			exps := Exponents(term); // exponents of ts and us
+			tExps := exps[1..T]; // exponents of (t_0, ..., t_{T-1})
+			uExps := exps[T+1..T+g+1]; // exponents of (u_0, ..., u_g)
+			// Term is optional, save the new optional parameters of this divisor
+			for j in [0..T-1] do
+				if (tExps[j+1] gt 0) and (j notin neededParams) and (j notin &cat(optionalParams)) then
+					Append(~optionalParams[g], j);
+				end if;
+			end for;
+		end for;
+		Sort(~optionalParams[g]);
+		if (print_betas) then
+			printf "    Optional at E%o: %o\n", g, optionalParams[g];
+			for i in [1..g-1] do
+				printf "    Needed at E%o: %o\n", i, neededParams[i];
+			end for;
+		end if;
+		optionalParams := &cat(optionalParams); // optional parameters from any divisor -> [optional parameters]
+		
+		// Choose deformation parameters
+		// INPUT
+		if (interactive_params) then
+			print "\nINPUT: Choose optional parameters";
+			print "Examples: [1,2,3]";
+			print "          all";
+			read parameters, "INPUT>";
+		else
+			parameters := parameters_betas;
+		end if;
+		if parameters eq "all" then
+			parameters := optionalParams;
+		else
+			error if (parameters eq ""), "Please define a valid list of parameters, empty input";
+			parameters := eval parameters;
+			error if ((ExtendedType(parameters) ne SeqEnum[RngIntElt]) and (parameters ne [])), "Please define a valid list of parameters, given not a sequence of integers";
+			for p in parameters do
+				error if ((p notin optionalParams) and (p notin neededParams)), "Please define a valid list of parameters, given invalid parameter";
+			end for;
+		end if;
+		parameters cat:= neededParams; // neededParams always have to be included
+		parameters := [p : p in Set(parameters)]; // remove duplicates
+		Sort(~parameters);
+		if (print_betas) then printf "Chosen parameters: %o\n", parameters; end if;
+		// Create structures with the new number of parameters
+		newT := #parameters; // (temp variable) updated # of parameters (t_0, ..., t_{newT-1})
+		PDeformation := LocalPolynomialRing(Q, newT+(g+1)); // polynomial ring with updated # of parameters
+		// Create vector "oldToNewParam" which for each old parameter contains the corresponding new parameter (as variable) or a 0
+		
+		oldToNewParam := [PDeformation| 0 : i in [1..T]];
+		k := 1;
+		for i in [0..T-1] do
+			if (i in parameters) then
+				oldToNewParam[i+1] := PDeformation.k; // t_i -> new k-th variable
+				k +:= 1;
+			end if;
+		end for;
+		// Update variables
+		newUs := [ PDeformation.i : i in [newT+1..newT+(g+1)]]; // new u_0, ..., u_g
+		Deformation := [Evaluate(pol, oldToNewParam cat newUs) : pol in Deformation]; // Update variables of Deformation
+		T := newT; // Update # of parameters
+		delete newT; // (delete temp variable)
+		totalDim := T + g+1; // Update total dimension
+		// Set parameter and variable names
+		if (printType eq "Latex") then
+			tNames := ["t_{"*Sprint(i)*"}" : i in parameters ];
+			uNames := ["u_{"*Sprint(i)*"}" : i in [0..g] ];
+		else
+			tNames := ["t"*Sprint(i) : i in parameters ];
+			uNames := ["u"*Sprint(i) : i in [0..g] ];
+		end if;
+		AssignNames(~PDeformation, tNames cat uNames);
+		if (print_betas) then
+			print "Chosen deformation:";
+			print Deformation;
+		end if;
+		
+		// Switch to rational fraction field
+		PDefNoLocal := PolynomialRing(BaseRing(PDeformation), totalDim); // Q[t_0, ..., t_{T-1}, u_0, ..., u_g] but non-localized to enable division/fractions
+		FP := FieldOfFractions(PDefNoLocal); // Q(t_0, ..., t_{T-1}, u_0, ..., u_g)
+		ChangeUniverse(~Deformation, FP);
+		
+		// Elimination of the variables u_2, ..., u_g
+		// Invariant property (as ensured before): u_{i+2}, ..., u_g not in Hi, u_{i+1} with exponent at most 1 in Hi
+		gs := [FP| ]; // Parts of the equations Hi, relevant later for their proximity to the curve f
+		for i in [1..g-1] do
+			Hi := Numerator(Deformation[i]); // We are interested in Hi=0 -> denominators don't matter
+			u_ip1 := PDefNoLocal.(T+1+ i+1); // u_{i+1} as polynomial
+			// Define: Hi = gs[i] + u_{i+1}*uDenom
+			gs[i]  := Coefficient(Hi, u_ip1, 0);
+			uDenom := Coefficient(Hi, u_ip1, 1);
+			// Solve for u_{i+1}:
+			// Hi = gs[i] + u_{i+1}*uDenom = 0 <=> u_{i+1} = - gs[i] / uDenom
+			u_ip1_value := - gs[i] / uDenom; // function of (u_0, u_1) because of the invariant property and the elimination of (u_2, ..., u_i) in previous iterations
+			// Substitute value of u_{i+1} in the remaining equations, thus eliminating u_{i+1}
+			// As the value of u_{i+1} is a function of (u_0, u_1), the invariant property is preserved
+			for j in [i+1..g] do
+				Deformation[j] := Evaluate(Deformation[j], (T+1+ i+1), u_ip1_value); // Substitute value of u_{i+1}
+				Deformation[j] := Numerator(Deformation[j]); // Remove denominators
+			end for;
+		end for;
+		f := Deformation[g]; // Resulting plane curve equation
+		gs[g] := f;
+		// Switch back to polynomial ring (no denominators)
+		ChangeUniverse(~gs, PDefNoLocal);
+		f := PDefNoLocal ! f;
+		
+		// Separate parameters into the coefficient ring
+		// From: Q[t_0, ..., t_{T-1}, u_0, ..., u_g]
+		// To:   Q(t_0, ..., t_{T-1})[x,y]
+		// u_0=x, u_1=y, ( u_2, ..., u_g have already been eliminated from the polynomials, can be evaluated to 0 )
+		if T eq 0 then
+			P<x,y> := LocalPolynomialRing(Q, 2);
+			R := BaseRing(P);
+			ts := [P | ];
+		else
+			P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, T), 2);
+			R := BaseRing(P);
+			if (printType eq "Latex") then
+				tNames := ["t_{"*Sprint(i)*"}" : i in parameters ];
+			else
+				tNames := ["t"*Sprint(i) : i in parameters ]; // in [1..T]
+			end if;
+			AssignNames(~R, tNames);
+			ts := [P | R.i : i in [1..T]];
+		end if;
+		// gs := [Evaluate(pol, ts cat [x,y] cat [0 : i in [2..g]]) : pol in gs];
+		//gUnits := [Evaluate(pol, ts cat [x,y] cat [0 : i in [2..g]]) : pol in gUnits];
+		f := Evaluate(f, ts cat [x,y] cat [0 : i in [2..g]]);
+		f /:= LeadingCoefficient(f);	
+		// printf "f = %o\n", f;
+		// printf "MaxContactElements = %o\n", MaxContactElements(f);
+
+		// Save needed non-zero parameters as variables
+		for i in neededParams do
+			j := Position(parameters, i);
+			Append(~neededParamsVars, R.j);
+		end for;
+
+
+
+
+	when "deformation_GroebnerElimination": // Generic curve construction  
+		// INPUT
+		if (interactive_betas) then
+			print "\nINPUT: Choose curve semigroup";
+			print "Examples: [6,14,43]";
+			read _betas, "INPUT>";
+			error if (_betas eq ""), "Please define a valid curve semigroup";
+			_betas := eval _betas;
+			error if (ExtendedType(_betas) ne SeqEnum[RngIntElt]), "Please define a valid curve semigroup";
+		else
+			_betas := _betas_betas;
+		end if;
+		error if (not IsPlaneCurveSemiGroup(_betas)), "Please define a valid curve semigroup, given input is not a plane curve semigroup";
+		
+		// Name
+		curve := &*[Sprint(_b)*"-" : _b in _betas];
+		curve := curve[1..#curve-1];
+		outFileName := outFileNamePrefix*curve*outFileNameSufix;
+		if printToFile then
+			SetOutputFile(outFileName : Overwrite := true);
+		end if;
+		
+		if (print_betas) then print "Semigroup:", _betas; end if;
+
+		// Topological information
+		semiGroupInfo := SemiGroupInfo(_betas);
+		g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+		
+		// Choice of monomial curve equations and their deformations
+		eqs := allMonomialCurves(_betas); // [ [i-th equation options] ]
+		if (print_betas) then
+			print "Possible undeformed equations in space:";
+			for i in [1..#_betas-1] do
+				printf "Equation %o options:\n", i;
+				print eqs[i];
+			end for;
+		end if;
+		// INPUT
+		chosenEqs := [];
+		if (interactive_eqs) then
+			print "\nINPUT: equation indexes";
+			print "Examples: [1,1]";
+			read chosenEqs, "INPUT>";
+			error if (chosenEqs eq ""), "Please define a valid list of equation indexes";
+			chosenEqs := eval chosenEqs;
+		else
+			chosenEqs := chosenEqs_betas;
+		end if;
+		error if (ExtendedType(chosenEqs) ne SeqEnum[RngIntElt]), "Please define a valid list of equation indexes";
+		error if (#chosenEqs ne (#_betas-1)), "Please define a valid list of equation indexes, wrong # of indexes";
+		error if (&or[ (eqIdx le 0) or (eqIdx gt #(eqs[i])) : i -> eqIdx in chosenEqs ]), "Please define a valid list of equation indexes, index out of bounds";
+		monomialCurve := [eqs[i, chosenEqs[i]] : i in [1..#_betas-1]]; // Select the chosen equations
+		if (print_betas) then print "Chosen equation indexes:", chosenEqs; end if;
+		if (print_betas) then print "Chosen equations:"; end if;
+		if (print_betas) then print monomialCurve; end if;
+
+		// Deform the chosen monomial curve equations
+		Deformation := DeformationCurveSpecific(monomialCurve, _betas);
+		
+		PDeformation := Universe(Deformation); // Q[t_0, ..., t_{T-1}, u_0, ..., u_g] (localization)
+		totalDim := Rank(PDeformation);
+		g := #Deformation; // g = # of equations in space (H_1, ..., H_g), g+1 = # variables (u_0, ..., u_g)
+		T := totalDim-(g+1); // # of parameters (t_0, ..., t_{T-1})
+		
+		// // Restrict deformation such that it can be turned explicitly to plane curve (see TFG-Roger, p.21)
+		// completeDeformation := true;
+		// for i in [1..g-1] do
+		// 	Hi := Deformation[i];
+		// 	// Find and save disallowed terms
+		// 	termsToRemove := PDeformation!0;
+		// 	for term in Terms(Hi) do
+		// 		if &+( Exponents(term)[(T+i+2 +1)..(T+g +1)] ) gt 0 then // u_{i+2}, ..., u_g not allowed in Hi (see TFG-Roger, p.21)
+		// 			termsToRemove +:= term;
+		// 		elif Exponents(term)[T+i+1 +1] gt 1 then // Allowed degree of u_{i+1} in Hi at most 1 (see TFG-Roger, p.21)
+		// 			termsToRemove +:= term;
+		// 		end if;
+		// 	end for;
+		// 	// Remove disallowed terms
+		// 	Deformation[i] -:= termsToRemove;
+		// 	// Store whether any terms have been removed (in total)
+		// 	if termsToRemove ne 0 then
+		// 		completeDeformation := false;
+		// 	end if;
+		// end for;
+		// if (print_betas) then
+		// 	print "Can use complete deformation:", completeDeformation;
+		// 	print "Usable deformation:";
+		// 	print Deformation;
+		// end if;
+		
+		// Determine, separate and show the needed and optional deformation parameters
+		if (print_betas) then print "Parameters:"; end if;
+		neededParams := []; // parameter needed at each Hi
+		optionalParams := []; // [ [optional parameters for Hi] ]
+		ones := [1 : j in [0..g]]; // [1, ..., 1] corresponding to (u_0, ..., u_g)
+		// Parameters of H_1, ..., H_{g-1}
+		// H_i = h_i(u_0,...,u_i) - t_?*u_{i+1} + sum_r( t_?*phi_{r,i}(u_0,...,u_g) )
+		for i in [1..g-1] do
+			Hi := Deformation[i];
+			ei := [ (j eq i+1) select 1 else 0 : j in [0..g] ]; // [0, ..., 0, 1, 0, ..., 0] at position corresponding to u_{i+1} among "u"s
+			optionalParams[i] := [];
+			for term in Terms(Hi) do
+				exps := Exponents(term); // exponents of ts and us
+				tExps := exps[1..T]; // exponents of (t_0, ..., t_{T-1})
+				uExps := exps[T+1..T+g+1]; // exponents of (u_0, ..., u_g)
+				if uExps eq ei then // Term t_?*u_{i+1} is necesaryly nonzero, save t_? as needed parameter
+					tIndex := Explode([j : j in [0..T-1] | tExps[j+1] gt 0]); // index of t_?
+					Append(~neededParams, tIndex);
+				else // Term is optional, save the new optional parameters of this divisor
+					for j in [0..T-1] do
+						if (tExps[j+1] gt 0) and (j notin neededParams) and (j notin &cat(optionalParams)) then
+							Append(~optionalParams[i], j);
+						end if;
+					end for;
+				end if;
+			end for;
+			Sort(~optionalParams[i]);
+			if (print_betas) then printf "    Optional at E%o: %o\n", i, optionalParams[i]; end if;
+		end for;
+		// H_g treated separately, no neededParams
+		// H_g = h_g(u_0,...,u_g) + sum_r( t_?*phi_{r,g}(u_0,...,u_g) )
+		Hg := Deformation[g];
+		optionalParams[g] := [];
+		for term in Terms(Hg) do
+			exps := Exponents(term); // exponents of ts and us
+			tExps := exps[1..T]; // exponents of (t_0, ..., t_{T-1})
+			uExps := exps[T+1..T+g+1]; // exponents of (u_0, ..., u_g)
+			// Term is optional, save the new optional parameters of this divisor
+			for j in [0..T-1] do
+				if (tExps[j+1] gt 0) and (j notin neededParams) and (j notin &cat(optionalParams)) then
+					Append(~optionalParams[g], j);
+				end if;
+			end for;
+		end for;
+		Sort(~optionalParams[g]);
+		if (print_betas) then
+			printf "    Optional at E%o: %o\n", g, optionalParams[g];
+			for i in [1..g-1] do
+				printf "    Needed at E%o: %o\n", i, neededParams[i];
+			end for;
+		end if;
+		optionalParams := &cat(optionalParams); // optional parameters from any divisor -> [optional parameters]
+		
+		// Choose deformation parameters
+		// INPUT
+		if (interactive_params) then
+			print "\nINPUT: Choose optional parameters";
+			print "Examples: [1,2,3]";
+			print "          all";
+			read parameters, "INPUT>";
+		else
+			parameters := parameters_betas;
+		end if;
+		if parameters eq "all" then
+			parameters := optionalParams;
+		else
+			error if (parameters eq ""), "Please define a valid list of parameters, empty input";
+			parameters := eval parameters;
+			error if ((ExtendedType(parameters) ne SeqEnum[RngIntElt]) and (parameters ne [])), "Please define a valid list of parameters, given not a sequence of integers";
+			for p in parameters do
+				error if ((p notin optionalParams) and (p notin neededParams)), "Please define a valid list of parameters, given invalid parameter";
+			end for;
+		end if;
+		parameters cat:= neededParams; // neededParams always have to be included
+		parameters := [p : p in Set(parameters)]; // remove duplicates
+		Sort(~parameters);
+		if (print_betas) then printf "Chosen parameters: %o\n", parameters; end if;
+		// Create structures with the new number of parameters
+		newT := #parameters; // (temp variable) updated # of parameters (t_0, ..., t_{newT-1})
+		PDeformation := LocalPolynomialRing(Q, newT+(g+1)); // polynomial ring with updated # of parameters
+		// Create vector "oldToNewParam" which for each old parameter contains the corresponding new parameter (as variable) or a 0
+		
+		oldToNewParam := [PDeformation| 0 : i in [1..T]];
+		k := 1;
+		for i in [0..T-1] do
+			if (i in parameters) then
+				oldToNewParam[i+1] := PDeformation.k; // t_i -> new k-th variable
+				k +:= 1;
+			end if;
+		end for;
+		// Update variables
+		newUs := [ PDeformation.i : i in [newT+1..newT+(g+1)]]; // new u_0, ..., u_g
+		Deformation := [Evaluate(pol, oldToNewParam cat newUs) : pol in Deformation]; // Update variables of Deformation
+		T := newT; // Update # of parameters
+		delete newT; // (delete temp variable)
+		totalDim := T + g+1; // Update total dimension
+		// Set parameter and variable names
+		if (printType eq "Latex") then
+			tNames := ["t_{"*Sprint(i)*"}" : i in parameters ];
+			uNames := ["u_{"*Sprint(i)*"}" : i in [0..g] ];
+		else
+			tNames := ["t"*Sprint(i) : i in parameters ];
+			uNames := ["u"*Sprint(i) : i in [0..g] ];
+		end if;
+		AssignNames(~PDeformation, tNames cat uNames);
+		if (print_betas) then
+			print "Chosen deformation:";
+			print Deformation;
+		end if;
+		
+		// Elimination of variables (using Groebner bases)
+		PP := PolynomialRing(CoefficientRing(PDeformation),totalDim);
+		AssignNames(~PP, Names(PDeformation));
+		I := ideal<PP| Deformation>;
+		// printf "I =\n"; IndentPush(); printf "%o\n", I; IndentPop();
+		J := EliminationIdeal(I, {1..(T+2)});
+		// printf "J =\n"; IndentPush(); printf "%o\n", J; IndentPop();
+		ff := Basis(J)[1];
+		// printf "ff = %o\n\n", ff;
+		// PPP := PolynomialRing(CoefficientRing(PDeformation),T+2);
+		// AssignNames(~PPP, Names(PDeformation)[1..T] cat ["x","y"]);
+		// printf "PPP =\n"; IndentPush(); printf "%o\n", PPP; IndentPop();
+		// ff := Evaluate(ff, [PPP.i : i in [1..(T+2)]] cat [0 : i in [3..(g+1)]]);
+		// printf "ff = %o\n\n", ff;
+		f := Normalize(ff);
+		printf "\n";
+
+		// // Switch to rational fraction field
+		// PDefNoLocal := PolynomialRing(BaseRing(PDeformation), totalDim); // Q[t_0, ..., t_{T-1}, u_0, ..., u_g] but non-localized to enable division/fractions
+		// FP := FieldOfFractions(PDefNoLocal); // Q(t_0, ..., t_{T-1}, u_0, ..., u_g)
+		// ChangeUniverse(~Deformation, FP);
+		
+		// // Elimination of the variables u_2, ..., u_g
+		// // Invariant property (as ensured before): u_{i+2}, ..., u_g not in Hi, u_{i+1} with exponent at most 1 in Hi
+		// gs := [FP| ]; // Parts of the equations Hi, relevant later for their proximity to the curve f
+		// for i in [1..g-1] do
+		// 	Hi := Numerator(Deformation[i]); // We are interested in Hi=0 -> denominators don't matter
+		// 	u_ip1 := PDefNoLocal.(T+1+ i+1); // u_{i+1} as polynomial
+		// 	// Define: Hi = gs[i] + u_{i+1}*uDenom
+		// 	gs[i]  := Coefficient(Hi, u_ip1, 0);
+		// 	uDenom := Coefficient(Hi, u_ip1, 1);
+		// 	// Solve for u_{i+1}:
+		// 	// Hi = gs[i] + u_{i+1}*uDenom = 0 <=> u_{i+1} = - gs[i] / uDenom
+		// 	u_ip1_value := - gs[i] / uDenom; // function of (u_0, u_1) because of the invariant property and the elimination of (u_2, ..., u_i) in previous iterations
+		// 	// Substitute value of u_{i+1} in the remaining equations, thus eliminating u_{i+1}
+		// 	// As the value of u_{i+1} is a function of (u_0, u_1), the invariant property is preserved
+		// 	for j in [i+1..g] do
+		// 		Deformation[j] := Evaluate(Deformation[j], (T+1+ i+1), u_ip1_value); // Substitute value of u_{i+1}
+		// 		Deformation[j] := Numerator(Deformation[j]); // Remove denominators
+		// 	end for;
+		// end for;
+		// f := Deformation[g]; // Resulting plane curve equation
+		// gs[g] := f;
+		// // Switch back to polynomial ring (no denominators)
+		// ChangeUniverse(~gs, PDefNoLocal);
+		// f := PDefNoLocal ! f;
+		
+		// Separate parameters into the coefficient ring
+		// From: Q[t_0, ..., t_{T-1}, u_0, ..., u_g]
+		// To:   Q(t_0, ..., t_{T-1})[x,y]
+		// u_0=x, u_1=y, ( u_2, ..., u_g have already been eliminated from the polynomials, can be evaluated to 0 )
+		if T eq 0 then
+			P<x,y> := LocalPolynomialRing(Q, 2);
+			R := BaseRing(P);
+			ts := [P | ];
+		else
+			P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, T), 2);
+			R := BaseRing(P);
+			if (printType eq "Latex") then
+				tNames := ["t_{"*Sprint(i)*"}" : i in parameters ];
+			else
+				tNames := ["t"*Sprint(i) : i in parameters ]; // in [1..T]
+			end if;
+			AssignNames(~R, tNames);
+			ts := [P | R.i : i in [1..T]];
+		end if;
+		// gs := [Evaluate(pol, ts cat [x,y] cat [0 : i in [2..g]]) : pol in gs];
+		//gUnits := [Evaluate(pol, ts cat [x,y] cat [0 : i in [2..g]]) : pol in gUnits];
+		f := Evaluate(f, ts cat [x,y] cat [0 : i in [2..g]]);
+		f /:= LeadingCoefficient(f);
+		// printf "f = %o\n", f;
+		// printf "MaxContactElements = %o\n", MaxContactElements(f);
+		
+		// Save needed non-zero parameters as variables
+		for i in neededParams do
+			j := Position(parameters, i);
+			Append(~neededParamsVars, R.j);
+		end for;
+
+
+
+
+
+	when "deformation_cassou": // Generic curve construction  
 		// INPUT
 		if (interactive_betas) then
 			print "\nINPUT: Choose curve semigroup";
@@ -477,7 +1025,7 @@ case curve:
 		printf "\n############################################################\n";
 		printf "############################################################\n\n";
 		// Deform the chosen monomial curve equations
-		Deformation := DeformationCurveSpecific(monomialCurve, _betas);
+		Deformation := DeformationCurveCassou(monomialCurve, _betas);
 		printf "\n############################################################\n";
 		printf "############################################################\n\n";
 		// printf "Deformation =\n"; IndentPush(); printf "%o\n", Deformation; IndentPop();
@@ -625,7 +1173,7 @@ case curve:
 			print Deformation;
 		end if;
 		
-		// // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
+		// // Elimination of variables (using Groebner bases)
 		// PP := PolynomialRing(CoefficientRing(PDeformation),totalDim);
 		// AssignNames(~PP, Names(PDeformation));
 		// I := ideal<PP| Deformation>;
@@ -641,7 +1189,6 @@ case curve:
 		// // printf "ff = %o\n\n", ff;
 		// f := Normalize(ff);
 		// printf "\n";
-		// // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
 		
 		// Switch to rational fraction field
 		PDefNoLocal := PolynomialRing(BaseRing(PDeformation), totalDim); // Q[t_0, ..., t_{T-1}, u_0, ..., u_g] but non-localized to enable division/fractions
