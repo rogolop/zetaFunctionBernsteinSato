@@ -384,6 +384,111 @@ case curve:
 			A_14_3*x^14*y^3 +
 			A_15_3*x^15*y^3;
 		
+	when "Maria_5-12_s1_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 4), 2);
+		R<A_10_1, A_8_2, A_9_2, A_10_2> := BaseRing(P);
+		f := y^5 - x^12 + x^5*y^3 + A_10_1*x^10*y + A_8_2*x^8*y^2 + A_9_2*x^9*y^2 + A_10_2*x^10*y^2;
+		
+	when "Maria_5-12_s1_subestrat1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 4), 2);
+		R<A_10_1, A_8_2, A_9_2, A_10_2> := BaseRing(P);
+		f := y^5 - x^12 + x^5*y^3 + A_10_1*x^10*y + A_8_2*x^8*y^2 + A_9_2*x^9*y^2;
+		
+	when "Maria_5-12_s1_subestrat2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 4), 2);
+		R<A_10_1, A_8_2, A_9_2, A_10_2> := BaseRing(P);
+		f := y^5 - x^12 + x^5*y^3 + 3/10*x^10*y + A_8_2*x^8*y^2 + A_9_2*x^9*y^2;
+		
+	when "Maria_5-12_s2_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y + A_8_2*x^8*y^2 +A_6_3*x^6*y^3 + A_9_2*x^9*y^2 + A_7_3*x^7*y^3 + A_8_3*x^8*y^3 + A_9_3*x^9*y^3;
+		
+	when "Maria_5-12_s2_subestrat1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y + A_8_2*x^8*y^2 + A_6_3*x^6*y^3 + A_7_3*x^7*y^3;
+		
+	when "Maria_5-12_s2_subestrat2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y + A_8_2*x^8*y^2 + (4/3*A_8_2*A_8_2 + 1/3*A_8_2)*x^6*y^3 + A_7_3*x^7*y^3 + A_8_3*x^8*y^3;
+		
+	when "Maria_5-12_s2_subestrat3":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y - 5/12*x^8*y^2 + A_6_3*x^6*y^3 + A_9_2*x^9*y^2;
+		
+	when "Maria_5-12_s2_subestrat4":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y - 5/12*x^8*y^2 + 5/54*x^6*y^3 + A_9_2*x^9*y^2 + A_7_3*x^7*y^3;
+		
+	when "Maria_5-12_s2_subestrat5":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y - 5/12*x^8*y^2 + 5/54*x^6*y^3 - 11/9*A_7_3*x^9*y^2 + A_7_3*x^7*y^3 + A_8_3*x^8*y^3;
+		
+	when "Maria_5-12_s2_subestrat6":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y - 5/12*x^8*y^2 + 5/54*x^6*y^3 - 11/9*A_7_3*x^9*y^2 + A_7_3*x^7*y^3 + (121/32*A_7_3*A_7_3 + 5/93312)*x^8*y^3 + A_9_3*x^9*y^3;
+		
+	when "Maria_5-12_s4_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_6_3, A_7_3> := BaseRing(P);
+		f := y^5 - x^12 + x^8*y^2 + A_6_3*x^6*y^3 + A_7_3*x^7*y^3;
+		
+	when "Maria_5-12_s6_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_9_2, A_10_2> := BaseRing(P);
+		f := y^5 - x^12 + x^6*y^3 + A_9_2*x^9*y^2 + A_10_2*x^10*y^2;
+		
+	when "Maria_5-12_s9_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_7_3, A_8_3> := BaseRing(P);
+		f := y^5 - x^12 + x^9*y^2 + A_7_3*x^7*y^3 + A_8_3*x^8*y^3;
+		
+	when "Maria_5-12_s11_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 1), 2);
+		R<A_10_2> := BaseRing(P);
+		f := y^5 - x^12 + x^7*y^3 + A_10_2*x^10*y^2;
+		
+	when "Maria_5-12_s14_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y^2 + A_8_3*x^8*y^3 + A_9_3*x^9*y^3;
+		
+	when "Maria_5-12_s14_subestrat1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y^2 + A_8_3*x^8*y^3;
+		
+	when "Maria_5-12_s14_subestrat2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y^2 + A_9_3*x^9*y^3;
+		
+	when "Maria_5-12_s16_general":
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := y^5 - x^12 + x^8*y^3;
+		
+	when "Maria_5-12_s21_general":
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := y^5 - x^12 + x^9*y^3;
+		
+	when "Maria_5-12_s26_general":
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := y^5 - x^12 + x^10*y^3;
+		
+	when "Maria_5-12_sInf_general":
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := y^5 - x^12;
+		
 	when "_betas": // Generic curve construction  
 		// INPUT
 		if (interactive_betas) then
