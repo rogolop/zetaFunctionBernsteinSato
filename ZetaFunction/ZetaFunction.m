@@ -522,6 +522,16 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 			sigma := Sigma(Np, kp, nu);
 			epsilon := [N[j] * sigma + k[j] : j in [1..3] ];
 			
+			// // Info regarding the sign of B_p
+			// printf "\nepsilon = [ %o, %o, %o ]\n", epsilon[1], epsilon[2], epsilon[3];
+			// printf "Fractional part {-eps}: %o, %o, %o\n", FractionalPart(-epsilon[1]), FractionalPart(-epsilon[2]), FractionalPart(-epsilon[3]);
+			// RR := RealField();
+			// RAprox := RealField(6);
+			// printf "cot(pi*(-eps)): %o, %o\n", RAprox!Cot(-Pi(RR)*epsilon[1]), RAprox!Cot(-Pi(RR)*epsilon[3]);
+			// printf "cot(pi*(-eps)): %o, %o\n", (Cot(-Pi(RR)*epsilon[1]) gt 0)select"+++"else"---", (Cot(-Pi(RR)*epsilon[3]) gt 0)select"+++"else"---";
+			// BFactor := Cot(Pi(RR)*epsilon[1]) + Cot(Pi(RR)*epsilon[3]);
+			// printf "cot(pi*eps1)+cot(pi*eps3) = %o%o\n", RAprox!BFactor, (BFactor gt 0)select" !!!!!!"else"";
+			
 			// Derivative of Phi(pi1(...),pi2(...),u(...); x,y) with respect to x
 			Phi, indexs_Phi := FormalDerivativeDiscardingVar(Phi, indexs_Phi, [pi1, pi2, u], nu-nuOld, x, [1, nuMax-nu]);
 			nuOld := nu;
@@ -559,6 +569,7 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 			elif (printType eq "Latex") then
 				PrintStratificationAsLatex(L, nu, sigma, Np);
 			end if;
+			// print Res;
 			
 			// Flush to file
 			if printToFile then
