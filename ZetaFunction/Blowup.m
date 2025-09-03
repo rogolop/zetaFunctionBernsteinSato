@@ -40,12 +40,12 @@ intrinsic SemiGroupInfo(_betas::[]) -> Tup
 end intrinsic;
 
 
-intrinsic MultiplicitiesAtAllRuptureDivisors(f::RngMPolLocElt) -> [], [], [], []
+intrinsic MultiplicitiesAtAllRuptureDivisors(_betas::[]) -> [], [], [], []
 	{
 		Multiplicities of the rupture divisors and their adjacent divisors
 	}
 	// All multiplicities
-	ProxMat, e := ProximityMatrix(f : ExtraPoint := true); // e: strict transform multiplicities
+	ProxMat, e := ProximityMatrix(_betas : ExtraPoint := true); // e: strict transform multiplicities
 	N := e*Transpose(ProxMat^(-1)); // (see TFG-Roger, p.16, Prop.2.3.21)
 	ones := Matrix([[1 : i in [1..Ncols(ProxMat)]]]); // row matrix (1,...,1)
 	k := ones*Transpose(ProxMat^(-1)); // (see TFG-Roger, p.17, Prop.2.3.22)
@@ -86,6 +86,18 @@ intrinsic MultiplicitiesAtThisRuptureDivisor(r::RngIntElt, Nps::[], kps::[], Ns:
 	return Np, kp, N, k;
 end intrinsic;
 
+
+function SemigroupElements(G, mu)
+	// Elements of the semigroup G up to (including) mu
+	if #G eq 0 or mu lt 0 then return {}; end if;
+	L := {G[1]*i : i in [0..Floor(mu/G[1])]};
+	if #G eq 1 then return L; end if;
+	semigroupElements := {};
+	for a in L do
+		semigroupElements join:= {a+b : b in SemigroupElements(G[2..#G], mu-a)};
+	end for;
+	return semigroupElements;
+end function;
 
 intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [], []
 	{
@@ -132,7 +144,11 @@ intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [],
 	//
 	Gamma_r := [ &*(ns[[(j+2)..(r+1)]]) * _ms[j+1] : j in [0..r] ];
 	while 0 in Gamma_r do Exclude(~Gamma_r, 0); end while; // Remove all 0's in Gamma_r
-	topologicalNus := [nu : nu in nus | SemiGroupMembership(nu, Gamma_r)];
+	
+	mu_r := ns[r+1] * _betas[r+1] - betas[r+1] - &*(ns[2..(r+1)]) + 1;
+	Gamma_r_elements := SemigroupElements(Gamma_r, mu_r);
+	topologicalNus := Sort([nu : nu in Gamma_r_elements]) cat [nu : nu in nus | nu gt mu_r];
+	// topologicalNus := [nu : nu in nus | SemiGroupMembership(nu, Gamma_r)];
 	
 	if discardTopologial then
 		nus := [nu : nu in nus | nu notin topologicalNus];

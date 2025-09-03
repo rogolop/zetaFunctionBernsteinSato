@@ -70,7 +70,7 @@ if printToFile and (curve ne "_betas") then
 	SetOutputFile(outFileName : Overwrite := true);
 end if;
 
-
+originalCurveString := curve;
 // Definition of:
 //   - R: the base ring
 //   - P = R[x,y]
@@ -879,12 +879,16 @@ end if;
 
 // ### Algebraic information ###
 
-// Multiplicities
-Nps, kps, Ns, ks := MultiplicitiesAtAllRuptureDivisors(f);
 // Semigroup
+if originalCurveString eq "_betas" then
+	_betas := _betas_betas;
+else
 _betas := SemiGroup(f); // minimal set of generators of the semigroup
+end if;
 semiGroupInfo := SemiGroupInfo(_betas);
 g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+// Multiplicities
+Nps, kps, Ns, ks := MultiplicitiesAtAllRuptureDivisors(_betas);
 // Variables in the for-loop
 L_all, sigma_all, epsilon_all := Explode(["not yet assigned" : i in [1..100]]);
 
