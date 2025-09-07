@@ -145,9 +145,9 @@ intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [],
 	Gamma_r := [ &*(ns[[(j+2)..(r+1)]]) * _ms[j+1] : j in [0..r] ];
 	while 0 in Gamma_r do Exclude(~Gamma_r, 0); end while; // Remove all 0's in Gamma_r
 	
-	mu_r := ns[r+1] * _betas[r+1] - betas[r+1] - &*(ns[2..(r+1)]) + 1;
+	mu_r := ns[r+1] * _ms[r+1] - ms[r+1] - &*(ns[2..(r+1)]) + 1;
 	Gamma_r_elements := SemigroupElements(Gamma_r, mu_r);
-	topologicalNus := Sort([nu : nu in Gamma_r_elements]) cat [nu : nu in nus | nu gt mu_r];
+	topologicalNus := [nu : nu in nus | nu in Gamma_r_elements or nu gt mu_r];
 	// topologicalNus := [nu : nu in nus | SemiGroupMembership(nu, Gamma_r)];
 	
 	if discardTopologial then
