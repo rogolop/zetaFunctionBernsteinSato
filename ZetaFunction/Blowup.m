@@ -105,16 +105,6 @@ intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [],
 	}
 	g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
 	
-	// All possible nus (see TFG-Roger, p.29, Cor.4.2.12)
-	nus := [0..(Np-1)];
-	
-	// Discard nus corresponding to the other divisors crossing the r-th exceptional divisor (they never correspond to roots of the Bernstein-Sato-polynomial, and they may give infinities and zeros at the calculation of the residue of the complex zeta function)
-	// Conditions: _beta_r*sigma not integer
-	//             e_{r-1}*sigma not integer
-	// (see TFG-Roger, p.28, Th.4.2.6)
-	Z := IntegerRing();
-	nus := [nu : nu in nus | _betas[r+1]*Sigma(Np,kp,nu) notin Z and es[r]*Sigma(Np,kp,nu) notin Z ];
-	
 	// Topological roots of Bernstein-Sato polynomial: 
 	// - they are roots for any topologically trivial deformation
 	// - they give unit (=> nonzero) residues of the complex zeta function (see TFG-Roger, p.28-29)
@@ -146,12 +136,22 @@ intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [],
 	while 0 in Gamma_r do Exclude(~Gamma_r, 0); end while; // Remove all 0's in Gamma_r
 	
 	mu_r := ns[r+1] * _ms[r+1] - ms[r+1] - &*(ns[2..(r+1)]) + 1;
-	Gamma_r_elements := SemigroupElements(Gamma_r, mu_r);
-	topologicalNus := [nu : nu in nus | nu in Gamma_r_elements or nu gt mu_r];
-	// topologicalNus := [nu : nu in nus | SemiGroupMembership(nu, Gamma_r)];
+	Gamma_r_elements := SemigroupElements(Gamma_r, mu_r - 1);
+    Gamma_r_elements := Sort([nu : nu in Gamma_r_elements]);
+    gaps := Reverse([mu_r - 1 - a : a in Gamma_r_elements]);
+    
+	// Discard nus corresponding to the other divisors crossing the r-th exceptional divisor (they never correspond to roots of the Bernstein-Sato-polynomial, and they may give infinities and zeros at the calculation of the residue of the complex zeta function)
+	// Conditions: _beta_r*sigma not integer
+	//             e_{r-1}*sigma not integer
+	// (see TFG-Roger, p.28, Th.4.2.6)
+	Z := IntegerRing();
+    nonTopNus := [nu : nu in gaps | _betas[r+1]*Sigma(Np,kp,nu) notin Z and es[r]*Sigma(Np,kp,nu) notin Z];
+    topologicalNus := [nu : nu in (Gamma_r_elements cat [mu_r..(Np-1)]) | _betas[r+1]*Sigma(Np,kp,nu) notin Z and es[r]*Sigma(Np,kp,nu) notin Z];
 	
 	if discardTopologial then
-		nus := [nu : nu in nus | nu notin topologicalNus];
+		nus := nonTopNus;
+	else
+		nus := Sort(nonTopNus cat topologicalNus);
 	end if;
 	
 	return nus, topologicalNus;
