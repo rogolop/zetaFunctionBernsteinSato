@@ -87,8 +87,18 @@ intrinsic MultiplicitiesAtThisRuptureDivisor(r::RngIntElt, Nps::[], kps::[], Ns:
 end intrinsic;
 
 
-function SemigroupElements(G, mu)
-	// Elements of the semigroup G up to (including) mu
+intrinsic Sigma(Np::RngIntElt, kp::RngIntElt, nu::RngIntElt) -> FldRatElt
+	{
+		Root candidate corresponding to a nu
+	}
+	return - (kp + 1 + nu) / Np; // (see TFG-Roger p.27 eq.4.2.1)
+end intrinsic;
+
+
+intrinsic SemigroupElements(G::[], mu::RngIntElt) -> {}
+	{
+		Elements of the semigroup G up to (including) mu
+	}
 	if #G eq 0 or mu lt 0 then return {}; end if;
 	L := {G[1]*i : i in [0..Floor(mu/G[1])]};
 	if #G eq 1 then return L; end if;
@@ -97,7 +107,8 @@ function SemigroupElements(G, mu)
 		semigroupElements join:= {a+b : b in SemigroupElements(G[2..#G], mu-a)};
 	end for;
 	return semigroupElements;
-end function;
+end intrinsic;
+
 
 intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [], []
 	{
@@ -158,12 +169,95 @@ intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [],
 end intrinsic;
 
 
-intrinsic Sigma(Np::RngIntElt, kp::RngIntElt, nu::RngIntElt) -> FldRatElt
+intrinsic CandidatesData(_betas, semiGroupInfo, Nps, kps: discardTopologial:=true, discardCoincidingWithTopological:=true) -> [], {}, {}, {}, Assoc, Assoc
 	{
-		Root candidate corresponding to a nu
+		TO DO
+		
+		If discardTopologial if false, discardCoincidingWithTopological is ignored.
 	}
-	return - (kp + 1 + nu) / Np; // (see TFG-Roger p.27 eq.4.2.1)
+	Z := IntegerRing();
+	Q := RationalField();
+	
+	g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+	Nps, kps, Ns, ks := MultiplicitiesAtAllRuptureDivisors(_betas);
+	
+	nonTopNus := [[Z| ] : r in [1..g]];
+	topologicalNus := [[Z| ] : r in [1..g]];
+	for r in [1..g] do
+		Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
+		nonTopNus[r], topologicalNus[r] := Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true);
+	end for;
+	
+	nonTopSigmas := {Q| };
+	nonTopSigmaToIndexList := AssociativeArray(); // map sigma_{r,nu} -> [<r_1,nu_1>, ...]
+	for r in [1..g] do
+		Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
+		for nu in nonTopNus[r] do
+			sigma := Sigma(Np, kp, nu);
+			if sigma in nonTopSigmas then
+				Include(~nonTopSigmaToIndexList[sigma], <r,nu>);
+			else
+				nonTopSigmaToIndexList[sigma] := [<r, nu>];
+				Include(~nonTopSigmas, sigma);
+			end if;
+		end for;
+	end for;
+	topologicalSigmas := {Q| };
+	topologicalSigmaToIndexList := AssociativeArray(); // map sigma_{r,nu} -> [<r_1,nu_1>, ...]
+	for r in [1..g] do
+		Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
+		for nu in topologicalNus[r] do
+			sigma := Sigma(Np, kp, nu);
+			if sigma in topologicalSigmas then
+				Include(~topologicalSigmaToIndexList[sigma], <r,nu>);
+			else
+				topologicalSigmaToIndexList[sigma] := [<r, nu>];
+				Include(~topologicalSigmas, sigma);
+			end if;
+		end for;
+	end for;
+	
+	coincidingTopAndNonTopSigmas := nonTopSigmas meet topologicalSigmas; // coinciding 1 (or more) nonTop sigma and 1 (or more) top sigma
+	trueNonTopSigmas := nonTopSigmas diff coincidingTopAndNonTopSigmas;
+	otherTopologicalSigmas := topologicalSigmas diff coincidingTopAndNonTopSigmas;
+	
+	nus := [[Z| ] : r in [1..g]];
+	if discardTopologial then
+		if discardCoincidingWithTopological then
+			// default case
+			sigmas := trueNonTopSigmas;
+		else
+			sigmas := nonTopSigmas;
+		end if;
+		for sigma in sigmas do
+			for tup in nonTopSigmaToIndexList[sigma] do
+				r, nu := Explode(tup);
+				Include(~nus[r], nu);
+			end for;
+		end for;
+	else
+		for sigma in nonTopSigmas do
+			for tup in nonTopSigmaToIndexList[sigma] do
+				r, nu := Explode(tup);
+				Include(~nus[r], nu);
+			end for;
+		end for;
+		for sigma in topologicalSigmas do
+			for tup in topologicalSigmaToIndexList[sigma] do
+				r, nu := Explode(tup);
+				Include(~nus[r], nu);
+			end for;
+		end for;
+	end if;
+	
+	for r in [1..g] do
+		Sort(~nus[r]);
+	end for;
+	
+	return nus, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList;
 end intrinsic;
+
+
 
 
 // Blowup and centering

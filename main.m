@@ -34,18 +34,26 @@ print_betas        := true;
 print_f            := true;
 
 // Which set of nus should be used for each rupture divisor
-defaultNus         := [true, true];
-nuChoices          := [[], []]; // (if not defaultNus)
+onlyCoincidingRoots := false; // default false
+onlyCoincidingNonTopologicalRoots := onlyCoincidingRoots and true;
+useDefaultNus         := [true, true, true];
+nuChoices          := [[], []]; // (if not useDefaultNus)
 
 // Choose curve
 curve              := "_betas";
 // "_betas";
-// "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
 // "4-6-13"; "6-14-43_AM";
-// "4-9_example"; "5-7";
 
 // For "_betas"
-_betas_betas       := [6,14,43];
+a := 5; // a>1
+b := 7; // b>a, coprime to a
+c := 3; // c>1, coprime to a and b
+d := 2; // d>1, coprime to c
+// 5, 7, 3, 2
+// 17, 19, 7, 6
+_betas_betas       := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
+// _betas_betas       := [4,6,15]; 
+// [18,48,146,441];
 //[36,96,292,881];
 // [5,7];
 // [4,6,13]; [4,10,21]; [6,9,22]; [6,14,43]; [8,18,73]; [10,15,36]; [10,24,121];
@@ -642,7 +650,8 @@ case curve:
 			chosenEqs := chosenEqs_betas;
 		end if;
 		error if (ExtendedType(chosenEqs) ne SeqEnum[RngIntElt]), "Please define a valid list of equation indexes";
-		error if (#chosenEqs ne (#_betas-1)), "Please define a valid list of equation indexes, wrong # of indexes";
+		error if (#chosenEqs lt (#_betas-1)), "Please define a valid list of equation indexes, # of indexes too small";
+		chosenEqs := chosenEqs[1..g];
 		error if (&or[ (eqIdx le 0) or (eqIdx gt #(eqs[i])) : i -> eqIdx in chosenEqs ]), "Please define a valid list of equation indexes, index out of bounds";
 		monomialCurve := [eqs[i, chosenEqs[i]] : i in [1..#_betas-1]]; // Select the chosen equations
 		if (print_betas) then print "Chosen equation indexes:", chosenEqs; end if;
@@ -883,7 +892,7 @@ end if;
 if originalCurveString eq "_betas" then
 	_betas := _betas_betas;
 else
-_betas := SemiGroup(f); // minimal set of generators of the semigroup
+	_betas := SemiGroup(f); // minimal set of generators of the semigroup
 end if;
 semiGroupInfo := SemiGroupInfo(_betas);
 g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
@@ -892,30 +901,94 @@ Nps, kps, Ns, ks := MultiplicitiesAtAllRuptureDivisors(_betas);
 // Variables in the for-loop
 L_all, sigma_all, epsilon_all := Explode(["not yet assigned" : i in [1..100]]);
 
-topologicalRoots := []; // [ [topological roots of divisor r] ]
-ignoreDivisor := [ (not defaultNus[i]) and (nuChoices[i] eq []) : i in [1..g] ]; // ignore the divisor if no "nus" should be checked
+// topologicalRoots := []; // [ [topological roots of divisor r] ]
+ignoreDivisor := [ (not useDefaultNus[i]) and (nuChoices[i] eq []) : i in [1..g] ]; // ignore the divisor if no "nus" should be checked
 
 
-// Find duplicate root candidates (-> monodromy has repeated eigenvalues)
-allSigmas := {Q| };
-sigmaToIndexing := AssociativeArray(); // map sigma_{r,nu} -> <r,nu>
-for r in [1..g] do
-	Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
-	nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=false);
-	for nu in nus do
-		sigma := Sigma(Np, kp, nu);
-		if sigma in allSigmas then
-			R, NU := Explode(sigmaToIndexing[sigma]);
-			printf "WARNING! Candidates coincide: sigma_{%1o,%3o} = sigma_{%1o,%3o} = %-8o \n", R, NU, r, nu, sigma;
-		else
-			Include(~allSigmas, sigma);
-			sigmaToIndexing[sigma] := <r, nu>;
-		end if;
-	end for;
+defaultNus, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList := CandidatesData(_betas, semiGroupInfo, Nps, kps);
+
+// print "\n-----------------------------------------------------------------------";
+// printf "%o\n", Sort([sigma : sigma in trueNonTopSigmas], func<x, y | -(x - y)>);
+// printf "%o\n", Sort([sigma : sigma in coincidingTopAndNonTopSigmas], func<x, y | -(x - y)>);
+// printf "%o\n", Sort([sigma : sigma in otherTopologicalSigmas], func<x, y | -(x - y)>);
+
+print "\n-----------------------------------------------------------------------";
+trueNonTopSigmasSorted := Sort([sigma : sigma in trueNonTopSigmas], func<x, y | -(x - y)>);
+coincidingNonTopologicalNus := [[Z| ] : r in [1..g]];
+printf "Coinciding non-topological candidates\n\n";
+for sigma in trueNonTopSigmasSorted do
+	if #nonTopSigmaToIndexList[sigma] gt 1 then
+		printf "%-15o", sigma;
+		for tup in nonTopSigmaToIndexList[sigma] do
+			r, nu := Explode(tup);
+			Include(~coincidingNonTopologicalNus[r], nu);
+			printf " = sigma_{%-2o,%-5o}", r, nu;
+		end for;
+		printf "\n";
+	// else
+	// 	printf "%-15o", sigma;
+	// 	r, nu := Explode(nonTopSigmaToIndexList[sigma][1]);
+	// 	printf " = sigma_{%-2o,%-5o}", r, nu;
+	// 	printf "\n";
+	end if;
 end for;
 printf "\n";
 
+printf "\n" cat "-"^70 cat "\n\n";
+printf "Topological poles that coincide with 'non-topological' sigmas\n\n";
+coincidingTopAndNonTopSigmasSorted := Sort([sigma : sigma in coincidingTopAndNonTopSigmas], func<x, y | -(x - y)>);
+coincidingNus := coincidingNonTopologicalNus;
+for sigma in coincidingTopAndNonTopSigmasSorted do
+	printf "%-15o", sigma;
+	for tup in nonTopSigmaToIndexList[sigma] do
+		r, nu := Explode(tup);
+		Include(~coincidingNus[r], nu);
+		printf " = sigma_{%-2o,%-5o}", r, nu;
+	end for;
+	for tup in topologicalSigmaToIndexList[sigma] do
+		r, nu := Explode(tup);
+		printf " = topSigma_{%-2o,%-5o}", r, nu;
+	end for;
+	printf "\n";
+end for;
 
+if (printType ne "none" and printTopologial) then
+	printf "\n" cat "-"^70 cat "\n\n";
+	printf "Topological sigmas, excluding the previous set\n\n";
+
+	otherTopologicalSigmasSorted := Sort([sigma : sigma in otherTopologicalSigmas], func<x, y | -(x - y)>);
+	for sigma in otherTopologicalSigmasSorted do
+		printf "%-15o", sigma;
+		for tup in topologicalSigmaToIndexList[sigma] do
+			r, nu := Explode(tup);
+			printf " = topSigma_{%-2o,%-5o}", r, nu;
+		end for;
+		printf "\n";
+	end for;
+end if;
+
+if onlyCoincidingRoots then
+	print "\n-----------------------------------------------------------------------";
+	useDefaultNus := [ false : i in [1..g] ];
+	ignoreDivisor := [ false : i in [1..g] ];
+	if onlyCoincidingNonTopologicalRoots then
+		if #(&cat(coincidingNonTopologicalNus)) eq 0 then
+			printf "No coinciding non topological nus.\n";
+			quit;
+		end if;
+		printf "Selected onlyCoincidingNonTopologicalRoots\n\n";
+		nuChoices := coincidingNonTopologicalNus; // [ (#arr gt 0) select arr else [1] : arr in coincidingNonTopologicalNus];
+		printf "%o\n", nuChoices;
+	else
+		if #(&cat(coincidingNus)) eq 0 then
+			printf "No coinciding nus.\n";
+			quit;
+		end if;
+		printf "Selected onlyCoincidingRoots\n\n";
+		nuChoices := coincidingNus; // [ (#arr gt 0) select arr else [1] : arr in coincidingNus];
+		printf "%o\n", nuChoices;
+	end if;
+end if;
 
 
 
@@ -959,6 +1032,12 @@ for r in [1..g] do
 	N := [N1, Np-N1-ep, ep];
 	k := [K1, Kp-K1-1, 0];
 	
+	// printf "u = %o\n\n", u;
+	// printf "v = %o\n\n", v;
+	// printf "PI_TOTAL = %o\n\n", PI_TOTAL;
+	printf "e = %o\n", ep;
+	printf "k = %o\n", ks;
+	
 	// // Find the maximum nu in this and following rupture divisors => maximum power needed in series expansions in x (?????????)
 	// // Don't discard topological roots to have enough terms for a blowup
 	// M := 0;
@@ -968,9 +1047,12 @@ for r in [1..g] do
 	// end for;
 	
 	// Interesting values of nu
-	nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
-	topologicalRoots[r] := [<nu, Sigma(Np, Kp, nu)> : nu in topologicalNus];
-	if not defaultNus[r] then
+	// nus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
+	// nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
+	// topologicalRoots[r] := [<nu, Sigma(Np, Kp, nu)> : nu in topologicalNus];
+	if useDefaultNus[r] then
+		nus := defaultNus[r];
+	else
 		nus := nuChoices[r];
 	end if;
 	// Print...
@@ -1019,39 +1101,39 @@ end for;
 
 
 
-if (printType ne "none" and printTopologial) then
-	if printType eq "table" then
-		for r in [1..g] do
-			if not ignoreDivisor[r] then
-				printf "Topological roots at divisor E_%o\n", r; 
-				printf " nu  │         sigma\n";
-				printf "─"^5*"┼";
-				printf "─"^22*"\n";
-				for tup in topologicalRoots[r] do
-					nu, sigma := Explode(tup);
-					Np := Nps[r];
-					printf "%4o │ %4o/%-4o = %8o\n", nu, (sigma*Np), Np, sigma;
-				end for;
-				printf "\n";
-			end if;
-		end for;
-	elif printType eq "Latex" then
-		for r in [1..g] do
-			if not ignoreDivisor[r] then
-				printf "Topological roots at divisor E_%o\n", r; 
-				printf "        $\\nu$&$\\sigma_{%o,\\nu}$\\\\", r;
-				printf "\\hline\\hline\n";
-				for tup in topologicalRoots[r] do
-					nu, sigma := Explode(tup);
-					Np := Nps[r];
-					//printf "-\\frac{%o}{%o}, ", Numerator(-sigma), Denominator(sigma);
-					printf "        $%4o $&$ %4o/%-4o =  %8o $\\\\\n", nu, (sigma*Np), Np, sigma;
-				end for;
-				printf "\n\n";
-			end if;
-		end for;
-	end if;
-end if;
+// if (printType ne "none" and printTopologial) then
+// 	if printType eq "table" then
+// 		for r in [1..g] do
+// 			if not ignoreDivisor[r] then
+// 				printf "Topological roots at divisor E_%o\n", r; 
+// 				printf " nu  │         sigma\n";
+// 				printf "─"^5*"┼";
+// 				printf "─"^22*"\n";
+// 				for tup in topologicalRoots[r] do
+// 					nu, sigma := Explode(tup);
+// 					Np := Nps[r];
+// 					printf "%4o │ %4o/%-4o = %8o\n", nu, (sigma*Np), Np, sigma;
+// 				end for;
+// 				printf "\n";
+// 			end if;
+// 		end for;
+// 	elif printType eq "Latex" then
+// 		for r in [1..g] do
+// 			if not ignoreDivisor[r] then
+// 				printf "Topological roots at divisor E_%o\n", r; 
+// 				printf "        $\\nu$&$\\sigma_{%o,\\nu}$\\\\", r;
+// 				printf "\\hline\\hline\n";
+// 				for tup in topologicalRoots[r] do
+// 					nu, sigma := Explode(tup);
+// 					Np := Nps[r];
+// 					//printf "-\\frac{%o}{%o}, ", Numerator(-sigma), Denominator(sigma);
+// 					printf "        $%4o $&$ %4o/%-4o =  %8o $\\\\\n", nu, (sigma*Np), Np, sigma;
+// 				end for;
+// 				printf "\n\n";
+// 			end if;
+// 		end for;
+// 	end if;
+// end if;
 
 // ### To do when finished ###
 
