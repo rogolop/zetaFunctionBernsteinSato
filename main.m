@@ -34,18 +34,28 @@ print_betas        := true;
 print_f            := true;
 
 // Which set of nus should be used for each rupture divisor
-defaultNus         := [true, true];
-nuChoices          := [[], []]; // (if not defaultNus)
+onlyCoincidingRoots := false; // default false
+onlyCoincidingNonTopologicalRoots := onlyCoincidingRoots and true;
+useDefaultNus         := [false, false, true];
+nuChoices          := [[], [], []]; // (if not useDefaultNus)
 
 // Choose curve
 curve              := "deformation_cassou";
 // "deformation_restricted"; "deformation_GroebnerElimination"; "deformation_cassou";
 // "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
 // "4-6-13"; "6-14-43_AM";
-// "4-9_example"; "5-7";
 
 // For "_betas"
-_betas_betas       := [6,14,43]; //[10,15,36]; //[4,6,13]; //[6,9,22]; //[10,24,121]; // [9,15,47];
+a := 5; // a>1
+b := 7; // b>a, coprime to a
+c := 3; // c>1, coprime to a and b
+d := 2; // d>1, coprime to c
+// 5, 7, 3, 2
+// 17, 19, 7, 6
+// _betas_betas       := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
+_betas_betas       := [6,14,43];
+// [18,48,146,441];
+//[36,96,292,881];
 // [5,7];
 // [6,17];
 // [4,6,13]; [4,10,21]; [6,9,22]; [6,14,43]; [8,18,73]; [10,15,36]; [10,24,121];
@@ -71,7 +81,7 @@ if printToFile and (curve ne "_betas") then
 	SetOutputFile(outFileName : Overwrite := true);
 end if;
 
-
+originalCurveString := curve;
 // Definition of:
 //   - R: the base ring
 //   - P = R[x,y]
@@ -198,7 +208,8 @@ case curve:
 		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 1), 2);
 		R<t> := BaseRing(P);
 		f := (x^2-y^3)^3 + x^6*y^2 + t*y^8*(x^2-y^3);
-		//                   ^   ^ exponentes cambiados ?
+		//                   ^   ^ exponentes cambiados (typo Artal supongo)
+		// -23/66 not root for t = -7/10 (Artal Singular)
 	when "6-9-22_Artal":
 		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 1), 2);
 		R<t> := BaseRing(P);
@@ -418,6 +429,215 @@ case curve:
 		// f := (-x^3+y^2)^3 + x^11;
 		// f := (-x^3+y^2)^3 + x^2*y^6;
 
+	when "Maria_5-12_s1_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 4), 2);
+		R<A_10_1, A_8_2, A_9_2, A_10_2> := BaseRing(P);
+		f := y^5 - x^12 + x^5*y^3 + A_10_1*x^10*y + A_8_2*x^8*y^2 + A_9_2*x^9*y^2 + A_10_2*x^10*y^2;
+		
+	when "Maria_5-12_s1_subestrat1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 4), 2);
+		R<A_10_1, A_8_2, A_9_2, A_10_2> := BaseRing(P);
+		f := y^5 - x^12 + x^5*y^3 + A_10_1*x^10*y + A_8_2*x^8*y^2 + A_9_2*x^9*y^2;
+		
+	when "Maria_5-12_s1_subestrat2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 4), 2);
+		R<A_10_1, A_8_2, A_9_2, A_10_2> := BaseRing(P);
+		f := y^5 - x^12 + x^5*y^3 + 3/10*x^10*y + A_8_2*x^8*y^2 + A_9_2*x^9*y^2;
+		
+	when "Maria_5-12_s2_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y + A_8_2*x^8*y^2 +A_6_3*x^6*y^3 + A_9_2*x^9*y^2 + A_7_3*x^7*y^3 + A_8_3*x^8*y^3 + A_9_3*x^9*y^3;
+		
+	when "Maria_5-12_s2_subestrat1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y + A_8_2*x^8*y^2 + A_6_3*x^6*y^3 + A_7_3*x^7*y^3;
+		
+	when "Maria_5-12_s2_subestrat2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y + A_8_2*x^8*y^2 + (4/3*A_8_2*A_8_2 + 1/3*A_8_2)*x^6*y^3 + A_7_3*x^7*y^3 + A_8_3*x^8*y^3;
+		
+	when "Maria_5-12_s2_subestrat3":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y - 5/12*x^8*y^2 + A_6_3*x^6*y^3 + A_9_2*x^9*y^2;
+		
+	when "Maria_5-12_s2_subestrat4":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y - 5/12*x^8*y^2 + 5/54*x^6*y^3 + A_9_2*x^9*y^2 + A_7_3*x^7*y^3;
+		
+	when "Maria_5-12_s2_subestrat5":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y - 5/12*x^8*y^2 + 5/54*x^6*y^3 - 11/9*A_7_3*x^9*y^2 + A_7_3*x^7*y^3 + A_8_3*x^8*y^3;
+		
+	when "Maria_5-12_s2_subestrat6":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_8_2, A_6_3, A_9_2, A_7_3, A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y - 5/12*x^8*y^2 + 5/54*x^6*y^3 - 11/9*A_7_3*x^9*y^2 + A_7_3*x^7*y^3 + (121/32*A_7_3*A_7_3 + 5/93312)*x^8*y^3 + A_9_3*x^9*y^3;
+		
+	when "Maria_5-12_s4_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_6_3, A_7_3> := BaseRing(P);
+		f := y^5 - x^12 + x^8*y^2 + A_6_3*x^6*y^3 + A_7_3*x^7*y^3;
+		
+	when "Maria_5-12_s6_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_9_2, A_10_2> := BaseRing(P);
+		f := y^5 - x^12 + x^6*y^3 + A_9_2*x^9*y^2 + A_10_2*x^10*y^2;
+		
+	when "Maria_5-12_s9_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_7_3, A_8_3> := BaseRing(P);
+		f := y^5 - x^12 + x^9*y^2 + A_7_3*x^7*y^3 + A_8_3*x^8*y^3;
+		
+	when "Maria_5-12_s11_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 1), 2);
+		R<A_10_2> := BaseRing(P);
+		f := y^5 - x^12 + x^7*y^3 + A_10_2*x^10*y^2;
+		
+	when "Maria_5-12_s14_general":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y^2 + A_8_3*x^8*y^3 + A_9_3*x^9*y^3;
+		
+	when "Maria_5-12_s14_subestrat1":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y^2 + A_8_3*x^8*y^3;
+		
+	when "Maria_5-12_s14_subestrat2":
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 3), 2);
+		R<A_8_3, A_9_3> := BaseRing(P);
+		f := y^5 - x^12 + x^10*y^2 + A_9_3*x^9*y^3;
+		
+	when "Maria_5-12_s16_general":
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := y^5 - x^12 + x^8*y^3;
+		
+	when "Maria_5-12_s21_general":
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := y^5 - x^12 + x^9*y^3;
+		
+	when "Maria_5-12_s26_general":
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := y^5 - x^12 + x^10*y^3;
+		
+	when "Maria_5-12_sInf_general":
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := y^5 - x^12;
+	
+	when "David_1":
+		// Puiseux 6,14,43; Zariski
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := -x^14 + 2*x^7*y^3 - y^6 + (-6)*x^12*y + 6*x^5*y^4 + (-9)*x^10*y^2 + (-2)*x^15 + 2*x^8*y^3 + (-6)*x^13*y - x^16 + 9*x^19*y^2 + (-6)*x^24 + 6*x^17*y^3 + 3*x^25 + 6*x^31*y + (-3)*x^34 + x^43;
+	
+	when "David_2":
+		// Puiseux 6,14,43; Zarkski
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := x^43 + 6*x^31*y + 9*x^19*y^2 - x^14 + 2*x^7*y^3 - y^6;
+		
+	when "David_3":
+		// Puiseux 6,14,17; Zariski 17
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := x^17 + (-3)*x^16 + 3*x^15 - x^14 + 6*x^8*y^3 + 2*x^7*y^3 - y^6;
+		
+	when "David_4":
+		// Puiseux 6,14,17; Zariski 16
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := x^17 + (-10)*x^16 + x^15 + 6*x^14*y - x^14 + (-6)*x^13*y + (-6)*x^12*y + 9*x^11*y^2 + (-9)*x^10*y^2 + 8*x^8*y^3 + 2*x^7*y^3 + 6*x^5*y^4 - y^6;
+		
+	when "David_5":
+		// Puiseux ; Zariski 
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := x^59 - x^58 + 46*x^57*y + (-483)*x^56*y^2 + 552*x^55*y^3 + 115*x^53*y^4 + 22862*x^52*y^5 + 63204*x^51*y^6 + 46*x^50*y^7 + (-4715)*x^48*y^8 + 738484*x^47*y^9 + (-86434)*x^46*y^10 + 82708*x^43*y^12 + 2691552*x^42*y^13 + 713*x^41*y^14 + (-586661)*x^38*y^16 + 777630*x^37*y^17 + 1310333*x^33*y^20 + 4232*x^32*y^21 + 2*x^29*y^23 + (-514234)*x^28*y^24 + 414*x^24*y^27 + 7820*x^23*y^28 + 4186*x^19*y^31 + 1932*x^14*y^35 - y^46;
+		
+	when "David_6":
+		// Puiseux 34,38,39; Zariski 39  -> raiz 
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := x^39 - x^38 + 34*x^37*y + (-425)*x^36*y^2 + 2380*x^35*y^3 + (-5780)*x^34*y^4 + 4862*x^33*y^5 + (-714)*x^32*y^6 + 170*x^28*y^9 + 11237*x^27*y^10 + 64736*x^26*y^11 + 40749*x^25*y^12 + 1190*x^24*y^13 + 2*x^19*y^17 + (-3213)*x^18*y^18 + 10540*x^17*y^19 + (-357)*x^16*y^20 + 119*x^9*y^26 + 34*x^8*y^27 - y^34;
+		
+	when "David_7":
+		// t5, t11 + t12 +t13 +t14
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := -x^14 - x^13 - x^12 + (-5)*x^11*y - x^11 + (-5)*x^10*y + (-5)*x^9*y + (-10)*x^8*y^2 + (-10)*x^7*y^2 + (-10)*x^5*y^3 + y^5;
+		
+	when "David_8":
+		// t10, t22 + t24 + t26 + t28 + t29
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := x^29 + (-111)*x^28 + 13*x^27 + 10*x^26*y + 27*x^26 + (-260)*x^25*y + x^25 + 20*x^24*y + 35*x^23*y^2 + (-3)*x^24 + (-385)*x^22*y^2 + (-2)*x^23 + (-100)*x^21*y^2 + 60*x^20*y^3 - x^22 + (-20)*x^21*y + (-25)*x^20*y^2 + (-420)*x^19*y^3 + (-10)*x^20*y + (-75)*x^19*y^2 + (-170)*x^18*y^3 + 75*x^17*y^4 + (-45)*x^18*y^2 + (-170)*x^17*y^3 + (-325)*x^16*y^4 + (-120)*x^16*y^3 + (-250)*x^15*y^4 + 72*x^14*y^5 + (-200)*x^14*y^4 + (-198)*x^13*y^5 + (-198)*x^12*y^5 + 55*x^11*y^6 + 2*x^11*y^5 + (-90)*x^10*y^6 + 10*x^9*y^6 + 30*x^8*y^7 + 20*x^7*y^7 + 20*x^5*y^8 - y^10;
+	
+	when "David_9":
+		// 
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := y^5 + x^11 + x^9*y + x^7*y^2;
+		
+	when "David_10":
+		// Senovilla - Computing a Saito basis from a standard basis
+		// 36x^3 * (...dx + ...dy) + ...dy
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := (-13492928512/4782969)*x^196 + 3373232128/531441*x^168*y + (-120472576/19683)*x^140*y^2 + 70027/729*x^116 + 21512960/6561*x^112*y^3 + (-3325/27)*x^88*y + (-768320/729)*x^84*y^4 + 154/3*x^60*y^2 + 5488/27*x^56*y^5 - x^36 + (-7)*x^32*y^3 + (-196/9)*x^28*y^6 + y^7;
+		
+	when "David_11":
+		// Senovilla - Computing a Saito basis from a standard basis
+		// 36x^3 * (...dx + ...dy) - 560 * (...)dy
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f :=  (-1/45312452946136620155605528267853500261871027739095881489117719035904)*x^206 + 343/271528241623977695813092575157061124887565828096*x^201 + (-245794879917154064393063555374515405263311844076914202370828559/87129290721203997305816807972135970662895181076683240243200)*x^196 + 20451673422440139293408181412560468062336411497906072756623929058133753/234890366791563487037922346027981368794283361210411774913919414435840000*x^191 + 221754041601537809643664681057269657151/2571503244531850514797585121685129425584128000*x^186 + (-26783585667400094917893367360702411855667959261/3451941807891854008254640222408748650602154998890496000000)*x^181 + (-249396329542342047811544650270125615514459278087453661/7656465298097773472089846789363197172084763089257565367618764800000000)*x^176 + (-49/60339609249772821291798350034902472197236850688)*x^173*y + (-4420833100615571387829783048287022170586138004907/37836861548453837233406462641720395718196340471184187751137280000000000)*x^171 + 1720564159420078450751444882196089774757467869405342881066969359/271068904465967991618096735913311908729007230016347858534400*x^168*y + 555331877120179284141942568587494072490650079221269/1328329573524454469415020066199715835904000000000000*x^166 + (-873104732057045878344905493883737719/5199564505679064255712587591670824960)*x^163*y + (-174874299450794616513217176420230360523092276383332381169/46113564007278380979403365604980179984439485030400000000000000)*x^161 + (-52666584880365229790370361403355175594337/380011035025262353853420912426802459558543360000)*x^158*y + (-2785450316611869131519118425629054241705231135934014903/23833642694889289263851535607086422388840915783291135590400000000)*x^156 + 107134342669600379671573469443487793136449394141/10739374513441323581236658469716106912984482218770432000000*x^153*y + (-21215627408818582514184754631714653456740837979/18356337970939861839053896913942615262446489626094862336000000)*x^151 + 143073025381124410761708163211898307295203/3467483853506984463483186385822646747006938581565440000000*x^148*y + 7/53635208222020285592709644475468864175321645056*x^145*y^2 + 5716665465494668717257763/142398746381431762422080639389123188326400000000*x^146 + 1012987122942640639/5097649578358181361498998439885000000000*x^143*y + (-44589434805851330231518057557545/7285092378896021389523288064)*x^140*y^2 + 5184500086928378520012947305425655789980415531979/2430929938476125826380428879319741399040000000000*x^141 + (-3742133418513437863770900992848081081737825297190019/4132580895409413904846729094843560378368000000000000)*x^138*y + 1559115592959010497044474096247661141/11554587790397920568250194648157388800*x^135*y^2 + (-27044952903916951943666708443778840920964990299/144194695673847651689218657813495532451004416000000)*x^136 + 671755435260516482475337112300258448876307511/139475364634544367202265017531231636209795072000000*x^133*y + 210666339521460919161481444917927966419297/2364513106823854646199063455100104192808714240000*x^130*y^2 + (-7394275781792919866511011631045973433344919/8622025668942386095232311572674468788971723816960000)*x^131 + 2090218176457113212463672902551109840028937/16924763610823776991720052925279056389373857628160000*x^128*y + (-6095669251/1267348151121831900000)*x^125*y^2 + (-1059702799154979357391/31402379598148414546335654451200000)*x^126 + 3689121397848050791597/3297249857805583527365243717376000000*x^123*y + (-714672202003528007/36471058348451219645314821120000000)*x^120*y^2 + (-34832526140406649/29642865757657852411719768499200000000)*x^121 + 38191022268537167683/46100584826309492070706583969955840000000*x^118*y + (-371619836101979486167/4059994686407938222136091201899520000000000)*x^115*y^2 + 4223892125282113696875939957642606532457/43971858844883557556693278874664960000*x^116 + 15924798144946903654113591964751/4856728252597347593015525376*x^112*y^3 + (-33293255074105362919251886276845955051/5139567916934441792340772855480320000)*x^113*y + 9725511919476570861647637559465608097039/13280643497358597591408557058561146880000*x^110*y^2 + (-33688333/5940250668)*x^111 + (-6236462371836041988177896385044046421/107842819377047258637001816716135628800)*x^107*y^3 + 269793986647/1489814867534400*x^108*y + (-37630442591/16407566370082800)*x^105*y^2 + (-18483871481984363/1259195399558730469440000)*x^106 + (-30173269/1053621109134000)*x^102*y^3 + 312762712463/462939485131886202000*x^103*y + (-540079238557081/12510715582712547889920000)*x^100*y^2 + (-310558145063807/1252568055350526624864000000)*x^101 + 870809893/844898767414554600000*x^97*y^3 + 6007775656813457/294287568372881623862784000000*x^98*y + (-15926012781499/44143135255932243579417600000)*x^95*y^2 + (-38254157/913968350666539710474240000)*x^96 + 1407588573410403007/340396544585544716689604997120000000*x^92*y^3 + 48217/125344230948554017436467200*x^93*y + (-4023559/12824693945473105784025907200)*x^90*y^2 + 197809/15489565414662322570317004800*x^87*y^3 + (-3325/27)*x^88*y + (-9099884654255373516636338259833/8634183560173062387583156224)*x^84*y^4 + 23492/4617*x^85*y^2 + (-77371/1929906)*x^86 + (-7390376/26053731)*x^82*y^3 + 14752073/4125174075*x^83*y + 1372/98415*x^79*y^4 + (-241146811/4138374632040)*x^80*y^2 + (-221996689/1151408166321600)*x^81 + 10617179833/21876755160110400*x^77*y^3 + 3653312880439/387563988783850560000*x^78*y + 4310467/936552097008000*x^74*y^4 + (-2322365501/17616544944720480000)*x^75*y^2 + (-136267/178871592085401600)*x^76 + 5916036569/1183831820285216256000*x^72*y^3 + 419/6969023068262400*x^73*y + (-870809893/10514295772270012800000)*x^69*y^4 + (-479/155548594883616768)*x^70*y^2 + 7/180637077929361408*x^67*y^3 + (-7/21396753230858551296)*x^64*y^4 + 154/3*x^60*y^2 + (-28/171)*x^61 + 5488/27*x^56*y^5 + (-2380/1539)*x^57*y^3 + 1253/107217*x^58*y + 308861/5789718*x^54*y^4 + (-2863/5078700)*x^55*y^2 + (-1/419904)*x^56 + (-98/54675)*x^51*y^5 + 50269/8044660800*x^52*y^3 + 7/117153216*x^53*y + (-2357/61212555360)*x^49*y^4 + (-7/4625662464)*x^50*y^2 + (-615781/2081226882240000)*x^46*y^5 - x^36 + (-7)*x^32*y^3 + (-196/9)*x^28*y^6 + 28/171*x^29*y^4 + (-7/1782)*x^26*y^5 + 7/72900*x^23*y^6 + y^7;
+		
+	when "Example_pair_1":
+		// Puiseux 6,7; Zariski 3
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_4_3, A_3_4, A_4_4, A_5_2, A_5_3, A_5_4> := BaseRing(P);
+		// R<A_5_2, A_4_3, A_3_4, A_4_4, A_5_3, A_5_4> := BaseRing(P);
+		// Reorder parameters -> same ideals, different generators. Check with:
+		//   RR<A_4_3, A_3_4, A_4_4, A_5_2, A_5_3, A_5_4> := PolynomialRing(Q,6);
+		//   ideal<RR| A_5_2*A_3_4^2 - 420*A_4_4, 5*A_5_2^2 + 14*A_3_4 > eq ideal<RR| 14*A_3_4 + 5*A_5_2^2, 16464*A_4_4 - 5*A_5_2^5 >;
+		
+		f := y^6 - x^7 + A_5_2*x^5*y^2 + A_4_3*x^4*y^3 + A_3_4*x^3*y^4 + A_4_4*x^4*y^4 + A_5_3*x^5*y^3 + A_5_4*x^5*y^4;
+		
+		// f := y^6 - x^7 + x^4*y^3 + A_3_4*x^3*y^4;
+		
+	when "Example_pair_2":
+		// Puiseux 12,14,85; Zariski ?
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<A_4_3, A_3_4, A_4_4, A_5_2, A_5_3, A_5_4> := BaseRing(P);		
+		f := (y^6 - x^7 + A_5_2*x^5*y^2 + A_4_3*x^4*y^3 + A_3_4*x^3*y^4 + A_4_4*x^4*y^4 + A_5_3*x^5*y^3 + A_5_4*x^5*y^4)^2 + x^6*y^7;
+		
+		// // Puiseux 12,14,17; Zariski 
+		// P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 1), 2);
+		// R<t> := BaseRing(P);
+		// f := (y^3 + x^7)^2 + x^17;
+		
+	when "Example_pair_3":
+		// Puiseux ; Zariski
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<t> := BaseRing(P);
+		f := y^3 - x^7 + t*x^5*y;
+		
+	when "Example_pair_4":
+		// Puiseux ; Zariski
+		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
+		R<t> := BaseRing(P);
+		f := (y^3 - x^7 + t*x^5*y)^2 + x^6*y^7;
+		
 	when "deformation_restricted": // Generic curve construction  
 		// INPUT
 		if (interactive_betas) then
@@ -467,7 +687,8 @@ case curve:
 			chosenEqs := chosenEqs_betas;
 		end if;
 		error if (ExtendedType(chosenEqs) ne SeqEnum[RngIntElt]), "Please define a valid list of equation indexes";
-		error if (#chosenEqs ne (#_betas-1)), "Please define a valid list of equation indexes, wrong # of indexes";
+		error if (#chosenEqs lt (#_betas-1)), "Please define a valid list of equation indexes, # of indexes too small";
+		chosenEqs := chosenEqs[1..g];
 		error if (&or[ (eqIdx le 0) or (eqIdx gt #(eqs[i])) : i -> eqIdx in chosenEqs ]), "Please define a valid list of equation indexes, index out of bounds";
 		monomialCurve := [eqs[i, chosenEqs[i]] : i in [1..#_betas-1]]; // Select the chosen equations
 		if (print_betas) then print "Chosen equation indexes:", chosenEqs; end if;
@@ -1277,42 +1498,109 @@ if printToFile then
 end if;
 
 
-
 // ### Algebraic information ###
 
-// Multiplicities
-Nps, kps, Ns, ks := MultiplicitiesAtAllRuptureDivisors(f);
 // Semigroup
-_betas := SemiGroup(f); // minimal set of generators of the semigroup
+if originalCurveString eq "_betas" then
+	_betas := _betas_betas;
+else
+	_betas := SemiGroup(f); // minimal set of generators of the semigroup
+end if;
 semiGroupInfo := SemiGroupInfo(_betas);
 g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+// Multiplicities
+Nps, kps, Ns, ks := MultiplicitiesAtAllRuptureDivisors(_betas);
 // Variables in the for-loop
 L_all, sigma_all, epsilon_all := Explode(["not yet assigned" : i in [1..100]]);
 
-topologicalRoots := []; // [ [topological roots of divisor r] ]
-ignoreDivisor := [ (not defaultNus[i]) and (nuChoices[i] eq []) : i in [1..g] ]; // ignore the divisor if no "nus" should be checked
+// topologicalRoots := []; // [ [topological roots of divisor r] ]
+ignoreDivisor := [ (not useDefaultNus[i]) and (nuChoices[i] eq []) : i in [1..g] ]; // ignore the divisor if no "nus" should be checked
 
 
-// Find duplicate root candidates (-> monodromy has repeated eigenvalues)
-allSigmas := {Q| };
-sigmaToIndexing := AssociativeArray(); // map sigma_{r,nu} -> <r,nu>
-for r in [1..g] do
-	Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
-	nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=false);
-	for nu in nus do
-		sigma := Sigma(Np, kp, nu);
-		if sigma in allSigmas then
-			R, NU := Explode(sigmaToIndexing[sigma]);
-			printf "WARNING! Candidates coincide: sigma_{%1o,%3o} = sigma_{%1o,%3o} = %-8o \n", R, NU, r, nu, sigma;
-		else
-			Include(~allSigmas, sigma);
-			sigmaToIndexing[sigma] := <r, nu>;
-		end if;
-	end for;
+defaultNus, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList := CandidatesData(_betas, semiGroupInfo, Nps, kps);
+
+// print "\n-----------------------------------------------------------------------";
+// printf "%o\n", Sort([sigma : sigma in trueNonTopSigmas], func<x, y | -(x - y)>);
+// printf "%o\n", Sort([sigma : sigma in coincidingTopAndNonTopSigmas], func<x, y | -(x - y)>);
+// printf "%o\n", Sort([sigma : sigma in otherTopologicalSigmas], func<x, y | -(x - y)>);
+
+print "\n-----------------------------------------------------------------------";
+trueNonTopSigmasSorted := Sort([sigma : sigma in trueNonTopSigmas], func<x, y | -(x - y)>);
+coincidingNonTopologicalNus := [[Z| ] : r in [1..g]];
+printf "Coinciding non-topological candidates\n\n";
+for sigma in trueNonTopSigmasSorted do
+	if #nonTopSigmaToIndexList[sigma] gt 1 then
+		printf "%-15o", sigma;
+		for tup in nonTopSigmaToIndexList[sigma] do
+			r, nu := Explode(tup);
+			Include(~coincidingNonTopologicalNus[r], nu);
+			printf " = sigma_{%-2o,%-5o}", r, nu;
+		end for;
+		printf "\n";
+	// else
+	// 	printf "%-15o", sigma;
+	// 	r, nu := Explode(nonTopSigmaToIndexList[sigma][1]);
+	// 	printf " = sigma_{%-2o,%-5o}", r, nu;
+	// 	printf "\n";
+	end if;
 end for;
 printf "\n";
 
+printf "\n" cat "-"^70 cat "\n\n";
+printf "Topological poles that coincide with 'non-topological' sigmas\n\n";
+coincidingTopAndNonTopSigmasSorted := Sort([sigma : sigma in coincidingTopAndNonTopSigmas], func<x, y | -(x - y)>);
+coincidingNus := coincidingNonTopologicalNus;
+for sigma in coincidingTopAndNonTopSigmasSorted do
+	printf "%-15o", sigma;
+	for tup in nonTopSigmaToIndexList[sigma] do
+		r, nu := Explode(tup);
+		Include(~coincidingNus[r], nu);
+		printf " = sigma_{%-2o,%-5o}", r, nu;
+	end for;
+	for tup in topologicalSigmaToIndexList[sigma] do
+		r, nu := Explode(tup);
+		printf " = topSigma_{%-2o,%-5o}", r, nu;
+	end for;
+	printf "\n";
+end for;
 
+if (printType ne "none" and printTopologial) then
+	printf "\n" cat "-"^70 cat "\n\n";
+	printf "Topological sigmas, excluding the previous set\n\n";
+
+	otherTopologicalSigmasSorted := Sort([sigma : sigma in otherTopologicalSigmas], func<x, y | -(x - y)>);
+	for sigma in otherTopologicalSigmasSorted do
+		printf "%-15o", sigma;
+		for tup in topologicalSigmaToIndexList[sigma] do
+			r, nu := Explode(tup);
+			printf " = topSigma_{%-2o,%-5o}", r, nu;
+		end for;
+		printf "\n";
+	end for;
+end if;
+
+if onlyCoincidingRoots then
+	print "\n-----------------------------------------------------------------------";
+	useDefaultNus := [ false : i in [1..g] ];
+	ignoreDivisor := [ false : i in [1..g] ];
+	if onlyCoincidingNonTopologicalRoots then
+		if #(&cat(coincidingNonTopologicalNus)) eq 0 then
+			printf "No coinciding non topological nus.\n";
+			quit;
+		end if;
+		printf "Selected onlyCoincidingNonTopologicalRoots\n\n";
+		nuChoices := coincidingNonTopologicalNus; // [ (#arr gt 0) select arr else [1] : arr in coincidingNonTopologicalNus];
+		printf "%o\n", nuChoices;
+	else
+		if #(&cat(coincidingNus)) eq 0 then
+			printf "No coinciding nus.\n";
+			quit;
+		end if;
+		printf "Selected onlyCoincidingRoots\n\n";
+		nuChoices := coincidingNus; // [ (#arr gt 0) select arr else [1] : arr in coincidingNus];
+		printf "%o\n", nuChoices;
+	end if;
+end if;
 
 
 
@@ -1356,6 +1644,12 @@ for r in [1..g] do
 	N := [N1, Np-N1-ep, ep];
 	k := [K1, Kp-K1-1, 0];
 	
+	// printf "u = %o\n\n", u;
+	// printf "v = %o\n\n", v;
+	// printf "PI_TOTAL = %o\n\n", PI_TOTAL;
+	printf "e = %o\n", ep;
+	printf "k = %o\n", ks;
+	
 	// // Find the maximum nu in this and following rupture divisors => maximum power needed in series expansions in x (?????????)
 	// // Don't discard topological roots to have enough terms for a blowup
 	// M := 0;
@@ -1365,9 +1659,12 @@ for r in [1..g] do
 	// end for;
 	
 	// Interesting values of nu
-	nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
-	topologicalRoots[r] := [<nu, Sigma(Np, Kp, nu)> : nu in topologicalNus];
-	if not defaultNus[r] then
+	// nus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
+	// nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
+	// topologicalRoots[r] := [<nu, Sigma(Np, Kp, nu)> : nu in topologicalNus];
+	if useDefaultNus[r] then
+		nus := defaultNus[r];
+	else
 		nus := nuChoices[r];
 	end if;
 	// Print...
@@ -1404,7 +1701,7 @@ for r in [1..g] do
 	// Prepare next iteration
 	if r lt g then
 		print 	"-----------------------------------------------------------------------";
-		print "Center singular point";
+		print "Centering the singular point";
 		
 		strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center := CenterOriginOnCurve(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, lambda);
 		// Total blowup morphism since starting point
@@ -1416,39 +1713,39 @@ end for;
 
 
 
-if (printType ne "none" and printTopologial) then
-	if printType eq "table" then
-		for r in [1..g] do
-			if not ignoreDivisor[r] then
-				printf "Topological roots at divisor E_%o\n", r; 
-				printf " nu  │         sigma\n";
-				printf "─"^5*"┼";
-				printf "─"^22*"\n";
-				for tup in topologicalRoots[r] do
-					nu, sigma := Explode(tup);
-					Np := Nps[r];
-					printf "%4o │ %4o/%-4o = %8o\n", nu, (sigma*Np), Np, sigma;
-				end for;
-				printf "\n";
-			end if;
-		end for;
-	elif printType eq "Latex" then
-		for r in [1..g] do
-			if not ignoreDivisor[r] then
-				printf "Topological roots at divisor E_%o\n", r; 
-				printf "        $\\nu$&$\\sigma_{%o,\\nu}$\\\\", r;
-				printf "\\hline\\hline\n";
-				for tup in topologicalRoots[r] do
-					nu, sigma := Explode(tup);
-					Np := Nps[r];
-					//printf "-\\frac{%o}{%o}, ", Numerator(-sigma), Denominator(sigma);
-					printf "        $%4o $&$ %4o/%-4o =  %8o $\\\\\n", nu, (sigma*Np), Np, sigma;
-				end for;
-				printf "\n\n";
-			end if;
-		end for;
-	end if;
-end if;
+// if (printType ne "none" and printTopologial) then
+// 	if printType eq "table" then
+// 		for r in [1..g] do
+// 			if not ignoreDivisor[r] then
+// 				printf "Topological roots at divisor E_%o\n", r; 
+// 				printf " nu  │         sigma\n";
+// 				printf "─"^5*"┼";
+// 				printf "─"^22*"\n";
+// 				for tup in topologicalRoots[r] do
+// 					nu, sigma := Explode(tup);
+// 					Np := Nps[r];
+// 					printf "%4o │ %4o/%-4o = %8o\n", nu, (sigma*Np), Np, sigma;
+// 				end for;
+// 				printf "\n";
+// 			end if;
+// 		end for;
+// 	elif printType eq "Latex" then
+// 		for r in [1..g] do
+// 			if not ignoreDivisor[r] then
+// 				printf "Topological roots at divisor E_%o\n", r; 
+// 				printf "        $\\nu$&$\\sigma_{%o,\\nu}$\\\\", r;
+// 				printf "\\hline\\hline\n";
+// 				for tup in topologicalRoots[r] do
+// 					nu, sigma := Explode(tup);
+// 					Np := Nps[r];
+// 					//printf "-\\frac{%o}{%o}, ", Numerator(-sigma), Denominator(sigma);
+// 					printf "        $%4o $&$ %4o/%-4o =  %8o $\\\\\n", nu, (sigma*Np), Np, sigma;
+// 				end for;
+// 				printf "\n\n";
+// 			end if;
+// 		end for;
+// 	end if;
+// end if;
 
 // ### To do when finished ###
 

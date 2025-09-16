@@ -1,8 +1,10 @@
 177,0
 S,SemiGroupInfo,Numbers related to the semigroup and the characteristic exponents. 		Input: _betas -> generators of the semigroup 		Theory indexing of all sequences 0..g -> Magma indexing 1..(g+1),0,1,0,0,0,0,0,0,0,82,,303,-38,-38,-38,-38,-38
-S,MultiplicitiesAtAllRuptureDivisors,Multiplicities of the rupture divisors and their adjacent divisors,0,1,0,0,0,0,0,0,0,469,,82,82,82,82,-38,-38
+S,MultiplicitiesAtAllRuptureDivisors,Multiplicities of the rupture divisors and their adjacent divisors,0,1,0,0,0,0,0,0,0,82,,82,82,82,82,-38,-38
 S,MultiplicitiesAtThisRuptureDivisor,Multiplicities of the r-th rupture divisor and its adjacent divisors,0,5,0,0,0,0,0,0,0,82,,0,0,82,,0,0,82,,0,0,82,,0,0,148,,148,148,82,82,-38,-38
-S,Nus,"Values of nu which may correspond to a varying root of the Bernstein-Sato polynomial, and topological roots",0,5,0,0,0,0,0,0,0,-1,,0,0,-1,,0,0,-1,,0,0,-1,,0,0,-1,,82,82,-38,-38,-38,-38
 S,Sigma,Root candidate corresponding to a nu,0,3,0,0,0,0,0,0,0,148,,0,0,148,,0,0,148,,267,-38,-38,-38,-38,-38
+S,SemigroupElements,Elements of the semigroup G up to (including) mu,0,2,0,0,0,0,0,0,0,148,,0,0,82,,83,-38,-38,-38,-38,-38
+S,Nus,"Values of nu which may correspond to a varying root of the Bernstein-Sato polynomial, and topological roots",0,5,0,0,0,0,0,0,0,-1,,0,0,-1,,0,0,-1,,0,0,-1,,0,0,-1,,82,82,-38,-38,-38,-38
+S,CandidatesData,"TO DO 		 		If discardTopologial if false, discardCoincidingWithTopological is ignored",0,4,0,0,0,0,0,0,0,-1,,0,0,-1,,0,0,-1,,0,0,-1,,82,83,83,83,457,457
 S,Blowup,"Blowup from one rupture divisor to the next one 		 		(total transform of f) = x^xExp_f * y^yExp_f * units_f * strictTransform_f 		(pullback of dx^dy) = x^xExp_w * y^yExp_w * units_w 		 		pointType: 0 -> starting point, 1 -> free point, 2 -> satellite point 		(0,lambda): intersection of rupture divisor and strict transform after last blowup 		e: multiplicity of the strict transform 		PI_blowup: blowup morphism from one rupture divisor to the next one 		 		Assumptions and conventions: 		- point to blow up: (0,0) 		- previous exceptional divisor (at free and satellite points): x=0 		- the other crossing exceptional divsor (at satellite points): y=0 		- strictTransform_f may have any tangent",0,6,0,0,0,1,0,0,0,148,,0,0,198,,0,0,198,,0,0,82,,0,0,82,,0,0,469,,469,82,82,198,198,148
 S,CenterOriginOnCurve,"Change y variable moving (0, 1/lambda) to (0,0) 		 		Sends (0,0) to (0,1), (0,infinity) to (0,infinity)",0,6,0,0,0,0,0,0,0,-25,,0,0,198,,0,0,198,,0,0,82,,0,0,82,,0,0,469,,469,82,82,198,198,82

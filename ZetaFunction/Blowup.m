@@ -40,12 +40,12 @@ intrinsic SemiGroupInfo(_betas::[]) -> Tup
 end intrinsic;
 
 
-intrinsic MultiplicitiesAtAllRuptureDivisors(f::RngMPolLocElt) -> [], [], [], []
+intrinsic MultiplicitiesAtAllRuptureDivisors(_betas::[]) -> [], [], [], []
 	{
 		Multiplicities of the rupture divisors and their adjacent divisors
 	}
 	// All multiplicities
-	ProxMat, e := ProximityMatrix(f : ExtraPoint := true); // e: strict transform multiplicities
+	ProxMat, e := ProximityMatrix(_betas : ExtraPoint := true); // e: strict transform multiplicities
 	N := e*Transpose(ProxMat^(-1)); // (see TFG-Roger, p.16, Prop.2.3.21)
 	ones := Matrix([[1 : i in [1..Ncols(ProxMat)]]]); // row matrix (1,...,1)
 	k := ones*Transpose(ProxMat^(-1)); // (see TFG-Roger, p.17, Prop.2.3.22)
@@ -87,21 +87,34 @@ intrinsic MultiplicitiesAtThisRuptureDivisor(r::RngIntElt, Nps::[], kps::[], Ns:
 end intrinsic;
 
 
+intrinsic Sigma(Np::RngIntElt, kp::RngIntElt, nu::RngIntElt) -> FldRatElt
+	{
+		Root candidate corresponding to a nu
+	}
+	return - (kp + 1 + nu) / Np; // (see TFG-Roger p.27 eq.4.2.1)
+end intrinsic;
+
+
+intrinsic SemigroupElements(G::[], mu::RngIntElt) -> {}
+	{
+		Elements of the semigroup G up to (including) mu
+	}
+	if #G eq 0 or mu lt 0 then return {}; end if;
+	L := {G[1]*i : i in [0..Floor(mu/G[1])]};
+	if #G eq 1 then return L; end if;
+	semigroupElements := {};
+	for a in L do
+		semigroupElements join:= {a+b : b in SemigroupElements(G[2..#G], mu-a)};
+	end for;
+	return semigroupElements;
+end intrinsic;
+
+
 intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [], []
 	{
 		Values of nu which may correspond to a varying root of the Bernstein-Sato polynomial, and topological roots
 	}
 	g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
-	
-	// All possible nus (see TFG-Roger, p.29, Cor.4.2.12)
-	nus := [0..(Np-1)];
-	
-	// Discard nus corresponding to the other divisors crossing the r-th exceptional divisor (they never correspond to roots of the Bernstein-Sato-polynomial, and they may give infinities and zeros at the calculation of the residue of the complex zeta function)
-	// Conditions: _beta_r*sigma not integer
-	//             e_{r-1}*sigma not integer
-	// (see TFG-Roger, p.28, Th.4.2.6)
-	Z := IntegerRing();
-	nus := [nu : nu in nus | _betas[r+1]*Sigma(Np,kp,nu) notin Z and es[r]*Sigma(Np,kp,nu) notin Z ];
 	
 	// Topological roots of Bernstein-Sato polynomial: 
 	// - they are roots for any topologically trivial deformation
@@ -132,22 +145,119 @@ intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [],
 	//
 	Gamma_r := [ &*(ns[[(j+2)..(r+1)]]) * _ms[j+1] : j in [0..r] ];
 	while 0 in Gamma_r do Exclude(~Gamma_r, 0); end while; // Remove all 0's in Gamma_r
-	topologicalNus := [nu : nu in nus | SemiGroupMembership(nu, Gamma_r)];
+	
+	mu_r := ns[r+1] * _ms[r+1] - ms[r+1] - &*(ns[2..(r+1)]) + 1;
+	Gamma_r_elements := SemigroupElements(Gamma_r, mu_r - 1);
+    Gamma_r_elements := Sort([nu : nu in Gamma_r_elements]);
+    gaps := Reverse([mu_r - 1 - a : a in Gamma_r_elements]);
+    
+	// Discard nus corresponding to the other divisors crossing the r-th exceptional divisor (they never correspond to roots of the Bernstein-Sato-polynomial, and they may give infinities and zeros at the calculation of the residue of the complex zeta function)
+	// Conditions: _beta_r*sigma not integer
+	//             e_{r-1}*sigma not integer
+	// (see TFG-Roger, p.28, Th.4.2.6)
+	Z := IntegerRing();
+    nonTopNus := [nu : nu in gaps | _betas[r+1]*Sigma(Np,kp,nu) notin Z and es[r]*Sigma(Np,kp,nu) notin Z];
+    topologicalNus := [nu : nu in (Gamma_r_elements cat [mu_r..(Np-1)]) | _betas[r+1]*Sigma(Np,kp,nu) notin Z and es[r]*Sigma(Np,kp,nu) notin Z];
 	
 	if discardTopologial then
-		nus := [nu : nu in nus | nu notin topologicalNus];
+		nus := nonTopNus;
+	else
+		nus := Sort(nonTopNus cat topologicalNus);
 	end if;
 	
 	return nus, topologicalNus;
 end intrinsic;
 
 
-intrinsic Sigma(Np::RngIntElt, kp::RngIntElt, nu::RngIntElt) -> FldRatElt
+intrinsic CandidatesData(_betas, semiGroupInfo, Nps, kps: discardTopologial:=true, discardCoincidingWithTopological:=true) -> [], {}, {}, {}, Assoc, Assoc
 	{
-		Root candidate corresponding to a nu
+		TO DO
+		
+		If discardTopologial if false, discardCoincidingWithTopological is ignored.
 	}
-	return - (kp + 1 + nu) / Np; // (see TFG-Roger p.27 eq.4.2.1)
+	Z := IntegerRing();
+	Q := RationalField();
+	
+	g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+	Nps, kps, Ns, ks := MultiplicitiesAtAllRuptureDivisors(_betas);
+	
+	nonTopNus := [[Z| ] : r in [1..g]];
+	topologicalNus := [[Z| ] : r in [1..g]];
+	for r in [1..g] do
+		Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
+		nonTopNus[r], topologicalNus[r] := Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true);
+	end for;
+	
+	nonTopSigmas := {Q| };
+	nonTopSigmaToIndexList := AssociativeArray(); // map sigma_{r,nu} -> [<r_1,nu_1>, ...]
+	for r in [1..g] do
+		Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
+		for nu in nonTopNus[r] do
+			sigma := Sigma(Np, kp, nu);
+			if sigma in nonTopSigmas then
+				Include(~nonTopSigmaToIndexList[sigma], <r,nu>);
+			else
+				nonTopSigmaToIndexList[sigma] := [<r, nu>];
+				Include(~nonTopSigmas, sigma);
+			end if;
+		end for;
+	end for;
+	topologicalSigmas := {Q| };
+	topologicalSigmaToIndexList := AssociativeArray(); // map sigma_{r,nu} -> [<r_1,nu_1>, ...]
+	for r in [1..g] do
+		Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
+		for nu in topologicalNus[r] do
+			sigma := Sigma(Np, kp, nu);
+			if sigma in topologicalSigmas then
+				Include(~topologicalSigmaToIndexList[sigma], <r,nu>);
+			else
+				topologicalSigmaToIndexList[sigma] := [<r, nu>];
+				Include(~topologicalSigmas, sigma);
+			end if;
+		end for;
+	end for;
+	
+	coincidingTopAndNonTopSigmas := nonTopSigmas meet topologicalSigmas; // coinciding 1 (or more) nonTop sigma and 1 (or more) top sigma
+	trueNonTopSigmas := nonTopSigmas diff coincidingTopAndNonTopSigmas;
+	otherTopologicalSigmas := topologicalSigmas diff coincidingTopAndNonTopSigmas;
+	
+	nus := [[Z| ] : r in [1..g]];
+	if discardTopologial then
+		if discardCoincidingWithTopological then
+			// default case
+			sigmas := trueNonTopSigmas;
+		else
+			sigmas := nonTopSigmas;
+		end if;
+		for sigma in sigmas do
+			for tup in nonTopSigmaToIndexList[sigma] do
+				r, nu := Explode(tup);
+				Include(~nus[r], nu);
+			end for;
+		end for;
+	else
+		for sigma in nonTopSigmas do
+			for tup in nonTopSigmaToIndexList[sigma] do
+				r, nu := Explode(tup);
+				Include(~nus[r], nu);
+			end for;
+		end for;
+		for sigma in topologicalSigmas do
+			for tup in topologicalSigmaToIndexList[sigma] do
+				r, nu := Explode(tup);
+				Include(~nus[r], nu);
+			end for;
+		end for;
+	end if;
+	
+	for r in [1..g] do
+		Sort(~nus[r]);
+	end for;
+	
+	return nus, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList;
 end intrinsic;
+
+
 
 
 // Blowup and centering
