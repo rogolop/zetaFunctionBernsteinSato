@@ -36,8 +36,8 @@ print_f            := true;
 // Which set of nus should be used for each rupture divisor
 onlyCoincidingRoots := false; // default false
 onlyCoincidingNonTopologicalRoots := onlyCoincidingRoots and true;
-useDefaultNus         := [true, true, true];
-nuChoices          := [[], []]; // (if not useDefaultNus)
+useDefaultNus         := [false, false, true];
+nuChoices          := [[], [], []]; // (if not useDefaultNus)
 
 // Choose curve
 curve              := "_betas";
@@ -52,7 +52,7 @@ d := 2; // d>1, coprime to c
 // 5, 7, 3, 2
 // 17, 19, 7, 6
 _betas_betas       := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
-// _betas_betas       := [4,6,15]; 
+// _betas_betas       := [36,96,292,881];
 // [18,48,146,441];
 //[36,96,292,881];
 // [5,7];
@@ -62,7 +62,7 @@ _betas_betas       := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
 // [12,18,38,115]; -> 2-3|3-4|2-3
 // [12,18,39,79];  -> 2-3|2-3|3-4
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
-chosenEqs_betas    := [1, 1]; // choose option for each equation
+chosenEqs_betas    := [1, 1, 1]; // choose option for each equation
 parameters_betas   := "[]"; //"[1,258,877]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 neededParamsVars   := []; // parameter needed at each Hi
 interactive_betas  := false;
@@ -1089,7 +1089,7 @@ for r in [1..g] do
 	// Prepare next iteration
 	if r lt g then
 		print 	"-----------------------------------------------------------------------";
-		print "Center singular point";
+		print "Centering the singular point";
 		
 		strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center := CenterOriginOnCurve(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, lambda);
 		// Total blowup morphism since starting point
