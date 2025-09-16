@@ -53,7 +53,7 @@ d := 2; // d>1, coprime to c
 // 5, 7, 3, 2
 // 17, 19, 7, 6
 // _betas_betas       := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
-_betas_betas       := [6,14,43];
+_betas_betas       := [6,9,22];
 // [18,48,146,441];
 //[36,96,292,881];
 // [5,7];
@@ -744,7 +744,7 @@ case curve:
 				exps := Exponents(term); // exponents of ts and us
 				tExps := exps[1..T]; // exponents of (t_0, ..., t_{T-1})
 				uExps := exps[T+1..T+g+1]; // exponents of (u_0, ..., u_g)
-				if uExps eq ei then // Term t_?*u_{i+1} is necesaryly nonzero, save t_? as needed parameter
+				if uExps eq ei then // Term t_?*u_{i+1} is necessarily nonzero, save t_? as needed parameter
 					tIndex := Explode([j : j in [0..T-1] | tExps[j+1] gt 0]); // index of t_?
 					Append(~neededParams, tIndex);
 				else // Term is optional, save the new optional parameters of this divisor
@@ -891,10 +891,10 @@ case curve:
 		// gs := [Evaluate(pol, ts cat [x,y] cat [0 : i in [2..g]]) : pol in gs];
 		//gUnits := [Evaluate(pol, ts cat [x,y] cat [0 : i in [2..g]]) : pol in gUnits];
 		f := Evaluate(f, ts cat [x,y] cat [0 : i in [2..g]]);
-		f /:= LeadingCoefficient(f);	
+		f /:= LeadingCoefficient(f);
 		// printf "f = %o\n", f;
 		// printf "MaxContactElements = %o\n", MaxContactElements(f);
-
+		
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
 			j := Position(parameters, i);
@@ -953,7 +953,8 @@ case curve:
 			chosenEqs := chosenEqs_betas;
 		end if;
 		error if (ExtendedType(chosenEqs) ne SeqEnum[RngIntElt]), "Please define a valid list of equation indexes";
-		error if (#chosenEqs ne (#_betas-1)), "Please define a valid list of equation indexes, wrong # of indexes";
+		error if (#chosenEqs lt (#_betas-1)), "Please define a valid list of equation indexes, # of indexes too small";
+		chosenEqs := chosenEqs[1..g];
 		error if (&or[ (eqIdx le 0) or (eqIdx gt #(eqs[i])) : i -> eqIdx in chosenEqs ]), "Please define a valid list of equation indexes, index out of bounds";
 		monomialCurve := [eqs[i, chosenEqs[i]] : i in [1..#_betas-1]]; // Select the chosen equations
 		if (print_betas) then print "Chosen equation indexes:", chosenEqs; end if;
@@ -967,32 +968,6 @@ case curve:
 		totalDim := Rank(PDeformation);
 		g := #Deformation; // g = # of equations in space (H_1, ..., H_g), g+1 = # variables (u_0, ..., u_g)
 		T := totalDim-(g+1); // # of parameters (t_0, ..., t_{T-1})
-		
-		// // Restrict deformation such that it can be turned explicitly to plane curve (see TFG-Roger, p.21)
-		// completeDeformation := true;
-		// for i in [1..g-1] do
-		// 	Hi := Deformation[i];
-		// 	// Find and save disallowed terms
-		// 	termsToRemove := PDeformation!0;
-		// 	for term in Terms(Hi) do
-		// 		if &+( Exponents(term)[(T+i+2 +1)..(T+g +1)] ) gt 0 then // u_{i+2}, ..., u_g not allowed in Hi (see TFG-Roger, p.21)
-		// 			termsToRemove +:= term;
-		// 		elif Exponents(term)[T+i+1 +1] gt 1 then // Allowed degree of u_{i+1} in Hi at most 1 (see TFG-Roger, p.21)
-		// 			termsToRemove +:= term;
-		// 		end if;
-		// 	end for;
-		// 	// Remove disallowed terms
-		// 	Deformation[i] -:= termsToRemove;
-		// 	// Store whether any terms have been removed (in total)
-		// 	if termsToRemove ne 0 then
-		// 		completeDeformation := false;
-		// 	end if;
-		// end for;
-		// if (print_betas) then
-		// 	print "Can use complete deformation:", completeDeformation;
-		// 	print "Usable deformation:";
-		// 	print Deformation;
-		// end if;
 		
 		// Determine, separate and show the needed and optional deformation parameters
 		if (print_betas) then print "Parameters:"; end if;
@@ -1009,7 +984,7 @@ case curve:
 				exps := Exponents(term); // exponents of ts and us
 				tExps := exps[1..T]; // exponents of (t_0, ..., t_{T-1})
 				uExps := exps[T+1..T+g+1]; // exponents of (u_0, ..., u_g)
-				if uExps eq ei then // Term t_?*u_{i+1} is necesaryly nonzero, save t_? as needed parameter
+				if uExps eq ei then // Term t_?*u_{i+1} is necessarily nonzero, save t_? as needed parameter
 					tIndex := Explode([j : j in [0..T-1] | tExps[j+1] gt 0]); // index of t_?
 					Append(~neededParams, tIndex);
 				else // Term is optional, save the new optional parameters of this divisor
@@ -1120,36 +1095,6 @@ case curve:
 		// printf "ff = %o\n\n", ff;
 		f := Normalize(ff);
 		printf "\n";
-
-		// // Switch to rational fraction field
-		// PDefNoLocal := PolynomialRing(BaseRing(PDeformation), totalDim); // Q[t_0, ..., t_{T-1}, u_0, ..., u_g] but non-localized to enable division/fractions
-		// FP := FieldOfFractions(PDefNoLocal); // Q(t_0, ..., t_{T-1}, u_0, ..., u_g)
-		// ChangeUniverse(~Deformation, FP);
-		
-		// // Elimination of the variables u_2, ..., u_g
-		// // Invariant property (as ensured before): u_{i+2}, ..., u_g not in Hi, u_{i+1} with exponent at most 1 in Hi
-		// gs := [FP| ]; // Parts of the equations Hi, relevant later for their proximity to the curve f
-		// for i in [1..g-1] do
-		// 	Hi := Numerator(Deformation[i]); // We are interested in Hi=0 -> denominators don't matter
-		// 	u_ip1 := PDefNoLocal.(T+1+ i+1); // u_{i+1} as polynomial
-		// 	// Define: Hi = gs[i] + u_{i+1}*uDenom
-		// 	gs[i]  := Coefficient(Hi, u_ip1, 0);
-		// 	uDenom := Coefficient(Hi, u_ip1, 1);
-		// 	// Solve for u_{i+1}:
-		// 	// Hi = gs[i] + u_{i+1}*uDenom = 0 <=> u_{i+1} = - gs[i] / uDenom
-		// 	u_ip1_value := - gs[i] / uDenom; // function of (u_0, u_1) because of the invariant property and the elimination of (u_2, ..., u_i) in previous iterations
-		// 	// Substitute value of u_{i+1} in the remaining equations, thus eliminating u_{i+1}
-		// 	// As the value of u_{i+1} is a function of (u_0, u_1), the invariant property is preserved
-		// 	for j in [i+1..g] do
-		// 		Deformation[j] := Evaluate(Deformation[j], (T+1+ i+1), u_ip1_value); // Substitute value of u_{i+1}
-		// 		Deformation[j] := Numerator(Deformation[j]); // Remove denominators
-		// 	end for;
-		// end for;
-		// f := Deformation[g]; // Resulting plane curve equation
-		// gs[g] := f;
-		// // Switch back to polynomial ring (no denominators)
-		// ChangeUniverse(~gs, PDefNoLocal);
-		// f := PDefNoLocal ! f;
 		
 		// Separate parameters into the coefficient ring
 		// From: Q[t_0, ..., t_{T-1}, u_0, ..., u_g]
@@ -1236,7 +1181,8 @@ case curve:
 			chosenEqs := chosenEqs_betas;
 		end if;
 		error if (ExtendedType(chosenEqs) ne SeqEnum[RngIntElt]), "Please define a valid list of equation indexes";
-		error if (#chosenEqs ne (#_betas-1)), "Please define a valid list of equation indexes, wrong # of indexes";
+		error if (#chosenEqs lt (#_betas-1)), "Please define a valid list of equation indexes, # of indexes too small";
+		chosenEqs := chosenEqs[1..g];
 		error if (&or[ (eqIdx le 0) or (eqIdx gt #(eqs[i])) : i -> eqIdx in chosenEqs ]), "Please define a valid list of equation indexes, index out of bounds";
 		monomialCurve := [eqs[i, chosenEqs[i]] : i in [1..#_betas-1]]; // Select the chosen equations
 		if (print_betas) then print "Chosen equation indexes:", chosenEqs; end if;
@@ -1258,32 +1204,6 @@ case curve:
 		g := #Deformation; // g = # of equations in space (H_1, ..., H_g), g+1 = # variables (u_0, ..., u_g)
 		T := totalDim-(g+1); // # of parameters (t_0, ..., t_{T-1})
 		
-		// // Restrict deformation such that it can be turned explicitly to plane curve (see TFG-Roger, p.21)
-		// completeDeformation := true;
-		// for i in [1..g-1] do
-		// 	Hi := Deformation[i];
-		// 	// Find and save disallowed terms
-		// 	termsToRemove := PDeformation!0;
-		// 	for term in Terms(Hi) do
-		// 		if &+( Exponents(term)[(T+i+2 +1)..(T+g +1)] ) gt 0 then // u_{i+2}, ..., u_g not allowed in Hi (see TFG-Roger, p.21)
-		// 			termsToRemove +:= term;
-		// 		elif Exponents(term)[T+i+1 +1] gt 1 then // Allowed degree of u_{i+1} in Hi at most 1 (see TFG-Roger, p.21)
-		// 			termsToRemove +:= term;
-		// 		end if;
-		// 	end for;
-		// 	// Remove disallowed terms
-		// 	Deformation[i] -:= termsToRemove;
-		// 	// Store whether any terms have been removed (in total)
-		// 	if termsToRemove ne 0 then
-		// 		completeDeformation := false;
-		// 	end if;
-		// end for;
-		// if (print_betas) then
-		// 	print "Can use complete deformation:", completeDeformation;
-		// 	print "Usable deformation:";
-		// 	print Deformation;
-		// end if;
-		
 		// Determine, separate and show the needed and optional deformation parameters
 		if (print_betas) then print "Parameters:"; end if;
 		neededParams := []; // parameter needed at each Hi
@@ -1299,7 +1219,7 @@ case curve:
 				exps := Exponents(term); // exponents of ts and us
 				tExps := exps[1..T]; // exponents of (t_0, ..., t_{T-1})
 				uExps := exps[T+1..T+g+1]; // exponents of (u_0, ..., u_g)
-				if uExps eq ei then // Term t_?*u_{i+1} is necesaryly nonzero, save t_? as needed parameter
+				if uExps eq ei then // Term t_?*u_{i+1} is necessarily nonzero, save t_? as needed parameter
 					tIndex := Explode([j : j in [0..T-1] | tExps[j+1] gt 0]); // index of t_?
 					Append(~neededParams, tIndex);
 				else // Term is optional, save the new optional parameters of this divisor
