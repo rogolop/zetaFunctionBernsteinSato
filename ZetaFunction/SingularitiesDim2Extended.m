@@ -87,7 +87,7 @@ function ExponentSetIlSTm2(s, t, l, n)
 	// 2 <= t <= s
 	if t eq 2 then
 		return [ [i,j] : i in [0..(l[s][0+1] - 1)],
-										 j in [0..(n[1] - 1)] ];
+		                 j in [0..(n[1] - 1)] ];
 	end if;
 	DplSTm2 := ExponentSetDplSTm1(s, t - 1, l, n);
 	return [ kk cat [kTm1] : kk in DplSTm2,
@@ -99,12 +99,12 @@ function ExponentSetJlSTm1(s, t, l, n)
 	// 2 <= t <= s
 	if t eq 2 then
 		return [ [i,j] : i in [(l[s][0+1])..(l[s][0+1] + l[1][0+1] -1)],
-										 j in [0..(l[s][1+1] - 1)] ];
+		                 j in [0..(l[s][1+1] - 1)] ];
 	end if;
 	DplTm1Tm2 := ExponentSetDplSTm1(t - 1, t - 1, l, n);
 	shiftedDplTm1Tm2 := [ [ kk[idx] + l[s][idx] : idx in [1..#kk] ] : kk in DplTm1Tm2 ];
 	return [ kk cat [kTm1] : kk in shiftedDplTm1Tm2,
-													 kTm1 in [0..(l[s][t-1+1] - 1)] ];
+	                         kTm1 in [0..(l[s][t-1+1] - 1)] ];
 end function;
 
 
@@ -208,19 +208,24 @@ intrinsic DeformationCurveSpecific(monomialCurve::SeqEnum[RngMPolElt], G::SeqEnu
 end intrinsic;
 
 
-intrinsic DeformationCurveCassou(monomialCurve::SeqEnum[RngMPolElt], G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt]
+intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt]
 	{
 		Computes the deformation of the monomial curve associated to the semigroup "G" with the specific choice of equations "monomialCurve".
 		Implementation based on "DeformationCurve(G::[RngIntElt])" from "SingularitiesDim2/Misc.m"
 	}
-
-	I := monomialCurve; // Choose this particular monomial curve equations
 	
 	// G = [_beta0, ..., _betag]
-	printf "G = %o\n", G;
+	// printf "G = %o\n", G;
 	semiGroupInfo := SemiGroupInfo(G);
 	g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
-	printf "g = %o\n", g;
+	// printf "g = %o\n", g;
+	// printf "c = %o\n", c;
+	// printf "betas = %o\n", betas;
+	// printf "es = %o\n", es;
+	// printf "ms = %o\n", ms;
+	// printf "ns = %o\n", ns;
+	// printf "qs = %o\n", qs;
+	// printf "_ms = %o\n", _ms;
 	n := ns[2..(g+1)]; // ns = [0, n1, ..., ng], n = [n1, ..., ng]
 	printf "n = %o\n", n;
 	l := [];
@@ -231,8 +236,16 @@ intrinsic DeformationCurveCassou(monomialCurve::SeqEnum[RngMPolElt], G::SeqEnum[
 		// printf "comparison %o", SemiGroupCoord(n[s]*G[s+1], G[(0+1)..(s-1+1)]);
 	end for;
 	printf "l =\n"; IndentPush(); printf "%o\n", l; IndentPop();
+	
+	// Monomial curve equations
+	R := PolynomialRing(RationalField(), G);
+	AssignNames(~R, ["u" cat IntegerToString(i) : i in [0..#G - 1]]);
+	monomialCurve := [R| (R.(i +1))^n[i] - Monomial(R, l[i] cat [0 : j in [1..(g+1-#l[i])]]) : i in [1..g]];
+	printf "monomialCurve =\n"; IndentPush(); printf "%o\n", monomialCurve; IndentPop();
+	// I := monomialCurve;
+	
 	// intrinsic MonomialCurve(G::[RngIntElt]) -> []
-	// { Computes the monomial curve assocaited to a semigroup of a
+	// { Computes the monomial curve associated to a semigroup of a
 	// plane curve }
 	// E := [i gt 1 select Gcd(Self(i - 1), G[i]) else G[1] : i in [1..#G]];
 	// N := [E[i - 1] div E[i] : i in [2..#G]];
@@ -245,20 +258,24 @@ intrinsic DeformationCurveCassou(monomialCurve::SeqEnum[RngMPolElt], G::SeqEnum[
 	// // return I;
 	// printf "I = %o\n", I;
 
-	g := #I; R := Universe(I); ZZ := Integers();
+	// g := #I; R := Universe(I);
+	// ZZ := Integers();
+	// Ei := [i gt 1 select Gcd(Self(i - 1), G[i]) else G[1] : i in [1..#G]]; // = es
+	// Ni := [0] cat [ZZ!(Ei[i] div Ei[i + 1]) : i in [1..g]]; // = ns
+	// nB := [-Ni[i+1] * G[i+1] : i in [1..g]]; // = -Nps
 	// printf "g = %o\n", g;
-	printf "R =\n"; IndentPush(); printf "%o\n", R; IndentPop();
+	// printf "R =\n"; IndentPush(); printf "%o\n", R; IndentPop();
 	// printf "ZZ =\n"; IndentPush(); printf "%o\n", ZZ; IndentPop();
-	Ei := [i gt 1 select Gcd(Self(i - 1), G[i]) else G[1] : i in [1..#G]];
 	// printf "Ei =\n"; IndentPush(); printf "%o\n", Ei; IndentPop();
-	Ni := [0] cat [ZZ!(Ei[i] div Ei[i + 1]) : i in [1..g]];
 	// printf "Ni =\n"; IndentPush(); printf "%o\n", Ni; IndentPop();
-	nB := [-Ni[i+1] * G[i+1] : i in [1..g]];
 	// printf "nB =\n"; IndentPush(); printf "%o\n", nB; IndentPop();
 	
 	// printf "\n";
 	
-	M := EModule(R, nB);
+	minusNps := [-ns[i+1] * G[i+1] : i in [1..g]];
+	M := EModule(R, minusNps);
+	//M := EModule(R, nB);
+	
 	// printf "M =\n"; IndentPush(); printf "%o\n", M; IndentPop();
 	// printf "BaseRing = %o\n", BaseRing(M);
 	// // printf "rank = %o\n", Rank(M);
@@ -365,7 +382,6 @@ intrinsic DeformationCurveCassou(monomialCurve::SeqEnum[RngMPolElt], G::SeqEnum[
 		basisOfDeformationModule cat:= [ mon * M.s : mon in monomials ];
 	end for;
 
-	printf "\n";
 	// printf "basisOfDeformationModule =\n";
 	// for i in [1..#basisOfDeformationModule] do
 	// 	elt := basisOfDeformationModule[i];
@@ -389,15 +405,14 @@ intrinsic DeformationCurveCassou(monomialCurve::SeqEnum[RngMPolElt], G::SeqEnum[
 	firstTerms := [M| ];
 	for s in [2..g] do
 		elt := R.(s +1) * M.(s-1);
-		print elt;
 		firstTerms cat:= [ elt ];
 		Exclude(~basisOfMuConstantDeformation, elt);
 	end for;
+	printf "firstTerms (to have plane curve) =\n"; IndentPush(); printf "%o\n", firstTerms; IndentPop();
 	basisOfMuConstantDeformation := firstTerms cat basisOfMuConstantDeformation;
 	
 	printf "basisOfMuConstantDeformation =\n"; IndentPush();
-	printf "%o\n", basisOfMuConstantDeformation;
-	IndentPop(); printf "\n";
+	printf "%o\n", basisOfMuConstantDeformation; IndentPop();
 
 
 
@@ -458,6 +473,7 @@ intrinsic DeformationCurveCassou(monomialCurve::SeqEnum[RngMPolElt], G::SeqEnum[
 	//       end if;
 	//     end for;
 	//     printf "\n\n";
+	
 	//     IndentPop();
 	//   else
 	//     printf "%-15o != 0  OK\n", b; // in T1(C^Gamma)
@@ -518,24 +534,24 @@ intrinsic DeformationCurveCassou(monomialCurve::SeqEnum[RngMPolElt], G::SeqEnum[
 	
 	RR := LocalPolynomialRing(RationalField(), Rank(R) + #D_mu, "lglex");
 	AssignNames(~RR, ["t" cat IntegerToString(i) : i in [0..#D_mu - 1]] cat
-									 ["u" cat IntegerToString(i) : i in [0..g]]);
+	                 ["u" cat IntegerToString(i) : i in [0..g]]);
 	printf "RR =\n"; IndentPush(); printf "%o\n", RR; IndentPop();
-	phi := hom<R -> RR | [RR.i : i in [#D_mu + 1..Rank(RR)]]>;
+	phi := hom<R -> RR | [RR.i : i in [#D_mu + 1..Rank(RR)]]>; // convert from Q[u] to Q[t,u]
 	// printf "phi =\n"; IndentPush(); printf "%o\n", phi; IndentPop();
-	II := [RR | phi(f) : f in I];
-	// printf "II =\n"; IndentPush(); printf "%o\n", II; IndentPop();
 
+	// Add deformation terms to the monomial curve
+	deformedMonomialCurve := [RR | phi(f) : f in monomialCurve];
+	// printf "deformedMonomialCurve =\n"; IndentPush(); printf "%o\n", deformedMonomialCurve; IndentPop();
 	// printf "\n";
-
 	for i in [1..#D_mu] do
-		// printf "\n### for loop -> step %o of %o\n", i, #D_mu;
 		e_i := Column(D_mu[i]);
+		deformedMonomialCurve[e_i] +:= RR.i * phi(D_mu[i][e_i]);
+		// printf "\n### for loop -> step %o of %o\n", i, #D_mu;
 		// printf "e_i =\n"; IndentPush(); printf "%o\n", e_i; IndentPop();
-		II[e_i] +:= RR.i * phi(D_mu[i][e_i]);
-		// printf "II =\n"; IndentPush(); printf "%o\n", II; IndentPop();
+		// printf "deformedMonomialCurve =\n"; IndentPush(); printf "%o\n", deformedMonomialCurve; IndentPop();
 	end for;
-	// printf "II =\n"; IndentPush(); printf "%o\n", II; IndentPop();
-	return II;
+	printf "deformedMonomialCurve =\n"; IndentPush(); printf "%o\n", deformedMonomialCurve; IndentPop();
+	return deformedMonomialCurve;
 end intrinsic;
 
 

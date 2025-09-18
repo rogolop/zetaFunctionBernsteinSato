@@ -1134,17 +1134,8 @@ case curve:
 
 	when "deformation_cassou": // Generic curve construction  
 		// INPUT
-		if (interactive_betas) then
-			print "\nINPUT: Choose curve semigroup";
-			print "Examples: [6,14,43]";
-			read _betas, "INPUT>";
-			error if (_betas eq ""), "Please define a valid curve semigroup";
-			_betas := eval _betas;
-			error if (ExtendedType(_betas) ne SeqEnum[RngIntElt]), "Please define a valid curve semigroup";
-		else
-			_betas := _betas_betas;
-		end if;
-		error if (not IsPlaneCurveSemiGroup(_betas)), "Please define a valid curve semigroup, given input is not a plane curve semigroup";
+		_betas := _betas_betas;
+		error if (not IsPlaneCurveSemiGroup(_betas)), "Please define a valid plane branch semigroup";
 		
 		// Name
 		curve := &*[Sprint(_b)*"-" : _b in _betas];
@@ -1160,39 +1151,29 @@ case curve:
 		semiGroupInfo := SemiGroupInfo(_betas);
 		g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
 		
-		// Choice of monomial curve equations and their deformations
-		eqs := allMonomialCurves(_betas); // [ [i-th equation options] ]
-		if (print_betas) then
-			print "Possible undeformed equations in space:";
-			for i in [1..#_betas-1] do
-				printf "Equation %o options:\n", i;
-				print eqs[i];
-			end for;
-		end if;
-		// INPUT
-		chosenEqs := [];
-		if (interactive_eqs) then
-			print "\nINPUT: equation indexes";
-			print "Examples: [1,1]";
-			read chosenEqs, "INPUT>";
-			error if (chosenEqs eq ""), "Please define a valid list of equation indexes";
-			chosenEqs := eval chosenEqs;
-		else
-			chosenEqs := chosenEqs_betas;
-		end if;
-		error if (ExtendedType(chosenEqs) ne SeqEnum[RngIntElt]), "Please define a valid list of equation indexes";
-		error if (#chosenEqs lt (#_betas-1)), "Please define a valid list of equation indexes, # of indexes too small";
-		chosenEqs := chosenEqs[1..g];
-		error if (&or[ (eqIdx le 0) or (eqIdx gt #(eqs[i])) : i -> eqIdx in chosenEqs ]), "Please define a valid list of equation indexes, index out of bounds";
-		monomialCurve := [eqs[i, chosenEqs[i]] : i in [1..#_betas-1]]; // Select the chosen equations
-		if (print_betas) then print "Chosen equation indexes:", chosenEqs; end if;
-		if (print_betas) then print "Chosen equations:"; end if;
-		if (print_betas) then print monomialCurve; end if;
+		// // Choice of monomial curve equations and their deformations
+		// eqs := allMonomialCurves(_betas); // [ [i-th equation options] ]
+		// if (print_betas) then
+		// 	print "Possible undeformed equations in space:";
+		// 	for i in [1..#_betas-1] do
+		// 		printf "Equation %o options:\n", i;
+		// 		print eqs[i];
+		// 	end for;
+		// end if;
+		// chosenEqs := chosenEqs_betas;
+		// error if (ExtendedType(chosenEqs) ne SeqEnum[RngIntElt]), "Please define a valid list of equation indexes";
+		// error if (#chosenEqs lt (#_betas-1)), "Please define a valid list of equation indexes, # of indexes too small";
+		// chosenEqs := chosenEqs[1..g];
+		// error if (&or[ (eqIdx le 0) or (eqIdx gt #(eqs[i])) : i -> eqIdx in chosenEqs ]), "Please define a valid list of equation indexes, index out of bounds";
+		// monomialCurve := [eqs[i, chosenEqs[i]] : i in [1..#_betas-1]]; // Select the chosen equations
+		// if (print_betas) then print "Chosen equation indexes:", chosenEqs; end if;
+		// if (print_betas) then print "Chosen equations:"; end if;
+		// if (print_betas) then print monomialCurve; end if;
 		
 		printf "\n############################################################\n";
 		printf "############################################################\n\n";
 		// Deform the chosen monomial curve equations
-		Deformation := DeformationCurveCassou(monomialCurve, _betas);
+		Deformation := DeformationCurveCassou(_betas);
 		printf "\n############################################################\n";
 		printf "############################################################\n\n";
 		// printf "Deformation =\n"; IndentPush(); printf "%o\n", Deformation; IndentPop();
