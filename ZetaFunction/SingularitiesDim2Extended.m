@@ -208,7 +208,7 @@ intrinsic DeformationCurveSpecific(monomialCurve::SeqEnum[RngMPolElt], G::SeqEnu
 end intrinsic;
 
 
-intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt]
+intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt], SeqEnum[RngMPolLocElt]
 	{
 		Computes the deformation of the monomial curve associated to the semigroup "G" with the specific choice of equations "monomialCurve".
 		Implementation based on "DeformationCurve(G::[RngIntElt])" from "SingularitiesDim2/Misc.m"
@@ -527,7 +527,7 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	// print "Ker(h) =",Kernel(h);
 	// // print h(MMM.3);
 	// printf "\n";
-	 
+	
 	D_mu := basisOfMuConstantDeformation;
 	// printf "Universe(D_mu) = %o\n", Universe(D_mu);
 	
@@ -539,7 +539,8 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	// printf "phi =\n"; IndentPush(); printf "%o\n", phi; IndentPop();
 	
 	// Add deformation terms to the monomial curve
-	deformedMonomialCurve := [RR | phi(f) : f in monomialCurve];
+	monomialCurve := [RR | phi(f) : f in monomialCurve];
+	deformedMonomialCurve := monomialCurve;
 	// printf "deformedMonomialCurve =\n"; IndentPush(); printf "%o\n", deformedMonomialCurve; IndentPop();
 	// printf "\n";
 	for i in [1..#D_mu] do
@@ -549,8 +550,9 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 		// printf "e_i =\n"; IndentPush(); printf "%o\n", e_i; IndentPop();
 		// printf "deformedMonomialCurve =\n"; IndentPush(); printf "%o\n", deformedMonomialCurve; IndentPop();
 	end for;
+	printf "monomialCurve =\n"; IndentPush(); printf "%o\n", monomialCurve; IndentPop();
 	printf "deformedMonomialCurve =\n"; IndentPush(); printf "%o\n", deformedMonomialCurve; IndentPop();
-	return deformedMonomialCurve;
+	return monomialCurve, deformedMonomialCurve;
 end intrinsic;
 
 
