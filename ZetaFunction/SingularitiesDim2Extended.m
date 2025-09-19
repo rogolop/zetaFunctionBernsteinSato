@@ -144,7 +144,7 @@ intrinsic SemigroupCoordinatesCassouNogues(v::RngIntElt, G::SeqEnum[RngIntElt], 
 	if #G eq 1 then
 		divisible, quotient := IsDivisibleBy(v, G[1]);
 		if divisible then
-			if (n[1] gt 0) and (quotient ge n[1]) then return false, [ ]; end if; // enforce v_i < n_i
+			if (n[1] gt 0) and (quotient ge n[1]) then return false, [ ]; end if; // enforce v_i < n_i (except at index 0, where n_0 = n[1] = 0)
 			return true, [ [quotient] ];
 		else
 			return false, [ ];
@@ -157,7 +157,7 @@ intrinsic SemigroupCoordinatesCassouNogues(v::RngIntElt, G::SeqEnum[RngIntElt], 
 	GNext := G[2..#G];
 	nNext := n[2..#n];
 	while G[1]*V1 le v do
-		if (n[1] gt 0) and (V1 ge n[1]) then break; end if; // enforce v_i < n_i
+		if (n[1] gt 0) and (V1 ge n[1]) then break; end if; // enforce v_i < n_i (except at index 0, where n_0 = n[1] = 0)
 		// Given fixed V1, calculate remaining coordinates V2 to V_{#G}
 		inSemigroup, possibilities := SemigroupCoordinatesCassouNogues(v - G[1]*V1, GNext, nNext);
 		if inSemigroup then
@@ -231,6 +231,7 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	l := [];
 	for s in [1..g] do
 		isInG, ls := SemigroupCoordinatesCassouNogues(n[s]*G[s+1], G[(0+1)..(s-1+1)], ns);
+		require isInG : Sprintf("n_%o * _beta_%o = %o not in semigroup %o\n", s, s, n[s]*G[s+1], G[(0+1)..(s-1+1)]);
 		// printf "s=%o, ls=%o\n", s, ls;
 		l[s] := ls[1];
 		// printf "comparison %o", SemiGroupCoord(n[s]*G[s+1], G[(0+1)..(s-1+1)]);
@@ -257,7 +258,7 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	// end for;
 	// // return I;
 	// printf "I = %o\n", I;
-
+	
 	// g := #I; R := Universe(I);
 	// ZZ := Integers();
 	// Ei := [i gt 1 select Gcd(Self(i - 1), G[i]) else G[1] : i in [1..#G]]; // = es
@@ -285,7 +286,7 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	// // printf "J =\n"; IndentPush(); printf "%o\n", J; IndentPop();
 	// T_1 := N + sub<M | [M ! m : m in RowSequence(J)]>;
 	// printf "T_1 =\n"; IndentPush(); printf "%o\n", T_1; IndentPop();
-
+	
 	// print "-----------------------------------------------------------------";
 	// print M / N;
 	// // printf "\n";
@@ -313,9 +314,9 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	//   // printf "D_mu =\n"; IndentPush(); printf "%o\n", D_mu; IndentPop();
 	// end for;
 	// printf "D_mu =\n"; IndentPush(); printf "%o\n", D_mu; IndentPop();
-
+	
 	// // printf "\n";
-
+	
 	// // RRRRRRRRRRRRRRRRRRRRRRRRRRRRR
 	// A := quo<M | T_1>;
 	// // B := quo<M | LT>;
@@ -355,7 +356,7 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	
 	basisOfDeformationModule := [M| ];
 	
-	// AM Thm2.4 (1)
+	// Almiron,Moyano Thm2.4 (1)
 	E := ExponentSetE(l, n);
 	// printf "E =\n"; IndentPush(); printf "%o\n", E; IndentPop();
 	// 1,2 or 2,1 ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
@@ -367,7 +368,7 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	// printf "monomials =\n"; IndentPush(); printf "%o\n", monomials; IndentPop();
 	basisOfDeformationModule cat:= [ mon * M.1 : mon in monomials ];
 	
-	// AM Thm2.4 (2), (3), (4)
+	// Almiron,Moyano Thm2.4 (2), (3), (4)
 	for s in [2..g] do
 		D := ExponentSetDlSSm1(s, l, n);
 		// printf "D =\n"; IndentPush(); printf "%o\n", D; IndentPop();
@@ -381,7 +382,7 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 		// printf "monomials =\n"; IndentPush(); printf "%o\n", monomials; IndentPop();
 		basisOfDeformationModule cat:= [ mon * M.s : mon in monomials ];
 	end for;
-
+	
 	// printf "basisOfDeformationModule =\n";
 	// for i in [1..#basisOfDeformationModule] do
 	// 	elt := basisOfDeformationModule[i];
@@ -396,26 +397,24 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	
 	// Remove non-mu-constant monomials
 	basisOfMuConstantDeformation := [M| elt : elt in basisOfDeformationModule | WeightedDegree(elt) gt 0 ];
+	
+	// printf "ELS QUE TENEN PES =0:\n%o\n", [M| elt : elt in basisOfDeformationModule | WeightedDegree(elt) eq 0 ];
+
 	// printf "basisOfMuConstantDeformation =\n"; IndentPush();
 	// printf "%o\n", basisOfMuConstantDeformation;
 	// IndentPop(); printf "\n";
 	
 	// Move to the front of the basis the elements necessary for being a plane curve:
 	// [u2,0,...,0], ..., [0,...,0,ug,0]
-	firstTerms := [M| ];
-	for s in [2..g] do
-		elt := R.(s +1) * M.(s-1);
-		firstTerms cat:= [ elt ];
-		Exclude(~basisOfMuConstantDeformation, elt);
+	firstTerms := [M| R.(s +1) * M.(s-1) : s in [2..g]];
+	for i in [1..#firstTerms] do
+		Exclude(~basisOfMuConstantDeformation, firstTerms[i]);
 	end for;
-	printf "firstTerms (to have plane curve) =\n"; IndentPush(); printf "%o\n", firstTerms; IndentPop();
 	basisOfMuConstantDeformation := firstTerms cat basisOfMuConstantDeformation;
+	printf "firstTerms (to have plane curve) =\n"; IndentPush(); printf "%o\n", firstTerms; IndentPop();
+	printf "basisOfMuConstantDeformation =\n"; IndentPush(); printf "%o\n", basisOfMuConstantDeformation; IndentPop();
 	
-	printf "basisOfMuConstantDeformation =\n"; IndentPush();
-	printf "%o\n", basisOfMuConstantDeformation; IndentPop();
-
-
-
+	
 	// NewModule := sub<A | basisOfDeformationModule>;
 	// printf "A = NewModule %o\n", A eq NewModule;
 	// printf "A < NewModule %o\n", A subset NewModule;
@@ -426,7 +425,7 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	
 	// T_2 := N + sub<M | [M ! m : m in RowSequence(J)]>;
 	// printf "T_2 =\n"; IndentPush(); printf "%o\n", T_2; IndentPop();
-
+	
 	// printf "basis T_2 =\n"; IndentPush(); printf "%o\n", Basis(T_2); IndentPop();
 	// for b in Basis(T_2) do
 	//   printf "%o = ", b;
@@ -451,7 +450,7 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	// printf "\n";
 	
 	// // Testing
-
+	
 	// basisElementsOK := true;
 	// for b in basisOfDeformationModule do
 	//   if b in T_1 then
@@ -487,7 +486,7 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	// mu := MilnorNumber(G);
 	// printf "Milnor number = %o\n", mu;
 	// printf "#basisOfDeformationModule = %o\n", #basisOfDeformationModule;
-
+	
 	// printf "\n";
 	// printf basisElementsOK and (mu eq #basisOfDeformationModule) select "NEW BASIS OK\n" else "NEW BASIS WRONG\n";
 	
@@ -538,13 +537,13 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	printf "RR =\n"; IndentPush(); printf "%o\n", RR; IndentPop();
 	phi := hom<R -> RR | [RR.i : i in [#D_mu + 1..Rank(RR)]]>; // convert from Q[u] to Q[t,u]
 	// printf "phi =\n"; IndentPush(); printf "%o\n", phi; IndentPop();
-
+	
 	// Add deformation terms to the monomial curve
 	deformedMonomialCurve := [RR | phi(f) : f in monomialCurve];
 	// printf "deformedMonomialCurve =\n"; IndentPush(); printf "%o\n", deformedMonomialCurve; IndentPop();
 	// printf "\n";
 	for i in [1..#D_mu] do
-		e_i := Column(D_mu[i]);
+		e_i := Column(D_mu[i]); // Position of the monomial in the "vector"
 		deformedMonomialCurve[e_i] +:= RR.i * phi(D_mu[i][e_i]);
 		// printf "\n### for loop -> step %o of %o\n", i, #D_mu;
 		// printf "e_i =\n"; IndentPush(); printf "%o\n", e_i; IndentPop();
