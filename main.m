@@ -55,7 +55,7 @@ d := 2; // d>1, coprime to c
 // _betas_betas       := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
 _betas_betas       := [6,9,22];
 // [18,48,146,441];
-//[36,96,292,881];
+// [36,96,292,881];
 // [5,7];
 // [6,17];
 // [4,6,13]; [4,10,21]; [6,9,22]; [6,14,43]; [8,18,73]; [10,15,36]; [10,24,121];
@@ -1168,12 +1168,8 @@ case curve:
 		// if (print_betas) then print "Chosen equations:"; end if;
 		// if (print_betas) then print monomialCurve; end if;
 		
-		printf "\n############################################################\n";
-		printf "############################################################\n\n";
 		// Deform the chosen monomial curve equations
 		monomialCurve, Deformation := DeformationCurveCassou(_betas);
-		printf "\n############################################################\n";
-		printf "############################################################\n\n";
 		// printf "Deformation =\n"; IndentPush(); printf "%o\n", Deformation; IndentPop();
 		// printf "DeformationCurveSpecific\n%o\n", Deformation;
 		
@@ -1307,14 +1303,14 @@ case curve:
 		printf "C1 =\n"; IndentPush(); printf "%o\n", C1; IndentPop();
 		printf "Deformation =\n"; IndentPush(); printf "%o\n", Deformation; IndentPop();
 		printf "gammas =\n[\n"; IndentPush();
-			for i in [0..g] do
-				printf "[\n"; IndentPush();
-				for j in [1..g] do
-					printf "%o\n", gammas[i+1][j];
-				end for;
-				IndentPop(); printf "]\n";
+		for i in [0..g] do
+			printf "[\n"; IndentPush();
+			for j in [1..g] do
+				printf "%o\n", gammas[i+1][j];
 			end for;
 			IndentPop(); printf "]\n";
+		end for;
+		IndentPop(); printf "]\n";
 		
 		for i in [1..(g-1)] do
 			termsToMove := PDeformation!0;
@@ -1343,7 +1339,7 @@ case curve:
 		
 		f := Deformation[g];
 		
-		printf "f =\n"; IndentPush(); printf "%o\n", f; IndentPop();
+		// printf "f =\n"; IndentPush(); printf "%o\n", f; IndentPop();
 		
 		// Separate parameters into the coefficient ring
 		// From: Q[t_0, ..., t_{T-1}, u_0, ..., u_g]
@@ -1366,7 +1362,7 @@ case curve:
 		end if;
 		f := Evaluate(f, ts cat [x,y] cat [0 : i in [2..g]]);
 		// f /:= LeadingCoefficient(f); // ????????????????????????????????????
-		printf "f =\n"; IndentPush(); printf "%o\n", f; IndentPop();
+		// printf "f =\n"; IndentPush(); printf "%o\n", f; IndentPop();
 		
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
