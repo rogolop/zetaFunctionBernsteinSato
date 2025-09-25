@@ -9,8 +9,8 @@
 */
 
 // ### Basic requirements ###
-AttachSpec("SingularitiesDim2/IntegralClosureDim2.spec");
-AttachSpec("ZetaFunction/ZetaFunction.spec");
+AttachSpec("../SingularitiesDim2/IntegralClosureDim2.spec");
+AttachSpec("../ZetaFunction/ZetaFunction.spec");
 //import "./testSemigroup.m" : MonomialCurveOptions, DeformationCurveSpecific;
 Z := IntegerRing();
 Q := RationalField();
@@ -24,7 +24,7 @@ quitWhenFinished   := true;
 
 // Whether to print into a file, and which one
 printToFile        := false;
-outFileNamePrefix  := "output/2025-09-23/out_";
+outFileNamePrefix  := "./examples/2025-09-23/out_";
 outFileNameSufix   := ".txt";
 // Output format: "table", "CSV", "Latex", "none"
 printType          := "table";
@@ -36,8 +36,8 @@ print_f            := true;
 // Which set of nus should be used for each rupture divisor
 onlyCoincidingRoots := false; // default false
 onlyCoincidingNonTopologicalRoots := onlyCoincidingRoots and true;
-useDefaultNus         := [true, true, true];
-nuChoices          := [[], [], []]; // (if not useDefaultNus)
+useDefaultNus         := [false, false, true];
+nuChoices          := [[1], [1], []]; // (if not useDefaultNus)
 
 // Choose curve
 curve              := "deformation_cassou_mod";
@@ -66,7 +66,7 @@ _betas_betas       := [10,15,36];
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 // [36,96,292,881];
 chosenEqs_betas    := [1, 1]; // choose option for each equation
-parameters_betas   := "all"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas   := "[]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 neededParamsVars   := []; // parameter needed at each Hi
 interactive_betas  := false;
 interactive_eqs    := false;

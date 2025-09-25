@@ -1,11 +1,11 @@
+// CURRENTLY BROKEN
 
 // units_f, units_w: multiset of terms with multiplicity
 // point types: 0 -> start, 1 -> free, 2 -> satellite
 
 
-AttachSpec("./ZetaFunction/ZetaFunction.spec");
-AttachSpec("./SingularitiesDim2/IntegralClosureDim2.spec");
-Attach("SingularitiesDim2Extended.m");
+AttachSpec("../SingularitiesDim2/IntegralClosureDim2.spec");
+AttachSpec("../ZetaFunction/ZetaFunction.spec");
 
 Q := RationalField();
 P<x,y> := LocalPolynomialRing(Q, 2);
