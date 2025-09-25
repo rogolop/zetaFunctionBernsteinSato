@@ -24,7 +24,7 @@ quitWhenFinished   := true;
 
 // Whether to print into a file, and which one
 printToFile        := false;
-outFileNamePrefix  := "output/2025_09_23/out_";
+outFileNamePrefix  := "output/2025-09-23/out_";
 outFileNameSufix   := ".txt";
 // Output format: "table", "CSV", "Latex", "none"
 printType          := "table";
@@ -41,7 +41,7 @@ nuChoices          := [[], [], []]; // (if not useDefaultNus)
 
 // Choose curve
 curve              := "deformation_cassou_mod";
-// "deformation_restricted"; "deformation_GroebnerElimination"; "deformation_cassou";
+// "deformation_restricted"; "deformation_GroebnerElimination"; "deformation_cassou"; "deformation_cassou_mod";
 // "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
 // "4-6-13"; "6-14-43_AM";
 
@@ -637,6 +637,16 @@ case curve:
 		P<x,y> := LocalPolynomialRing(RationalFunctionField(Q, 6), 2);
 		R<t> := BaseRing(P);
 		f := (y^3 - x^7 + t*x^5*y)^2 + x^6*y^7;
+		
+	when "Maria_f1":
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := y^5 - x^12 + x^5*y^3;
+		
+	when "Maria_f2":
+		P<x,y> := LocalPolynomialRing(Q, 2);
+		R := BaseRing(P);
+		f := y^5 - x^12 + x^5*y^3 + (3/10)*x^10*y;
 
 	when "deformation_restricted": // Generic curve construction  
 		// INPUT
@@ -1887,6 +1897,7 @@ end for;
 
 // ### To do when finished ###
 
+printf "\nFinished.\n";
 if printToFile then
 	UnsetOutputFile();
 	printf "Printed to: %o\n", outFileName;
