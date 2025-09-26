@@ -1,8 +1,26 @@
-# zetaFunctionBernsteinSato
-Implementation in Magma of an algorithm to calculate the stratification of the roots of the Bernstein-Sato polynomial of irreducible plane curve singularities along deformations with constant Milnor number.
+# zetaFunctionPoles
+Implementation in Magma of an algorithm to calculate the stratification of $`\mu`$-constant plane branch deformations by the poles of the complex zeta function.
 
-This code uses the library for plane curve singularities [SingularitiesDim2](https://github.com/gblanco92/SingularitiesDim2) by Guillem Blanco.
+This is equivalent to the stratification by the roots of the Bernstein-Sato polynomial in the following cases:
+- A plane branch deformation with pairwise different monodromy eigenvalues (in particular this includes the case of one characteristic exponent).
+- A plane branch deformation for which the only coinciding candidates are of geometric origin (e.g. semigroup $`\langle 10,15,36 \rangle`$).
 
-The code might be subject to corrections and/or improvements in the near future. 
+Plane branches are treated as deformations with zero parameters, so this code can be used to calculate for a particular curve the set of poles (or the Bernstein-Sato polynomial in the previous cases).
 
-An article explaining the mathematical results in which the code is based should be eventually published. The calculations find the zeroes of the poles of the complex zeta function.
+An article explaining the mathematical results in which the code is based will eventually be published.
+
+## Requirements
+- Install [Magma](https://magma.maths.usyd.edu.au/magma/)
+- Download [SingularitiesDim2/](https://github.com/rogolop/SingularitiesDim2) (library for plane curve singularities by Guillem Blanco)
+- Download this repository
+
+## Files
+- `ZetaFunction/`: library for computing the stratification by the poles by the poles of the complex zeta function
+- `usage/`: my personal usage of the library; you may ignore its contents; the correctness of the computed examples is not guaranteed
+- `calculateExamples.m/`: simple script to compute examples
+
+## Usage example
+
+See [calculateExamples.m](calculateExamples.m).
+
+
