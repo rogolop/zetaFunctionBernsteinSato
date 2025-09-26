@@ -17,7 +17,7 @@ An article explaining the mathematical results in which the code is based will e
 ## Files
 - `ZetaFunction/`: library for computing the stratification by the poles by the poles of the complex zeta function
 - `usage/`: my personal usage of the library; you may ignore its contents; the correctness of the computed examples is not guaranteed
-- `calculateExamples.m/`: simple script to compute examples
+- `calculateExamples.m`: simple script to compute examples
 
 ## Usage example
 
