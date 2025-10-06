@@ -281,7 +281,7 @@ intrinsic FactorizedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, neededParamsVa
 	}
 	R := BaseRing(P);
 	Rpol := Parent(Numerator(R!1));
-
+	
 	// Ignore which (derivative of) delta-function they multiply. Each polynimial multiplies to a different delta-function, so the residue is only 0 at common roots of all polynomials.
 	// Coerce into a nonlocal polynomial ring for the function Reduce()
 	listRes := [R | SeqElt(Res, ij) : ij in indexs_Res ];
@@ -477,7 +477,7 @@ intrinsic PrintStratificationAsLatex(L::[[]], nu, sigma, Np)
 end intrinsic;
 
 
-intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List, List
+intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List, List, List, List
 	{
 		Return and print stratification of the residue of the complez zeta function at candidate poles corresponding to nus in rupture divisor r, each one as [[]] which is a sequence of generators of the zero ideal, represented as sequences containing their irreducible factors
 	}
@@ -492,9 +492,11 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 	// Formal v(x,y) * phi(X,Y) * Z^s, to be evaluated at X=pi1, Y=pi2, Z=u
 	Phi := [[[v]]];
 	indexs_Phi := {[1,1,1]};
-
+	
 	// Storage
 	L_all := [**];
+	Res_all := [**];
+	indexs_Res_all := [**];
 	sigma_all := [**];
 	epsilon_all := [**];
 	
@@ -517,7 +519,7 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 	nuOld := 0;
 	
 	for nu in nus do
-		repeat // Do once, but group statements to calculate time easily
+		//repeat // Do once, but group statements to calculate time easily
 			// Relevant numbers
 			sigma := Sigma(Np, kp, nu);
 			epsilon := [N[j] * sigma + k[j] : j in [1..3] ];
@@ -555,10 +557,12 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 			
 			// Basis of the ideal whose roots make the residue =0
 			L := FactorizedBasis(Res, indexs_Res, P, neededParamsVars);
-
+			
 			// Storage
 			Append(~L_all, L);
-			Append(~sigma_all, sigma);
+			Append(~Res_all, Res);
+			Append(~indexs_Res_all, indexs_Res);
+			Append(~sigma_all, <r, nu,sigma>);
 			Append(~epsilon_all, epsilon);
 			
 			// print
@@ -576,15 +580,15 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 				UnsetOutputFile();
 				SetOutputFile(outFileName : Overwrite := false);
 			end if;
-
-		until true;
+			
+		//until true;
 	end for;
 	
 	if (printType ne "none") then
 		printf "\n";
 	end if;
-
-	return L_all, sigma_all, epsilon_all;
+	
+	return L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all;
 end intrinsic;
 
 
@@ -607,5 +611,131 @@ intrinsic Evaluate(f::FldFunRatMElt, i::RngIntElt, r::RngElt) -> FldFunRatMElt
 end intrinsic;
 
 
+// Full stratification
 
+intrinsic ZetaFunctionStratification(arguments::Tup : printType:="none") -> List, List, List, List, List
+	{
+		TO DO
+	}
+	
+	// Prepare arguments
+	f, semiGroupInfo, ignoreDivisor, Nps, kps, Ns, ks, useDefaultNus, defaultNus, nuChoices, printToFile, outFileName, neededParamsVars := Explode(arguments);
+	P<x,y> := Parent(f);
+	R := BaseRing(P);
+	g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+	
+	// (total transform of f) = x^xExp_f * y^yExp_f * units_f * strictTransform_f
+	// (pullback of dx^dy)    = x^xExp_w * y^yExp_w * units_w
+	strictTransform_f := f;
+	xyExp_f := [0,0];
+	xyExp_w := [0,0];
+	units_f := {* P!1 *};
+	units_w := {* P!1 *};
+	pointType := 0; // 0 -> starting point, 1 -> free point, 2 -> satellite point
+	PI_TOTAL := [x, y]; // Total blowup morphism since starting point
+	L_all := [**];
+	Res_all := [**];
+	indexs_Res_all := [**];
+	sigma_all := [**];
+	epsilon_all := [**];
+	
+	// ### For each rupture divisor ###
+	// Non-rupture divisors don't contribute (see TFG-Roger, p.28, Cor.4.2.5 or PHD-Guillem p.87 Th.8.10)
+	for r in [1..g] do
+		print "------------------------------";
+		if (printType ne "none" and not ignoreDivisor[r]) then printf "Divisor E_%o\n", r; end if;
+		
+		///////////////////////////////// THEORY OK ////////////////////////////////////
+		
+		// Blowup
+		// From: (0,0) singular point of the strict transform of the curve (starting point or a free point on the last rupture divisor)
+		// To: next rupture divisor
+		strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType, lambda, ep, PI_blowup := Blowup(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType);
+		// Total blowup morphism since starting point
+		PI_TOTAL := [Evaluate(t, PI_blowup) : t in PI_TOTAL];
+		// Units
+		u := &*[t^m : t->m in units_f] * strictTransform_f;
+		v := &*[t^m : t->m in units_w];
+		// Multiplicities of rupture divisor x=0
+		Np := xyExp_f[1];
+		Kp := xyExp_w[1];
+		// Multiplicities of y=0
+		N1 := xyExp_f[2];
+		K1 := xyExp_w[2];
+		// Multiplicities of:
+		// 1) proximate non-rupture divisor through (0,0): y=0
+		// 2) proximate non-rupture divisor through (0,infinity)
+		// 3) the curve
+		N := [N1, Np-N1-ep, ep];
+		k := [K1, Kp-K1-1, 0];
+		
+		// printf "u = %o\n\n", u;
+		// printf "v = %o\n\n", v;
+		// printf "PI_TOTAL = %o\n\n", PI_TOTAL;
+		// printf "e = %o\n", ep;
+		// printf "k = %o\n", ks;
+		
+		// // Find the maximum nu in this and following rupture divisors => maximum power needed in series expansions in x (?????????)
+		// // Don't discard topological roots to have enough terms for a blowup
+		// M := 0;
+		// for i in [r..g] do
+		// 	Npi, kpi, Ni, ki := MultiplicitiesAtThisRuptureDivisor(i, Nps, kps, Ns, ks);
+		// 	M := Max( [M] cat Nus(_betas, semiGroupInfo, Npi, kpi, i : discardTopologial:=false) );
+		// end for;
+		
+		// Interesting values of nu
+		// nus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
+		// nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
+		// topologicalRoots[r] := [<nu, Sigma(Np, Kp, nu)> : nu in topologicalNus];
+		if useDefaultNus[r] then
+			nus := defaultNus[r];
+		else
+			nus := nuChoices[r];
+		end if;
+		// Print...
+		if not ignoreDivisor[r] then
+			if (printType eq "CSV") then
+				printf "nus, ";
+				for i->nu in nus do
+					printf "%o", nu;
+					if (i lt #nus) then printf ", "; end if;
+				end for;
+				printf "\n\n";
+			elif (printType in {"table","Latex"}) then
+				printf "nus = %o\n\n", nus;
+			end if;
+		end if;
+		
+		print "------------------------------";
+		print "ZetaFunctionResidue";
+		
+		// Flush to file
+		if printToFile then
+			UnsetOutputFile();
+			SetOutputFile(outFileName : Overwrite := false);
+		end if;
+		
+		L_all[r], Res_all[r], indexs_Res_all[r], sigma_all[r], epsilon_all[r] := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], u, v, lambda, ep, Np, Kp, N, k, nus, r, neededParamsVars, printToFile, outFileName > : printType:=printType);
+		
+		// Flush to file
+		if printToFile then
+			UnsetOutputFile();
+			SetOutputFile(outFileName : Overwrite := false);
+		end if;
+		
+		// Prepare next iteration
+		if r lt g then
+			print "------------------------------";
+			print "Centering the singular point";
+			
+			strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center := CenterOriginOnCurve(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, lambda);
+			// Total blowup morphism since starting point
+			PI_TOTAL := [Evaluate(t, PI_center) : t in PI_TOTAL];
+			
+			printf "lambda = %o\n\n", lambda;
+		end if;
+	end for;
+	
+	return L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all;
+end intrinsic;
 

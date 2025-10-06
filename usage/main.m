@@ -24,7 +24,7 @@ quitWhenFinished   := true;
 
 // Whether to print into a file, and which one
 printToFile        := false;
-outFileNamePrefix  := "./examples/2025-09-23/out_";
+outFileNamePrefix  := "./examples/2025-09-26/out_";
 outFileNameSufix   := ".txt";
 // Output format: "table", "CSV", "Latex", "none"
 printType          := "table";
@@ -36,11 +36,11 @@ print_f            := true;
 // Which set of nus should be used for each rupture divisor
 onlyCoincidingRoots := false; // default false
 onlyCoincidingNonTopologicalRoots := onlyCoincidingRoots and true;
-useDefaultNus         := [false, false, true];
-nuChoices          := [[1], [1], []]; // (if not useDefaultNus)
+useDefaultNus         := [true, true, true];
+nuChoices          := [[], [], []]; // (if not useDefaultNus)
 
 // Choose curve
-curve              := "deformation_cassou_mod";
+curve              := "deformation_restricted";
 // "deformation_restricted"; "deformation_GroebnerElimination"; "deformation_cassou"; "deformation_cassou_mod";
 // "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
 // "4-6-13"; "6-14-43_AM";
@@ -53,7 +53,7 @@ d := 2; // d>1, coprime to c
 // 5, 7, 3, 2
 // 17, 19, 7, 6
 // _betas_betas       := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
-_betas_betas       := [10,15,36];
+_betas_betas       := [6,14,43];
 // [18,48,146,441];
 // [36,96,292,881];
 // [5,7];
@@ -66,7 +66,7 @@ _betas_betas       := [10,15,36];
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 // [36,96,292,881];
 chosenEqs_betas    := [1, 1]; // choose option for each equation
-parameters_betas   := "[]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas   := "[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 neededParamsVars   := []; // parameter needed at each Hi
 interactive_betas  := false;
 interactive_eqs    := false;
@@ -1751,113 +1751,33 @@ if onlyCoincidingRoots then
 end if;
 
 
+L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratification(<f, semiGroupInfo, ignoreDivisor, Nps, kps, Ns, ks, useDefaultNus, defaultNus, nuChoices, printToFile, outFileName, neededParamsVars>);
 
-// (total transform of f) = x^xExp_f * y^yExp_f * units_f * strictTransform_f
-// (pullback of dx^dy)    = x^xExp_w * y^yExp_w * units_w
-strictTransform_f := f;
-xyExp_f := [0,0];
-xyExp_w := [0,0];
-units_f := {* P!1 *};
-units_w := {* P!1 *};
-pointType := 0; // 0 -> starting point, 1 -> free point, 2 -> satellite point
-PI_TOTAL := [x, y]; // Total blowup morphism since starting point
-
-// ### For each rupture divisor ###
-// Non-rupture divisors don't contribute (see TFG-Roger, p.28, Cor.4.2.5 or PHD-Guillem p.87 Th.8.10)
+printf "\n";
+// printf "L_all =\n";
+// for r in [1..g] do
+// 	for rootIdx in [1..#L_all[r]] do
+// 		printf "Candidate sigma_{%o,%o}=%o\n", sigma_all[r][rootIdx][1], sigma_all[r][rootIdx][2], sigma_all[r][rootIdx][3];
+// 		print L_all[r][rootIdx];
+// 		printf "\n";
+// 	end for;
+// end for;
 for r in [1..g] do
-	print "-----------------------------------------------------------------------";
-	if (printType ne "none" and not ignoreDivisor[r]) then printf "Divisor E_%o\n", r; end if;
-	
-	///////////////////////////////// THEORY OK ////////////////////////////////////
-	
-	// Blowup
-	// From: (0,0) singular point of the strict transform of the curve (starting point or a free point on the last rupture divisor)
-	// To: next rupture divisor
-	strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType, lambda, ep, PI_blowup := Blowup(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType);
-	// Total blowup morphism since starting point
-	PI_TOTAL := [Evaluate(t, PI_blowup) : t in PI_TOTAL];
-	// Units
-	u := &*[t^m : t->m in units_f] * strictTransform_f;
-	v := &*[t^m : t->m in units_w];
-	// Multiplicities of rupture divisor x=0
-	Np := xyExp_f[1];
-	Kp := xyExp_w[1];
-	// Multiplicities of y=0
-	N1 := xyExp_f[2];
-	K1 := xyExp_w[2];
-	// Multiplicities of:
-	// 1) proximate non-rupture divisor through (0,0): y=0
-	// 2) proximate non-rupture divisor through (0,infinity)
-	// 3) the curve
-	N := [N1, Np-N1-ep, ep];
-	k := [K1, Kp-K1-1, 0];
-	
-	// printf "u = %o\n\n", u;
-	// printf "v = %o\n\n", v;
-	// printf "PI_TOTAL = %o\n\n", PI_TOTAL;
-	printf "e = %o\n", ep;
-	printf "k = %o\n", ks;
-	
-	// // Find the maximum nu in this and following rupture divisors => maximum power needed in series expansions in x (?????????)
-	// // Don't discard topological roots to have enough terms for a blowup
-	// M := 0;
-	// for i in [r..g] do
-	// 	Npi, kpi, Ni, ki := MultiplicitiesAtThisRuptureDivisor(i, Nps, kps, Ns, ks);
-	// 	M := Max( [M] cat Nus(_betas, semiGroupInfo, Npi, kpi, i : discardTopologial:=false) );
-	// end for;
-	
-	// Interesting values of nu
-	// nus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
-	// nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
-	// topologicalRoots[r] := [<nu, Sigma(Np, Kp, nu)> : nu in topologicalNus];
-	if useDefaultNus[r] then
-		nus := defaultNus[r];
-	else
-		nus := nuChoices[r];
-	end if;
-	// Print...
-	if not ignoreDivisor[r] then
-		if (printType eq "CSV") then
-			printf "nus, ";
-			for i->nu in nus do
-				printf "%o", nu;
-				if (i lt #nus) then printf ", "; end if;
-			end for;
-			printf "\n\n";
-		elif (printType in {"table","Latex"}) then
-			printf "nus = %o\n\n", nus;
-		end if;
-	end if;
-	
-	print "-----------------------------------------------------------------------";
-	print "ZetaFunctionResidue";
-	
-	// Flush to file
-	if printToFile then
-		UnsetOutputFile();
-		SetOutputFile(outFileName : Overwrite := false);
-	end if;
-	
-	L_all, sigma_all, epsilon_all := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], u, v, lambda, ep, Np, Kp, N, k, nus, r, neededParamsVars, printToFile, outFileName > : printType:=printType);
-	
-	// Flush to file
-	if printToFile then
-		UnsetOutputFile();
-		SetOutputFile(outFileName : Overwrite := false);
-	end if;
-	
-	// Prepare next iteration
-	if r lt g then
-		print 	"-----------------------------------------------------------------------";
-		print "Centering the singular point";
-		
-		strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center := CenterOriginOnCurve(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, lambda);
-		// Total blowup morphism since starting point
-		PI_TOTAL := [Evaluate(t, PI_center) : t in PI_TOTAL];
-		
-		printf "lambda = %o\n\n", lambda;
-	end if;
+	for rootIdx in [1..#L_all[r]] do
+		printf "sigma_{%o,%o}=%o\n", sigma_all[r][rootIdx][1], sigma_all[r][rootIdx][2], sigma_all[r][rootIdx][3];
+		// printf "A_{p,i,j}:\n";
+		// print L_all[r][i];
+		IndentPush();
+		for AIdx->ij in Sort([elt : elt in indexs_Res_all[r][rootIdx]]) do
+			printf "%o", SeqElt(Res_all[r][rootIdx],ij);
+			printf (AIdx lt #indexs_Res_all[r][rootIdx]) select ",\n"else "\n";
+		end for;
+		IndentPop();
+ 		printf "\n";
+	end for;
 end for;
+// printf "sigma_all =\n"; printf "%o\n", sigma_all;
+// printf "epsilon_all =\n"; printf "%o\n", epsilon_all;
 
 
 
