@@ -66,7 +66,7 @@ _betas_betas       := [6,14,43];
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 // [36,96,292,881];
 chosenEqs_betas     := [1, 1]; // choose option for each equation
-parameters_betas    := "[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas    := "[17]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 invertibleVariables := [];
 interactive_betas   := false;
 interactive_eqs     := false;
@@ -909,7 +909,7 @@ case curve:
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
 			j := Position(parameters, i);
-			Append(~invertibleVariables, R.j);
+			Append(~invertibleVariables, j);
 		end for;
 
 
@@ -1136,7 +1136,7 @@ case curve:
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
 			j := Position(parameters, i);
-			Append(~invertibleVariables, R.j);
+			Append(~invertibleVariables, j);
 		end for;
 
 
@@ -1380,7 +1380,7 @@ case curve:
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
 			j := Position(parameters, i);
-			Append(~invertibleVariables, R.j);
+			Append(~invertibleVariables, j);
 		end for;
 		
 
@@ -1625,7 +1625,7 @@ case curve:
 		// Save needed non-zero parameters as variables
 		//for i in neededParams do
 		for i in [1..numL] do
-			Append(~invertibleVariables, R.(T+i));
+			Append(~invertibleVariables, (T+i));
 		end for;
 		
 
@@ -1760,31 +1760,28 @@ nuChoices := [ (useDefaultNus[r]) select defaultNus[r] else nuChoices[r] : r in 
 L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratification(
 	f, planeBranchNumbers, nuChoices :
 	invertibleVariables:=invertibleVariables,
-	printType:=printType,
+	printType:="something",
 	printToFile:=printToFile,
 	outFileName:=outFileName
 	);
 
 printf "\n";
-// printf "L_all =\n";
-// for r in [1..g] do
-// 	for rootIdx in [1..#L_all[r]] do
-// 		printf "Candidate sigma_{%o,%o}=%o\n", sigma_all[r][rootIdx][1], sigma_all[r][rootIdx][2], sigma_all[r][rootIdx][3];
-// 		print L_all[r][rootIdx];
-// 		printf "\n";
-// 	end for;
-// end for;
+print "------------------------------";
+printf "RESULTS\n";
+print "------------------------------";
+printf "\n";
 for r in [1..g] do
 	for rootIdx in [1..#L_all[r]] do
 		printf "sigma_{%o,%o}=%o\n", sigma_all[r][rootIdx][1], sigma_all[r][rootIdx][2], sigma_all[r][rootIdx][3];
-		// printf "A_{p,i,j}:\n";
-		// print L_all[r][i];
-		IndentPush();
 		for AIdx->ij in Sort([elt : elt in indexs_Res_all[r][rootIdx]]) do
-			printf "%o", SeqElt(Res_all[r][rootIdx],ij);
-			printf (AIdx lt #indexs_Res_all[r][rootIdx]) select ",\n"else "\n";
+			printf "[%o,%o]\n", ij[1], ij[2];
+			IndentPush();
+			printf "%o\n", SeqElt(Res_all[r][rootIdx],ij);
+			//printf (AIdx lt #indexs_Res_all[r][rootIdx]) select ",\n"else "\n";
+			IndentPop();
 		end for;
-		IndentPop();
+ 		printf "Simplified:\n";
+ 		print L_all[r][rootIdx];
  		printf "\n";
 	end for;
 end for;

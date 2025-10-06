@@ -334,7 +334,7 @@ intrinsic FactorizedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, invertibleVari
 		
 		// If one of the conditions is that a non-zero variable is 0, the residue never vanishes
 		for l in L do
-			if ((#l eq 1) and &or[Rpol!(l[1]) eq Rpol!t : t in invertibleVariables]) then
+			if ((#l eq 1) and &or[Rpol!(l[1]) eq Rpol!R.t : t in invertibleVariables]) then
 				return [[R|1]];
 			end if;
 		end for;
@@ -346,7 +346,7 @@ intrinsic FactorizedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, invertibleVari
 			removedTermsNum := 0;
 			for j in [1..#l] do
 				pol := l[j];
-				if (&or[Rpol!pol eq Rpol!t : t in invertibleVariables]) then
+				if (&or[Rpol!pol eq Rpol!R.t : t in invertibleVariables]) then
 					Remove(~(L[i]), j-removedTermsNum);
 					removedTermsNum +:= 1;
 				end if;
@@ -359,6 +359,72 @@ intrinsic FactorizedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, invertibleVari
 	
 	//L := [[p]: p in listRes];
 	return L;
+end intrinsic;
+
+
+intrinsic SimplifiedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, invertibleVariables::[]) -> []
+	{
+		Get a simplified basis of polynomials
+	}
+	if #indexs_Res eq 0 then return [P| 0]; end if;
+	
+	// Ignore which derivative of delta-function
+	listRes := [P | SeqElt(Res, ij) : ij in Sort([IJ : IJ in indexs_Res]) ];
+	
+	// Check that the residues have no terms with x,y => residues are in R
+	error if (&or[Degree(res) gt 0 : res in listRes]), "At SimplifiedBasis(Res, indexs_Res, P, invertibleVariables): Res contains x or y\nGiven arguments:", Res, ",", indexs_Res, ",", P, ",", invertibleVariables;
+
+	R := BaseRing(P); // P = R[x,y]
+	listRes := [R| MonomialCoefficient(res, P!1) : res in listRes]; // residues are equal to the constant term in x,y
+	if Type(R) eq FldFunRat then // R = Q(t_1,...,t_k)
+		nonInvertibleVariables := [ i : i in [1..Rank(R)] | i notin invertibleVariables];
+		if #invertibleVariables eq 0 then
+			Q := BaseRing(R);
+			Qnew := Q;
+		else
+			Q := BaseRing(R);
+			// Qnew = Q(t_1,...,t_r)
+			Qnew := RationalFunctionField(Q, #invertibleVariables);
+			AssignNames(~Qnew, [Sprint(R.i) : i in invertibleVariables]);
+		end if;
+		// Rnew = Qnew[t_{r+1},...,t_k]
+		Rnew := PolynomialRing(Qnew, #nonInvertibleVariables);
+		AssignNames(~Rnew, [Sprint(R.i) : i in nonInvertibleVariables]);
+		
+		newVarsInOldOrder := [Rnew| 0 : i in [1..Rank(R)]];
+		for newPos->oldPos in invertibleVariables do
+			newVarsInOldOrder[oldPos] := Qnew.newPos;
+		end for;
+		for newPos->oldPos in nonInvertibleVariables do
+			newVarsInOldOrder[oldPos] := Rnew.newPos;
+		end for;
+		
+		listResNew := [Rnew| Evaluate(res, newVarsInOldOrder) : res in listRes];
+		// listResNew := [Pnew| ];
+		// for res in listRes do
+		// 	coefficients, monomials := CoefficientsAndMonomials(res);
+		// 	resNew := Pnew!0;
+		// 	for i in [1..#monomials] do
+		// 		coeff := Evaluate(coefficients[i], newVarsInOldOrder);
+		// 		monomial := Evaluate(monomials[i], [0,0]);
+		// 		resNew +:= coeff * monomial;
+		// 	end for;
+		// 	Append(~listResNew, resNew);
+		// end for;
+		//listResNew := ClearDenominators(listResNew);
+		
+		listResNew := Reduce(listResNew);
+		return listResNew;
+		
+	// elif ISA(Type(R),Fld) then
+	// 	// Can clear denominators (not taking into account invertibleVariables)
+	// 	listResNew := Reduce(listRes);
+	// 	return listResNew;
+	else
+		//listResNew := [P| res : res in listRes | not IsUnit(res)];
+	 	listResNew := Reduce(listRes);
+		return listRes;
+	end if;
 end intrinsic;
 
 
@@ -556,7 +622,8 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 			Res, indexs_Res := nonconjugateResidue(DPhi_terms, indexs_DPhi, sigma, lambda, epsilon, ep);
 			
 			// Basis of the ideal whose roots make the residue =0
-			L := FactorizedBasis(Res, indexs_Res, P, invertibleVariables);
+			//L := FactorizedBasis(Res, indexs_Res, P, invertibleVariables);
+			L := SimplifiedBasis(Res, indexs_Res, P, invertibleVariables);
 			
 			// Storage
 			Append(~L_all, L);
@@ -566,13 +633,26 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 			Append(~epsilon_all, epsilon);
 			
 			// print
-			if (printType eq "table") then
-				PrintStratification(L, nu, sigma, Np);
-			elif (printType eq "CSV") then
-				PrintStratificationAsCSV(L, nu, sigma, Np);
-			elif (printType eq "Latex") then
-				PrintStratificationAsLatex(L, nu, sigma, Np);
+			
+			if (printType ne "none") then
+				printf "sigma_{%o,%o}=%o\n", r, nu, sigma;
+				for AIdx->ij in Sort([elt : elt in indexs_Res]) do
+					printf "[%o,%o]\n", ij[1], ij[2];
+					IndentPush();
+					printf "%o\n", SeqElt(Res,ij);
+					IndentPop();
+				end for;
+				printf "Simplified:\n";
+				print L;
+				printf "\n";
 			end if;
+			// if (printType eq "table") then
+			// 	PrintStratification(L, nu, sigma, Np);
+			// elif (printType eq "CSV") then
+			// 	PrintStratificationAsCSV(L, nu, sigma, Np);
+			// elif (printType eq "Latex") then
+			// 	PrintStratificationAsLatex(L, nu, sigma, Np);
+			// end if;
 			// print Res;
 			
 			// Flush to file

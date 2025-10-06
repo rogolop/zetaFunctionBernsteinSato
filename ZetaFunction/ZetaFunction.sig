@@ -11,6 +11,7 @@ S,E,"Gamma(l+epsilon+1) * Gamma(sigma-i+1) / Gamma(l+epsilon+sigma-i+2) * 1/ref,
 S,SeparateYTerms,"Convert each polynomial in s to a sequence of pairs [l,term], there term is the coefficient of y^l of the polynomial (as member of R[y] with the corresponding ring R)",0,2,0,0,0,0,0,0,0,83,,0,0,82,,82,-38,-38,-38,-38,-38
 S,nonconjugateResidue,"""Nonconjugate"" part of the residue of the complex zeta function, with indexing representing the derivatives of delta(x,y). Multiply the result by its conjugate to obtain the full residue (apart from the multiplying constant)",0,6,0,0,0,0,0,0,0,148,,0,0,82,,0,0,-25,,0,0,267,,0,0,83,,0,0,82,,82,83,-38,-38,-38,-38
 S,FactorizedBasis,"Get a simplified basis of polynomials, as sequences of factors without multiplicity, without denominators",0,4,0,0,0,0,0,0,0,82,,0,0,470,,0,0,83,,0,0,82,,82,-38,-38,-38,-38,-38
+S,SimplifiedBasis,Get a simplified basis of polynomials,0,4,0,0,0,0,0,0,0,82,,0,0,470,,0,0,83,,0,0,82,,82,-38,-38,-38,-38,-38
 S,PrintStratification,print [[]] containing the polynomials where a residue is 0,1,0,1,82,0,82,4,0,0,1,0,0,0,0,-1,,0,0,-1,,0,0,-1,,0,0,82,,-38,-38,-38,-38,-38,-38
 S,PrintStratificationAsCSV,print [[]] containing the polynomials where a residue is 0,1,0,1,82,0,82,4,0,0,1,0,0,0,0,-1,,0,0,-1,,0,0,-1,,0,0,82,,-38,-38,-38,-38,-38,-38
 S,PrintStratificationAsLatex,print [[]] containing the polynomials where a residue is 0,1,0,1,82,0,82,4,0,0,1,0,0,0,0,-1,,0,0,-1,,0,0,-1,,0,0,82,,-38,-38,-38,-38,-38,-38
