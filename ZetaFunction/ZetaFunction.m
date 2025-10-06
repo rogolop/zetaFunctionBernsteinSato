@@ -275,7 +275,7 @@ intrinsic nonconjugateResidue(DPhi_terms::SeqEnum, indexs_DPhi::SetEnum, sigma::
 end intrinsic;
 
 
-intrinsic FactorizedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, neededParamsVars::[]) -> []
+intrinsic FactorizedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, invertibleVariables::[]) -> []
 	{
 		Get a simplified basis of polynomials, as sequences of factors without multiplicity, without denominators
 	}
@@ -313,15 +313,15 @@ intrinsic FactorizedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, neededParamsVa
 	if (Type(R) eq FldFunRat) then
 		L := [ [R | ClearDenominators(tup[1]) : tup in Factorization(g)] : g in listRes];
 		// print Parent(Factorization(listRes[1])[1][1]);
-		// print Parent(neededParamsVars[1]);
-		// print Parent(Rpol!neededParamsVars[1]);
+		// print Parent(invertibleVariables[1]);
+		// print Parent(Rpol!invertibleVariables[1]);
 		
 		/*
 		L := [
 						[
 							R |
 							ClearDenominators(tup[1]) : tup in Factorization(g) | // integer coefficients
-							&and[Rpol!tup[1] ne Rpol!t : t in neededParamsVars] // ensure polynomial is not = non-zero variable
+							&and[Rpol!tup[1] ne Rpol!t : t in invertibleVariables] // ensure polynomial is not = non-zero variable
 						] :
 						g in listRes
 					];
@@ -334,7 +334,7 @@ intrinsic FactorizedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, neededParamsVa
 		
 		// If one of the conditions is that a non-zero variable is 0, the residue never vanishes
 		for l in L do
-			if ((#l eq 1) and &or[Rpol!(l[1]) eq Rpol!t : t in neededParamsVars]) then
+			if ((#l eq 1) and &or[Rpol!(l[1]) eq Rpol!t : t in invertibleVariables]) then
 				return [[R|1]];
 			end if;
 		end for;
@@ -346,7 +346,7 @@ intrinsic FactorizedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, neededParamsVa
 			removedTermsNum := 0;
 			for j in [1..#l] do
 				pol := l[j];
-				if (&or[Rpol!pol eq Rpol!t : t in neededParamsVars]) then
+				if (&or[Rpol!pol eq Rpol!t : t in invertibleVariables]) then
 					Remove(~(L[i]), j-removedTermsNum);
 					removedTermsNum +:= 1;
 				end if;
@@ -483,7 +483,7 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 	}
 	
 	// Prepare arguments
-	P, xy, pi1, pi2, u, v, lambda, ep, Np, kp, N, k, nus, r, neededParamsVars, printToFile, outFileName := Explode(arguments);
+	P, xy, pi1, pi2, u, v, lambda, ep, Np, kp, N, k, nus, r, invertibleVariables, printToFile, outFileName := Explode(arguments);
 	
 	x, y := Explode(xy);
 	R := BaseRing(P);
@@ -556,7 +556,7 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 			Res, indexs_Res := nonconjugateResidue(DPhi_terms, indexs_DPhi, sigma, lambda, epsilon, ep);
 			
 			// Basis of the ideal whose roots make the residue =0
-			L := FactorizedBasis(Res, indexs_Res, P, neededParamsVars);
+			L := FactorizedBasis(Res, indexs_Res, P, invertibleVariables);
 			
 			// Storage
 			Append(~L_all, L);
@@ -613,17 +613,24 @@ end intrinsic;
 
 // Full stratification
 
-intrinsic ZetaFunctionStratification(arguments::Tup : printType:="none") -> List, List, List, List, List
+intrinsic ZetaFunctionStratification(
+	f::RngMPolLocElt, planeBranchNumbers::Tup, nuChoices::SeqEnum :
+	invertibleVariables:=[],
+	printType:="none",
+	printToFile:=false,
+	outFileName:=""
+) -> List, List, List, List, List
 	{
 		TO DO
 	}
 	
 	// Prepare arguments
-	f, semiGroupInfo, ignoreDivisor, Nps, kps, Ns, ks, useDefaultNus, defaultNus, nuChoices, printToFile, outFileName, neededParamsVars := Explode(arguments);
 	P<x,y> := Parent(f);
 	R := BaseRing(P);
-	g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+	g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
 	
+	ignoreDivisor := [ nuChoices[i] eq [] : i in [1..g] ];
+
 	// (total transform of f) = x^xExp_f * y^yExp_f * units_f * strictTransform_f
 	// (pullback of dx^dy)    = x^xExp_w * y^yExp_w * units_w
 	strictTransform_f := f;
@@ -687,11 +694,13 @@ intrinsic ZetaFunctionStratification(arguments::Tup : printType:="none") -> List
 		// nus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
 		// nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
 		// topologicalRoots[r] := [<nu, Sigma(Np, Kp, nu)> : nu in topologicalNus];
-		if useDefaultNus[r] then
-			nus := defaultNus[r];
-		else
-			nus := nuChoices[r];
-		end if;
+		
+		//if useDefaultNus[r] then
+		//	nus := defaultNus[r];
+		//else
+		nus := nuChoices[r];
+		//end if;
+		
 		// Print...
 		if not ignoreDivisor[r] then
 			if (printType eq "CSV") then
@@ -715,7 +724,7 @@ intrinsic ZetaFunctionStratification(arguments::Tup : printType:="none") -> List
 			SetOutputFile(outFileName : Overwrite := false);
 		end if;
 		
-		L_all[r], Res_all[r], indexs_Res_all[r], sigma_all[r], epsilon_all[r] := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], u, v, lambda, ep, Np, Kp, N, k, nus, r, neededParamsVars, printToFile, outFileName > : printType:=printType);
+		L_all[r], Res_all[r], indexs_Res_all[r], sigma_all[r], epsilon_all[r] := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], u, v, lambda, ep, Np, Kp, N, k, nus, r, invertibleVariables, printToFile, outFileName > : printType:=printType);
 		
 		// Flush to file
 		if printToFile then

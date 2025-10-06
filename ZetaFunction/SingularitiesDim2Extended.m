@@ -216,8 +216,10 @@ intrinsic DeformationCurveCassou(G::SeqEnum[RngIntElt]) -> SeqEnum[RngMPolLocElt
 	
 	// G = [_beta0, ..., _betag]
 	// printf "G = %o\n", G;
-	semiGroupInfo := SemiGroupInfo(G);
-	g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+	//semiGroupInfo := SemiGroupInfo(G);
+	//g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+	planeBranchNumbers := PlaneBranchNumbers(G);
+	g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
 	// printf "g = %o\n", g;
 	// printf "c = %o\n", c;
 	// printf "betas = %o\n", betas;

@@ -65,12 +65,12 @@ _betas_betas       := [6,14,43];
 // [12,18,39,79];  -> 2-3|2-3|3-4
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 // [36,96,292,881];
-chosenEqs_betas    := [1, 1]; // choose option for each equation
-parameters_betas   := "[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
-neededParamsVars   := []; // parameter needed at each Hi
-interactive_betas  := false;
-interactive_eqs    := false;
-interactive_params := false;
+chosenEqs_betas     := [1, 1]; // choose option for each equation
+parameters_betas    := "[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+invertibleVariables := [];
+interactive_betas   := false;
+interactive_eqs     := false;
+interactive_params  := false;
 
 
 
@@ -673,8 +673,10 @@ case curve:
 		if (print_betas) then print "Semigroup:", _betas; end if;
 		
 		// Topological information
-		semiGroupInfo := SemiGroupInfo(_betas);
-		g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+		//semiGroupInfo := SemiGroupInfo(_betas);
+		//g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+		planeBranchNumbers := PlaneBranchNumbers(_betas);
+		g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
 		
 		// Choice of monomial curve equations and their deformations
 		eqs := allMonomialCurves(_betas); // [ [i-th equation options] ]
@@ -907,7 +909,7 @@ case curve:
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
 			j := Position(parameters, i);
-			Append(~neededParamsVars, R.j);
+			Append(~invertibleVariables, R.j);
 		end for;
 
 
@@ -937,8 +939,10 @@ case curve:
 		if (print_betas) then print "Semigroup:", _betas; end if;
 		
 		// Topological information
-		semiGroupInfo := SemiGroupInfo(_betas);
-		g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+		//semiGroupInfo := SemiGroupInfo(_betas);
+		//g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+		planeBranchNumbers := PlaneBranchNumbers(_betas);
+		g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
 		
 		// Choice of monomial curve equations and their deformations
 		eqs := allMonomialCurves(_betas); // [ [i-th equation options] ]
@@ -1132,7 +1136,7 @@ case curve:
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
 			j := Position(parameters, i);
-			Append(~neededParamsVars, R.j);
+			Append(~invertibleVariables, R.j);
 		end for;
 
 
@@ -1153,8 +1157,10 @@ case curve:
 		if (print_betas) then print "Semigroup:", _betas; end if;
 		
 		// Topological information
-		semiGroupInfo := SemiGroupInfo(_betas);
-		g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+		//semiGroupInfo := SemiGroupInfo(_betas);
+		//g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+		planeBranchNumbers := PlaneBranchNumbers(_betas);
+		g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
 		
 		// // Choice of monomial curve equations and their deformations
 		// eqs := allMonomialCurves(_betas); // [ [i-th equation options] ]
@@ -1374,7 +1380,7 @@ case curve:
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
 			j := Position(parameters, i);
-			Append(~neededParamsVars, R.j);
+			Append(~invertibleVariables, R.j);
 		end for;
 		
 
@@ -1395,8 +1401,10 @@ case curve:
 		if (print_betas) then print "Semigroup:", _betas; end if;
 		
 		// Topological information
-		semiGroupInfo := SemiGroupInfo(_betas);
-		g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+		//semiGroupInfo := SemiGroupInfo(_betas);
+		//g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+		planeBranchNumbers := PlaneBranchNumbers(_betas);
+		g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
 		
 		// // Choice of monomial curve equations and their deformations
 		// eqs := allMonomialCurves(_betas); // [ [i-th equation options] ]
@@ -1617,7 +1625,7 @@ case curve:
 		// Save needed non-zero parameters as variables
 		//for i in neededParams do
 		for i in [1..numL] do
-			Append(~neededParamsVars, R.(T+i));
+			Append(~invertibleVariables, R.(T+i));
 		end for;
 		
 
@@ -1654,18 +1662,16 @@ if originalCurveString eq "_betas" then
 else
 	_betas := SemiGroup(f); // minimal set of generators of the semigroup
 end if;
-semiGroupInfo := SemiGroupInfo(_betas);
-g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
 // Multiplicities
-Nps, kps, Ns, ks := MultiplicitiesAtAllRuptureDivisors(_betas);
+planeBranchNumbers := PlaneBranchNumbers(_betas);
+g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
 // Variables in the for-loop
 L_all, sigma_all, epsilon_all := Explode(["not yet assigned" : i in [1..100]]);
 
 // topologicalRoots := []; // [ [topological roots of divisor r] ]
-ignoreDivisor := [ (not useDefaultNus[i]) and (nuChoices[i] eq []) : i in [1..g] ]; // ignore the divisor if no "nus" should be checked
 
 
-defaultNus, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList := CandidatesData(_betas, semiGroupInfo, Nps, kps);
+defaultNus, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList := CandidatesData(planeBranchNumbers);
 
 // print "\n-----------------------------------------------------------------------";
 // printf "%o\n", Sort([sigma : sigma in trueNonTopSigmas], func<x, y | -(x - y)>);
@@ -1730,7 +1736,6 @@ end if;
 if onlyCoincidingRoots then
 	print "\n-----------------------------------------------------------------------";
 	useDefaultNus := [ false : i in [1..g] ];
-	ignoreDivisor := [ false : i in [1..g] ];
 	if onlyCoincidingNonTopologicalRoots then
 		if #(&cat(coincidingNonTopologicalNus)) eq 0 then
 			printf "No coinciding non topological nus.\n";
@@ -1750,8 +1755,15 @@ if onlyCoincidingRoots then
 	end if;
 end if;
 
+nuChoices := [ (useDefaultNus[r]) select defaultNus[r] else nuChoices[r] : r in [1..g]];
 
-L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratification(<f, semiGroupInfo, ignoreDivisor, Nps, kps, Ns, ks, useDefaultNus, defaultNus, nuChoices, printToFile, outFileName, neededParamsVars>);
+L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratification(
+	f, planeBranchNumbers, nuChoices :
+	invertibleVariables:=invertibleVariables,
+	printType:=printType,
+	printToFile:=printToFile,
+	outFileName:=outFileName
+	);
 
 printf "\n";
 // printf "L_all =\n";

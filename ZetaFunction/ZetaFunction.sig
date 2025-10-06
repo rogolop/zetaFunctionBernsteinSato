@@ -17,4 +17,4 @@ S,PrintStratificationAsLatex,print [[]] containing the polynomials where a resid
 S,ZetaFunctionResidue,"Return and print stratification of the residue of the complez zeta function at candidate poles corresponding to nus in rupture divisor r, each one as [[]] which is a sequence of generators of the zero ideal, represented as sequences containing their irreducible factors",0,1,0,0,0,0,0,0,0,303,,168,168,168,168,168,-38
 S,DiscardHigherPow,Discard terms with powers of var higher than var^pow,0,3,0,0,0,0,0,0,0,148,,0,0,-1,,0,0,-1,,-1,-38,-38,-38,-38,-38
 S,Evaluate,Evaluate a multivariate rational function in x_i=r 		Necessary in construction of curve from _betas,0,3,0,0,0,0,0,0,0,-45,,0,0,148,,0,0,237,,237,-38,-38,-38,-38,-38
-S,ZetaFunctionStratification,TO DO,0,1,0,0,0,0,0,0,0,303,,168,168,168,168,168,-38
+S,ZetaFunctionStratification,TO DO,0,3,0,0,0,0,0,0,0,82,,0,0,303,,0,0,469,,168,168,168,168,168,-38

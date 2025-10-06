@@ -75,6 +75,16 @@ intrinsic MultiplicitiesAtAllRuptureDivisors(_betas::[]) -> [], [], [], []
 end intrinsic;
 
 
+intrinsic PlaneBranchNumbers(_betas::[]) -> Tup 
+	{
+		TO DO
+	}
+	g, c, betas, es, ms, ns, qs, _ms := Explode(SemiGroupInfo(_betas));
+	Nps, kps, Ns, ks := MultiplicitiesAtAllRuptureDivisors(_betas);
+	return < g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks >;
+end intrinsic;
+
+
 intrinsic MultiplicitiesAtThisRuptureDivisor(r::RngIntElt, Nps::[], kps::[], Ns::[], ks::[]) -> RngIntElt, RngIntElt, [], []
 	{
 		Multiplicities of the r-th rupture divisor and its adjacent divisors
@@ -110,11 +120,12 @@ intrinsic SemigroupElements(G::[], mu::RngIntElt) -> {}
 end intrinsic;
 
 
-intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [], []
+intrinsic Nus(planeBranchNumbers, r : discardTopologial:=true) -> [], []
 	{
 		Values of nu which may correspond to a varying root of the Bernstein-Sato polynomial, and topological roots
 	}
-	g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
+	g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
+	Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
 	
 	// Topological roots of Bernstein-Sato polynomial: 
 	// - they are roots for any topologically trivial deformation
@@ -169,7 +180,7 @@ intrinsic Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true) -> [],
 end intrinsic;
 
 
-intrinsic CandidatesData(_betas, semiGroupInfo, Nps, kps: discardTopologial:=true, discardCoincidingWithTopological:=true) -> [], {}, {}, {}, Assoc, Assoc
+intrinsic CandidatesData(planeBranchNumbers: discardTopologial:=true, discardCoincidingWithTopological:=true) -> [], {}, {}, {}, Assoc, Assoc
 	{
 		TO DO
 		
@@ -178,14 +189,13 @@ intrinsic CandidatesData(_betas, semiGroupInfo, Nps, kps: discardTopologial:=tru
 	Z := IntegerRing();
 	Q := RationalField();
 	
-	g, c, betas, es, ms, ns, qs, _ms := Explode(semiGroupInfo);
-	Nps, kps, Ns, ks := MultiplicitiesAtAllRuptureDivisors(_betas);
+	g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
 	
 	nonTopNus := [[Z| ] : r in [1..g]];
 	topologicalNus := [[Z| ] : r in [1..g]];
 	for r in [1..g] do
 		Np, kp, N, k := MultiplicitiesAtThisRuptureDivisor(r, Nps, kps, Ns, ks);
-		nonTopNus[r], topologicalNus[r] := Nus(_betas, semiGroupInfo, Np, kp, r : discardTopologial:=true);
+		nonTopNus[r], topologicalNus[r] := Nus(planeBranchNumbers, r : discardTopologial:=true);
 	end for;
 	
 	nonTopSigmas := {Q| };
