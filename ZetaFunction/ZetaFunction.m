@@ -400,20 +400,8 @@ intrinsic SimplifiedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, invertibleVari
 		end for;
 		
 		listResNew := [Rnew| Evaluate(res, newVarsInOldOrder) : res in listRes];
-		// listResNew := [Pnew| ];
-		// for res in listRes do
-		// 	coefficients, monomials := CoefficientsAndMonomials(res);
-		// 	resNew := Pnew!0;
-		// 	for i in [1..#monomials] do
-		// 		coeff := Evaluate(coefficients[i], newVarsInOldOrder);
-		// 		monomial := Evaluate(monomials[i], [0,0]);
-		// 		resNew +:= coeff * monomial;
-		// 	end for;
-		// 	Append(~listResNew, resNew);
-		// end for;
-		//listResNew := ClearDenominators(listResNew);
-		
 		listResNew := Reduce(listResNew);
+		listResNew := ClearDenominators(listResNew);
 		return listResNew;
 		
 	// elif ISA(Type(R),Fld) then
@@ -543,13 +531,15 @@ intrinsic PrintStratificationAsLatex(L::[[]], nu, sigma, Np)
 end intrinsic;
 
 
-intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List, List, List, List
+intrinsic ZetaFunctionResidue(arguments::Tup : verboseLevel:="none") -> List, List, List, List, List
 	{
-		Return and print stratification of the residue of the complez zeta function at candidate poles corresponding to nus in rupture divisor r, each one as [[]] which is a sequence of generators of the zero ideal, represented as sequences containing their irreducible factors
+		Return and print stratification of the residue of the complez zeta function at candidate poles corresponding to nus in rupture divisor r, each one as [[]] which is a sequence of generators of the zero ideal, represented as sequences containing their irreducible factors.
+		
+		verboseLevel: "none", "default", "onlyStrata", "detailed1" or "detailed2"
 	}
 	
 	// Prepare arguments
-	P, xy, pi1, pi2, u, v, lambda, ep, Np, kp, N, k, nus, r, invertibleVariables, printToFile, outFileName := Explode(arguments);
+	P, xy, pi1, pi2, u, v, lambda, ep, Np, kp, N, k, nus, r, invertibleVariables := Explode(arguments);
 	
 	x, y := Explode(xy);
 	R := BaseRing(P);
@@ -565,21 +555,6 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 	indexs_Res_all := [**];
 	sigma_all := [**];
 	epsilon_all := [**];
-	
-	// print stratification table head
-	if (#nus gt 0) then
-		if (printType eq "table") then
-			printf " nu  │     sigma_{%o,nu}     │ residue=0 => sigma NOT root & (sigma-1) root\n", r;
-			printf "─"^5*"┼";
-			printf "─"^22*"┼";
-			printf "─"^26*"\n";
-		elif (printType eq "CSV") then
-			printf "nu, sigma, sigma, residue=0 => sigma NOT root & (sigma-1) root\n";
-		elif (printType eq "Latex") then
-			printf "        $\\nu$&$\\sigma_{%o,\\nu}$&Conditions for $\\Ress{\\sigma_{%o,\\nu}}=0$\\\\", r, r;
-			printf "\\hline\\hline\n";
-		end if;
-	end if;
 	
 	nuMax := Max([0] cat nus);
 	nuOld := 0;
@@ -633,16 +608,17 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 			Append(~epsilon_all, epsilon);
 			
 			// print
-			
-			if (printType ne "none") then
+			if verboseLevel in {"default", "onlyStrata", "detailed1", "detailed2"} then
 				printf "sigma_{%o,%o}=%o\n", r, nu, sigma;
-				for AIdx->ij in Sort([elt : elt in indexs_Res]) do
-					printf "[%o,%o]\n", ij[1], ij[2];
-					IndentPush();
-					printf "%o\n", SeqElt(Res,ij);
-					IndentPop();
-				end for;
-				printf "Simplified:\n";
+				if verboseLevel in {"detailed1", "detailed2"} then
+					for AIdx->ij in Sort([elt : elt in indexs_Res]) do
+						printf "[%o,%o]\n", ij[1], ij[2];
+						IndentPush();
+						printf "%o\n", SeqElt(Res,ij);
+						IndentPop();
+					end for;
+					printf "Simplified:\n";
+				end if;
 				print L;
 				printf "\n";
 			end if;
@@ -654,19 +630,8 @@ intrinsic ZetaFunctionResidue(arguments::Tup : printType:="none") -> List, List,
 			// 	PrintStratificationAsLatex(L, nu, sigma, Np);
 			// end if;
 			// print Res;
-			
-			// Flush to file
-			if printToFile then
-				UnsetOutputFile();
-				SetOutputFile(outFileName : Overwrite := false);
-			end if;
-			
 		//until true;
 	end for;
-	
-	if (printType ne "none") then
-		printf "\n";
-	end if;
 	
 	return L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all;
 end intrinsic;
@@ -696,12 +661,12 @@ end intrinsic;
 intrinsic ZetaFunctionStratification(
 	f::RngMPolLocElt, planeBranchNumbers::Tup, nuChoices::SeqEnum :
 	invertibleVariables:=[],
-	printType:="none",
-	printToFile:=false,
-	outFileName:=""
+	verboseLevel:="none"
 ) -> List, List, List, List, List
 	{
 		TO DO
+		
+		verboseLevel: "none", "default", "onlyStrata", "detailed1" or "detailed2"
 	}
 	
 	// Prepare arguments
@@ -710,7 +675,7 @@ intrinsic ZetaFunctionStratification(
 	g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
 	
 	ignoreDivisor := [ nuChoices[i] eq [] : i in [1..g] ];
-
+	
 	// (total transform of f) = x^xExp_f * y^yExp_f * units_f * strictTransform_f
 	// (pullback of dx^dy)    = x^xExp_w * y^yExp_w * units_w
 	strictTransform_f := f;
@@ -729,10 +694,10 @@ intrinsic ZetaFunctionStratification(
 	// ### For each rupture divisor ###
 	// Non-rupture divisors don't contribute (see TFG-Roger, p.28, Cor.4.2.5 or PHD-Guillem p.87 Th.8.10)
 	for r in [1..g] do
-		print "\n------------------------------";
-		if (printType ne "none" and not ignoreDivisor[r]) then printf "Divisor E_%o\n", r; end if;
-		
-		///////////////////////////////// THEORY OK ////////////////////////////////////
+		if (not ignoreDivisor[r] and verboseLevel in {"default", "onlyStrata", "detailed1", "detailed2"}) then
+			printf "------------------------------\n";
+			printf "Divisor E_%o\n", r;
+		end if;
 		
 		// Blowup
 		// From: (0,0) singular point of the strict transform of the curve (starting point or a free point on the last rupture divisor)
@@ -762,69 +727,61 @@ intrinsic ZetaFunctionStratification(
 		// printf "e = %o\n", ep;
 		// printf "k = %o\n", ks;
 		
-		// // Find the maximum nu in this and following rupture divisors => maximum power needed in series expansions in x (?????????)
-		// // Don't discard topological roots to have enough terms for a blowup
-		// M := 0;
-		// for i in [r..g] do
-		// 	Npi, kpi, Ni, ki := MultiplicitiesAtThisRuptureDivisor(i, Nps, kps, Ns, ks);
-		// 	M := Max( [M] cat Nus(_betas, semiGroupInfo, Npi, kpi, i : discardTopologial:=false) );
-		// end for;
-		
-		// Interesting values of nu
-		// nus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
-		// nus, topologicalNus := Nus(_betas, semiGroupInfo, Np, Kp, r : discardTopologial:=true);
-		// topologicalRoots[r] := [<nu, Sigma(Np, Kp, nu)> : nu in topologicalNus];
-		
-		//if useDefaultNus[r] then
-		//	nus := defaultNus[r];
-		//else
 		nus := nuChoices[r];
-		//end if;
 		
-		// Print...
-		if not ignoreDivisor[r] then
-			if (printType eq "CSV") then
-				printf "nus, ";
-				for i->nu in nus do
-					printf "%o", nu;
-					if (i lt #nus) then printf ", "; end if;
-				end for;
-				printf "\n\n";
-			elif (printType in {"table","Latex"}) then
-				printf "nus = %o\n\n", nus;
-			end if;
+		if (not ignoreDivisor[r] and verboseLevel in {"default", "detailed1", "detailed2"}) then
+			printf "nus = %o\n", nus;
+		end if;
+		if (not ignoreDivisor[r] and verboseLevel in {"default", "onlyStrata", "detailed1", "detailed2"}) then
+			printf "------------------------------\n\n";
 		end if;
 		
-		print "------------------------------";
-		print "ZetaFunctionResidue";
-		
-		// Flush to file
-		if printToFile then
-			UnsetOutputFile();
-			SetOutputFile(outFileName : Overwrite := false);
-		end if;
-		
-		L_all[r], Res_all[r], indexs_Res_all[r], sigma_all[r], epsilon_all[r] := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], u, v, lambda, ep, Np, Kp, N, k, nus, r, invertibleVariables, printToFile, outFileName > : printType:=printType);
-		
-		// Flush to file
-		if printToFile then
-			UnsetOutputFile();
-			SetOutputFile(outFileName : Overwrite := false);
-		end if;
+		L_all[r], Res_all[r], indexs_Res_all[r], sigma_all[r], epsilon_all[r] := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], u, v, lambda, ep, Np, Kp, N, k, nus, r, invertibleVariables > : verboseLevel:=verboseLevel);
 		
 		// Prepare next iteration
 		if r lt g then
-			print "------------------------------";
-			print "Centering the singular point";
+			if (verboseLevel in {"default", "detailed1", "detailed2"}) then
+				printf "\n------------------------------\n";
+				printf "Centering the singular point\n";
+			end if;
 			
 			strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center := CenterOriginOnCurve(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, lambda);
 			// Total blowup morphism since starting point
 			PI_TOTAL := [Evaluate(t, PI_center) : t in PI_TOTAL];
 			
-			printf "lambda = %o\n\n", lambda;
+			if (verboseLevel in {"default", "detailed1", "detailed2"}) then
+				printf "lambda = %o\n", lambda;
+			end if;
 		end if;
 	end for;
 	
 	return L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all;
 end intrinsic;
+
+
+
+intrinsic ZetaFunctionStratificationDefault(
+	f::RngMPolLocElt:
+	invertibleVariables:=[],
+	verboseLevel:="default"
+) -> List, List
+	{
+		TO DO
+		
+		verboseLevel: "none", "default", "onlyStrata", "detailed1" or "detailed2"
+	}
+	_betas := SemiGroup(f);
+	planeBranchNumbers := PlaneBranchNumbers(_betas);
+	defaultNus, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList := CandidatesData(planeBranchNumbers);
+	nuChoices := defaultNus;
+	
+	L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratification(
+		f, planeBranchNumbers, nuChoices :
+		invertibleVariables:=invertibleVariables,
+		verboseLevel:="default"
+		);
+	
+	return L_all, sigma_all;
+end intrinsic;
+
 

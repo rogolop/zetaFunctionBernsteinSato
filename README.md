@@ -21,6 +21,6 @@ An article explaining the mathematical results in which the code is based will e
 
 ## Usage example
 
-See [calculateExamples.m](calculateExamples.m).
+See [calculateExample.m](calculateExample.m).
 
 

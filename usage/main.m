@@ -1666,10 +1666,6 @@ end if;
 planeBranchNumbers := PlaneBranchNumbers(_betas);
 g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
 // Variables in the for-loop
-L_all, sigma_all, epsilon_all := Explode(["not yet assigned" : i in [1..100]]);
-
-// topologicalRoots := []; // [ [topological roots of divisor r] ]
-
 
 defaultNus, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList := CandidatesData(planeBranchNumbers);
 
@@ -1760,10 +1756,12 @@ nuChoices := [ (useDefaultNus[r]) select defaultNus[r] else nuChoices[r] : r in 
 L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratification(
 	f, planeBranchNumbers, nuChoices :
 	invertibleVariables:=invertibleVariables,
-	printType:="something",
+	verboseLevel:="default",
 	printToFile:=printToFile,
 	outFileName:=outFileName
 	);
+
+printf "\n";
 
 if true then
 	printf "\n";
