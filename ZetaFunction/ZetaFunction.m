@@ -729,7 +729,7 @@ intrinsic ZetaFunctionStratification(
 	// ### For each rupture divisor ###
 	// Non-rupture divisors don't contribute (see TFG-Roger, p.28, Cor.4.2.5 or PHD-Guillem p.87 Th.8.10)
 	for r in [1..g] do
-		print "------------------------------";
+		print "\n------------------------------";
 		if (printType ne "none" and not ignoreDivisor[r]) then printf "Divisor E_%o\n", r; end if;
 		
 		///////////////////////////////// THEORY OK ////////////////////////////////////

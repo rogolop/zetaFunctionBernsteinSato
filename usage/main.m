@@ -23,13 +23,13 @@ Q := RationalField();
 quitWhenFinished   := true;
 
 // Whether to print into a file, and which one
-printToFile        := false;
-outFileNamePrefix  := "./examples/2025-09-26/out_";
+printToFile        := true;
+outFileNamePrefix  := "./examples/2025-10-09/out_";
 outFileNameSufix   := ".txt";
 // Output format: "table", "CSV", "Latex", "none"
 printType          := "table";
 // Whether to print
-printTopologial    := false;
+printTopologial    := true;
 print_betas        := true;
 print_f            := true;
 
@@ -45,11 +45,11 @@ curve              := "deformation_restricted";
 // "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
 // "4-6-13"; "6-14-43_AM";
 
-// For "_betas"
-a := 5; // a>1
-b := 7; // b>a, coprime to a
-c := 3; // c>1, coprime to a and b
-d := 2; // d>1, coprime to c
+// a,b,c pairwise coprime
+a := 5; // a>=2
+b := 7; // b>=a+1
+c := 3; // c>=2
+d := 2; // d>=1, coprime to c
 // 5, 7, 3, 2
 // 17, 19, 7, 6
 // _betas_betas       := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
@@ -66,7 +66,7 @@ _betas_betas       := [6,14,43];
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 // [36,96,292,881];
 chosenEqs_betas     := [1, 1]; // choose option for each equation
-parameters_betas    := "[17]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas    := "all"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 invertibleVariables := [];
 interactive_betas   := false;
 interactive_eqs     := false;
@@ -1765,29 +1765,32 @@ L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratifica
 	outFileName:=outFileName
 	);
 
-printf "\n";
-print "------------------------------";
-printf "RESULTS\n";
-print "------------------------------";
-printf "\n";
-for r in [1..g] do
-	for rootIdx in [1..#L_all[r]] do
-		printf "sigma_{%o,%o}=%o\n", sigma_all[r][rootIdx][1], sigma_all[r][rootIdx][2], sigma_all[r][rootIdx][3];
-		for AIdx->ij in Sort([elt : elt in indexs_Res_all[r][rootIdx]]) do
-			printf "[%o,%o]\n", ij[1], ij[2];
-			IndentPush();
-			printf "%o\n", SeqElt(Res_all[r][rootIdx],ij);
-			//printf (AIdx lt #indexs_Res_all[r][rootIdx]) select ",\n"else "\n";
-			IndentPop();
+if true then
+	printf "\n";
+	print "------------------------------";
+	printf "RESULTS\n";
+	print "------------------------------";
+	printf "\n";
+	for r in [1..g] do
+		for rootIdx in [1..#L_all[r]] do
+			printf "sigma_{%o,%o}=%o\n", sigma_all[r][rootIdx][1], sigma_all[r][rootIdx][2], sigma_all[r][rootIdx][3];
+			if false then
+				for AIdx->ij in Sort([elt : elt in indexs_Res_all[r][rootIdx]]) do
+					printf "[%o,%o]\n", ij[1], ij[2];
+					IndentPush();
+					printf "%o\n", SeqElt(Res_all[r][rootIdx],ij);
+					//printf (AIdx lt #indexs_Res_all[r][rootIdx]) select ",\n"else "\n";
+					IndentPop();
+				end for;
+				printf "Simplified:\n";
+			end if;
+			print L_all[r][rootIdx];
+			printf "\n";
 		end for;
- 		printf "Simplified:\n";
- 		print L_all[r][rootIdx];
- 		printf "\n";
 	end for;
-end for;
-// printf "sigma_all =\n"; printf "%o\n", sigma_all;
-// printf "epsilon_all =\n"; printf "%o\n", epsilon_all;
-
+	// printf "sigma_all =\n"; printf "%o\n", sigma_all;
+	// printf "epsilon_all =\n"; printf "%o\n", epsilon_all;
+end if;
 
 
 // if (printType ne "none" and printTopologial) then
