@@ -1680,7 +1680,7 @@ nuChoices := [ useDefaultNus[r] select defaultNus[r] else nuChoices[r] : r in [1
 // Print candidates info
 if printCandidatesLong then
 	// Long print
-	printf "\n-----------------------------------------------------------------------\n";
+	printf "\n_______________________________________________________________________\n";
 	printf "Non-topological candidates (#=%o)\n", #trueNonTopSigmas;
 	for sigma in Reverse(Sort([sigma : sigma in trueNonTopSigmas])) do
 		printf "%-15o", sigma;
@@ -1689,7 +1689,7 @@ if printCandidatesLong then
 		end for;
 		printf "\n";
 	end for;
-	printf "\n-----------------------------------------------------------------------\n";
+	printf "\n_______________________________________________________________________\n";
 	printf "Topological poles that coincide with 'non-topological' sigmas (#=%o)\n", #coincidingTopAndNonTopSigmas;
 	for sigma in Reverse(Sort([sigma : sigma in coincidingTopAndNonTopSigmas])) do
 		printf "%-15o", sigma;
@@ -1701,7 +1701,7 @@ if printCandidatesLong then
 		end for;
 		printf "\n";
 	end for;
-	printf "\n-----------------------------------------------------------------------\n";
+	printf "\n_______________________________________________________________________\n";
 	printf "Topological sigmas, excluding the previous set (#=%o)\n", #otherTopologicalSigmas;
 	for sigma in Reverse(Sort([sigma : sigma in otherTopologicalSigmas])) do
 		printf "%-15o", sigma;

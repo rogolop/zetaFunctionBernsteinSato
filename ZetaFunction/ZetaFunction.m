@@ -741,7 +741,7 @@ intrinsic ZetaFunctionStratification(
 		// Prepare next iteration
 		if r lt g then
 			if (verboseLevel in {"default", "detailed1", "detailed2"}) then
-			printf "\n_______________________________________________________________________\n";
+				printf "_______________________________________________________________________\n";
 				printf "Centering the singular point\n";
 			end if;
 			
@@ -772,8 +772,8 @@ intrinsic ZetaFunctionStratificationDefault(
 	}
 	_betas := SemiGroup(f);
 	planeBranchNumbers := PlaneBranchNumbers(_betas);
-	defaultNus, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList := CandidatesData(planeBranchNumbers);
-	nuChoices := defaultNus;
+	nusForPoleCandidates, nusForRootCandidatesIncludingUndetermined, nusIncludingTopological, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList, trueNonTopSigmasCoincidences, otherTopologicalSigmasCoincidences := CandidatesData(planeBranchNumbers);
+	nuChoices := nusForPoleCandidates;
 	
 	L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratification(
 		f, planeBranchNumbers, nuChoices :
