@@ -24,7 +24,7 @@ quitWhenFinished    := true;
 
 // Whether to print into a file, and which one
 printToFile         := false;
-outFileNamePrefix   := "./examples/2025-10-09/out_";
+outFileNamePrefix   := "./examples/2025-10-11/out_";
 outFileNameSufix    := ".txt";
 // Output format: "table", "CSV", "Latex", "none"
 printType           := "table";
@@ -33,31 +33,32 @@ print_betas         := true;
 print_f             := true;
 printCandidatesLong := false;
 printResults        := true;
+printResultsApij    := true;
 
 // Which set of nus should be used for each rupture divisor
-useDefaultNus       := [true, false];
+useDefaultNus       := [false, false];
 // if not useDefaultNus
-nuChoices           := [[], []];
+nuChoices           := [[11], [4,9]];
 // if useDefaultNus
 includeTopological  := false; // default false
 includeUndeterminedCandidateRoots := true; // default false
 
 
 // Choose curve
-curve               := "deformation_cassou";
+curve               := "deformation_restricted";
 // "deformation_restricted"; "deformation_GroebnerElimination"; "deformation_cassou"; "deformation_cassou_mod";
 // "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
 // "4-6-13"; "6-14-43_AM";
 
 // a,b,c pairwise coprime
-a := 5; // a>=2
-b := 7; // b>=a+1
-c := 3; // c>=2
-d := 2; // d>=1, coprime to c
+a := 2; // a>=2
+b := 3; // b>=a+1
+c := 5; // c>=2
+d := 1; // d>=1, coprime to c
 // 5, 7, 3, 2
 // 17, 19, 7, 6
-_betas_betas        := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
-// _betas_betas        := [6,14,43];
+// _betas_betas        := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
+ _betas_betas        := [15,21,175];
 // [18,48,146,441];
 // [36,96,292,881];
 // [5,7];
@@ -70,7 +71,7 @@ _betas_betas        := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 // [36,96,292,881];
 chosenEqs_betas     := [1, 1]; // choose option for each equation
-parameters_betas    := "[]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas    := "[2,62]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 invertibleVariables := [];
 interactive_betas   := false;
 interactive_eqs     := false;
@@ -1783,7 +1784,7 @@ if printResults then
 	for r in [1..g] do
 		for rootIdx in [1..#L_all[r]] do
 			printf "sigma_{%o,%o}=%o\n", sigma_all[r][rootIdx][1], sigma_all[r][rootIdx][2], sigma_all[r][rootIdx][3];
-			if false then
+			if printResultsApij then
 				for AIdx->ij in Sort([elt : elt in indexs_Res_all[r][rootIdx]]) do
 					printf "[%o,%o]\n", ij[1], ij[2];
 					IndentPush();
