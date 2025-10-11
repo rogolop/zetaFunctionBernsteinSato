@@ -695,8 +695,8 @@ intrinsic ZetaFunctionStratification(
 	// Non-rupture divisors don't contribute (see TFG-Roger, p.28, Cor.4.2.5 or PHD-Guillem p.87 Th.8.10)
 	for r in [1..g] do
 		if (not ignoreDivisor[r] and verboseLevel in {"default", "onlyStrata", "detailed1", "detailed2"}) then
-			printf "------------------------------\n";
-			printf "Divisor E_%o\n", r;
+			printf "_______________________________________________________________________\n";
+			printf "Divisor E_%o\n\n", r;
 		end if;
 		
 		// Blowup
@@ -730,18 +730,18 @@ intrinsic ZetaFunctionStratification(
 		nus := nuChoices[r];
 		
 		if (not ignoreDivisor[r] and verboseLevel in {"default", "detailed1", "detailed2"}) then
-			printf "nus = %o\n", nus;
+			printf "nus = %o\n\n", nuChoices[r];
 		end if;
-		if (not ignoreDivisor[r] and verboseLevel in {"default", "onlyStrata", "detailed1", "detailed2"}) then
-			printf "------------------------------\n\n";
-		end if;
+		// if (not ignoreDivisor[r] and verboseLevel in {"default", "onlyStrata", "detailed1", "detailed2"}) then
+		// 	printf "Stratification:\n\n";
+		// end if;
 		
 		L_all[r], Res_all[r], indexs_Res_all[r], sigma_all[r], epsilon_all[r] := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], u, v, lambda, ep, Np, Kp, N, k, nus, r, invertibleVariables > : verboseLevel:=verboseLevel);
 		
 		// Prepare next iteration
 		if r lt g then
 			if (verboseLevel in {"default", "detailed1", "detailed2"}) then
-				printf "\n------------------------------\n";
+			printf "\n_______________________________________________________________________\n";
 				printf "Centering the singular point\n";
 			end if;
 			

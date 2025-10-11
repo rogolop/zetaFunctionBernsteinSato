@@ -180,11 +180,9 @@ intrinsic Nus(planeBranchNumbers, r : discardTopologial:=true) -> [], []
 end intrinsic;
 
 
-intrinsic CandidatesData(planeBranchNumbers: discardTopologial:=true, discardCoincidingWithTopological:=true) -> [], {}, {}, {}, Assoc, Assoc
+intrinsic CandidatesData(planeBranchNumbers) -> [], [], [], {}, {}, {}, Assoc, Assoc, {}
 	{
-		TO DO
-		
-		If discardTopologial if false, discardCoincidingWithTopological is ignored.
+		Return: nusForPoleCandidates, nusForRootCandidatesIncludingUndetermined, nusIncludingTopological, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList, trueNonTopSigmasCoincidences, otherTopologicalSigmasCoincidences
 	}
 	Z := IntegerRing();
 	Q := RationalField();
@@ -231,40 +229,42 @@ intrinsic CandidatesData(planeBranchNumbers: discardTopologial:=true, discardCoi
 	trueNonTopSigmas := nonTopSigmas diff coincidingTopAndNonTopSigmas;
 	otherTopologicalSigmas := topologicalSigmas diff coincidingTopAndNonTopSigmas;
 	
-	nus := [[Z| ] : r in [1..g]];
-	if discardTopologial then
-		if discardCoincidingWithTopological then
-			// default case
-			sigmas := trueNonTopSigmas;
-		else
-			sigmas := nonTopSigmas;
-		end if;
-		for sigma in sigmas do
-			for tup in nonTopSigmaToIndexList[sigma] do
-				r, nu := Explode(tup);
-				Include(~nus[r], nu);
-			end for;
-		end for;
-	else
-		for sigma in nonTopSigmas do
-			for tup in nonTopSigmaToIndexList[sigma] do
-				r, nu := Explode(tup);
-				Include(~nus[r], nu);
-			end for;
-		end for;
-		for sigma in topologicalSigmas do
-			for tup in topologicalSigmaToIndexList[sigma] do
-				r, nu := Explode(tup);
-				Include(~nus[r], nu);
-			end for;
-		end for;
-	end if;
+	nusForPoleCandidates := [[Z| ] : r in [1..g]];
+	nusForRootCandidatesIncludingUndetermined := [[Z| ] : r in [1..g]];
+	nusIncludingTopological := [[Z| ] : r in [1..g]];
 	
-	for r in [1..g] do
-		Sort(~nus[r]);
+	for sigma in trueNonTopSigmas do
+		for tup in nonTopSigmaToIndexList[sigma] do
+			r, nu := Explode(tup);
+			Include(~nusForPoleCandidates[r], nu);
+			Include(~nusForRootCandidatesIncludingUndetermined[r], nu);
+			Include(~nusIncludingTopological[r], nu);
+		end for;
+	end for;
+	for sigma in coincidingTopAndNonTopSigmas do
+		for tup in (nonTopSigmaToIndexList[sigma] cat topologicalSigmaToIndexList[sigma]) do
+			r, nu := Explode(tup);
+			Include(~nusForRootCandidatesIncludingUndetermined[r], nu);
+			Include(~nusIncludingTopological[r], nu);
+		end for;
+	end for;
+	for sigma in otherTopologicalSigmas do
+		for tup in topologicalSigmaToIndexList[sigma] do
+			r, nu := Explode(tup);
+			Include(~nusIncludingTopological[r], nu);
+		end for;
 	end for;
 	
-	return nus, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList;
+	for r in [1..g] do
+		Sort(~nusForPoleCandidates[r]);
+		Sort(~nusForRootCandidatesIncludingUndetermined[r]);
+		Sort(~nusIncludingTopological[r]);
+	end for;
+	
+	trueNonTopSigmasCoincidences := {sigma : sigma in trueNonTopSigmas | #nonTopSigmaToIndexList[sigma] gt 1};
+	otherTopologicalSigmasCoincidences := {sigma : sigma in otherTopologicalSigmas | #topologicalSigmaToIndexList[sigma] gt 1};
+	
+	return nusForPoleCandidates, nusForRootCandidatesIncludingUndetermined, nusIncludingTopological, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList, trueNonTopSigmasCoincidences, otherTopologicalSigmasCoincidences ;
 end intrinsic;
 
 

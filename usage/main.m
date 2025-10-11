@@ -20,27 +20,31 @@ Q := RationalField();
 // ### Input ###
 
 // Whether Magma should quit when the calculations are finished
-quitWhenFinished   := true;
+quitWhenFinished    := true;
 
 // Whether to print into a file, and which one
-printToFile        := true;
-outFileNamePrefix  := "./examples/2025-10-09/out_";
-outFileNameSufix   := ".txt";
+printToFile         := false;
+outFileNamePrefix   := "./examples/2025-10-09/out_";
+outFileNameSufix    := ".txt";
 // Output format: "table", "CSV", "Latex", "none"
-printType          := "table";
-// Whether to print
-printTopologial    := true;
-print_betas        := true;
-print_f            := true;
+printType           := "table";
+// Print settings
+print_betas         := true;
+print_f             := true;
+printCandidatesLong := false;
+printResults        := true;
 
 // Which set of nus should be used for each rupture divisor
-onlyCoincidingRoots := false; // default false
-onlyCoincidingNonTopologicalRoots := onlyCoincidingRoots and true;
-useDefaultNus         := [true, true, true];
-nuChoices          := [[], [], []]; // (if not useDefaultNus)
+useDefaultNus       := [true, false];
+// if not useDefaultNus
+nuChoices           := [[], []];
+// if useDefaultNus
+includeTopological  := false; // default false
+includeUndeterminedCandidateRoots := true; // default false
+
 
 // Choose curve
-curve              := "deformation_restricted";
+curve               := "deformation_cassou";
 // "deformation_restricted"; "deformation_GroebnerElimination"; "deformation_cassou"; "deformation_cassou_mod";
 // "6-14-43_Artal"; "6-9-22_Artal"; "6-9-22_Artal_mod";
 // "4-6-13"; "6-14-43_AM";
@@ -52,8 +56,8 @@ c := 3; // c>=2
 d := 2; // d>=1, coprime to c
 // 5, 7, 3, 2
 // 17, 19, 7, 6
-// _betas_betas       := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
-_betas_betas       := [6,14,43];
+_betas_betas        := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
+// _betas_betas        := [6,14,43];
 // [18,48,146,441];
 // [36,96,292,881];
 // [5,7];
@@ -66,7 +70,7 @@ _betas_betas       := [6,14,43];
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 // [36,96,292,881];
 chosenEqs_betas     := [1, 1]; // choose option for each equation
-parameters_betas    := "all"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas    := "[]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 invertibleVariables := [];
 interactive_betas   := false;
 interactive_eqs     := false;
@@ -1646,129 +1650,136 @@ elif (printType eq "Latex") then
 	if print_f then printf "f = %o\n\n", f; end if;
 end if;
 
-
 // Flush to file
 if printToFile then
 	UnsetOutputFile();
 	SetOutputFile(outFileName : Overwrite := false);
 end if;
 
-
-// ### Algebraic information ###
-
-// Semigroup
-if originalCurveString eq "_betas" then
+// Numerical invariants
+if originalCurveString in {"deformation_restricted", "deformation_GroebnerElimination", "deformation_cassou", "deformation_cassou_mod"} then
 	_betas := _betas_betas;
 else
 	_betas := SemiGroup(f); // minimal set of generators of the semigroup
 end if;
-// Multiplicities
 planeBranchNumbers := PlaneBranchNumbers(_betas);
 g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
-// Variables in the for-loop
 
-defaultNus, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList := CandidatesData(planeBranchNumbers);
+// Candidates
+nusForPoleCandidates, nusForRootCandidatesIncludingUndetermined, nusIncludingTopological, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList, trueNonTopSigmasCoincidences, otherTopologicalSigmasCoincidences := CandidatesData(planeBranchNumbers);
 
-// print "\n-----------------------------------------------------------------------";
-// printf "%o\n", Sort([sigma : sigma in trueNonTopSigmas], func<x, y | -(x - y)>);
-// printf "%o\n", Sort([sigma : sigma in coincidingTopAndNonTopSigmas], func<x, y | -(x - y)>);
-// printf "%o\n", Sort([sigma : sigma in otherTopologicalSigmas], func<x, y | -(x - y)>);
+if includeTopological then
+	defaultNus := nusIncludingTopological;
+elif includeUndeterminedCandidateRoots then
+	defaultNus := nusForRootCandidatesIncludingUndetermined;
+else
+	defaultNus := nusForPoleCandidates;
+end if;
+nuChoices := [ useDefaultNus[r] select defaultNus[r] else nuChoices[r] : r in [1..g]];
 
-print "\n-----------------------------------------------------------------------";
-trueNonTopSigmasSorted := Sort([sigma : sigma in trueNonTopSigmas], func<x, y | -(x - y)>);
-coincidingNonTopologicalNus := [[Z| ] : r in [1..g]];
-printf "Coinciding non-topological candidates\n\n";
-for sigma in trueNonTopSigmasSorted do
-	if #nonTopSigmaToIndexList[sigma] gt 1 then
+// Print candidates info
+if printCandidatesLong then
+	// Long print
+	printf "\n-----------------------------------------------------------------------\n";
+	printf "Non-topological candidates (#=%o)\n", #trueNonTopSigmas;
+	for sigma in Reverse(Sort([sigma : sigma in trueNonTopSigmas])) do
 		printf "%-15o", sigma;
-		for tup in nonTopSigmaToIndexList[sigma] do
-			r, nu := Explode(tup);
-			Include(~coincidingNonTopologicalNus[r], nu);
-			printf " = sigma_{%-2o,%-5o}", r, nu;
+		for r_nu in nonTopSigmaToIndexList[sigma] do
+			printf " = sigma_{%-2o,%-5o}", r_nu[1], r_nu[2];
 		end for;
 		printf "\n";
-	// else
-	// 	printf "%-15o", sigma;
-	// 	r, nu := Explode(nonTopSigmaToIndexList[sigma][1]);
-	// 	printf " = sigma_{%-2o,%-5o}", r, nu;
-	// 	printf "\n";
+	end for;
+	printf "\n-----------------------------------------------------------------------\n";
+	printf "Topological poles that coincide with 'non-topological' sigmas (#=%o)\n", #coincidingTopAndNonTopSigmas;
+	for sigma in Reverse(Sort([sigma : sigma in coincidingTopAndNonTopSigmas])) do
+		printf "%-15o", sigma;
+		for r_nu in nonTopSigmaToIndexList[sigma] do
+			printf " = sigma_{%-2o,%-5o}", r_nu[1], r_nu[2];
+		end for;
+		for r_nu in topologicalSigmaToIndexList[sigma] do
+			printf " = topSigma_{%-2o,%-5o}", r_nu[1], r_nu[2];
+		end for;
+		printf "\n";
+	end for;
+	printf "\n-----------------------------------------------------------------------\n";
+	printf "Topological sigmas, excluding the previous set (#=%o)\n", #otherTopologicalSigmas;
+	for sigma in Reverse(Sort([sigma : sigma in otherTopologicalSigmas])) do
+		printf "%-15o", sigma;
+		for r_nu in topologicalSigmaToIndexList[sigma] do
+			printf " = topSigma_{%-2o,%-5o}", r_nu[1], r_nu[2];
+		end for;
+		printf "\n";
+	end for;
+else
+	// Short print
+	printf "\n_______________________________________________________________________\n";
+	printf "Coinciding non-topological candidates (#=%o)\n", #trueNonTopSigmasCoincidences;
+	for sigma in Reverse(Sort([sigma : sigma in trueNonTopSigmasCoincidences])) do
+		printf "%-15o", sigma;
+		for r_nu in nonTopSigmaToIndexList[sigma] do
+			printf " = sigma_{%-2o,%-5o}", r_nu[1], r_nu[2];
+		end for;
+		printf "\n";
+	end for;
+	if includeUndeterminedCandidateRoots or includeTopological then
+		printf "\n_______________________________________________________________________\n";
+		printf "Topological poles that coincide with 'non-topological' sigmas (#=%o)\n", #coincidingTopAndNonTopSigmas;
+		for sigma in Reverse(Sort([sigma : sigma in coincidingTopAndNonTopSigmas])) do
+			printf "%-15o", sigma;
+			for r_nu in nonTopSigmaToIndexList[sigma] do
+				printf " = sigma_{%-2o,%-5o}", r_nu[1], r_nu[2];
+			end for;
+			for r_nu in topologicalSigmaToIndexList[sigma] do
+				printf " = topSigma_{%-2o,%-5o}", r_nu[1], r_nu[2];
+			end for;
+			printf "\n";
+		end for;
 	end if;
+	if includeTopological then
+		printf "\n_______________________________________________________________________\n";
+		printf "Topological poles that coincide with topological poles (#=%o)\n", #otherTopologicalSigmasCoincidences ;
+		for sigma in Reverse(Sort([sigma : sigma in otherTopologicalSigmasCoincidences ])) do
+			printf "%-15o", sigma;
+			for r_nu in topologicalSigmaToIndexList[sigma] do
+				printf " = topSigma_{%-2o,%-5o}", r_nu[1], r_nu[2];
+			end for;
+			printf "\n";
+		end for;
+	end if;
+end if;
+
+// Print selected candidates info
+printf "\n_______________________________________________________________________\n";
+printf "Calculating stratification for the following candidates:\n";
+for r in [1..g] do
+	printf "E_%o: ", r;
+	if useDefaultNus[r] then
+		if includeTopological then
+			printf "all candidates, including topological poles of geometric origin";
+		elif includeUndeterminedCandidateRoots then
+			printf "all candidates with nu not in Gamma_%o, ignoring coincidences with topological poles/roots of geometric origin", r;
+		else
+			printf "all non-geometric candidates";
+		end if;
+	else
+		printf "user-selected nus";
+	end if;
+	printf " (#=%o):\n", #nuChoices[r];
+	IndentPush(); printf "nus = %o\n", nuChoices[r]; IndentPop();
 end for;
 printf "\n";
 
-printf "\n" cat "-"^70 cat "\n\n";
-printf "Topological poles that coincide with 'non-topological' sigmas\n\n";
-coincidingTopAndNonTopSigmasSorted := Sort([sigma : sigma in coincidingTopAndNonTopSigmas], func<x, y | -(x - y)>);
-coincidingNus := coincidingNonTopologicalNus;
-for sigma in coincidingTopAndNonTopSigmasSorted do
-	printf "%-15o", sigma;
-	for tup in nonTopSigmaToIndexList[sigma] do
-		r, nu := Explode(tup);
-		Include(~coincidingNus[r], nu);
-		printf " = sigma_{%-2o,%-5o}", r, nu;
-	end for;
-	for tup in topologicalSigmaToIndexList[sigma] do
-		r, nu := Explode(tup);
-		printf " = topSigma_{%-2o,%-5o}", r, nu;
-	end for;
-	printf "\n";
-end for;
-
-if (printType ne "none" and printTopologial) then
-	printf "\n" cat "-"^70 cat "\n\n";
-	printf "Topological sigmas, excluding the previous set\n\n";
-
-	otherTopologicalSigmasSorted := Sort([sigma : sigma in otherTopologicalSigmas], func<x, y | -(x - y)>);
-	for sigma in otherTopologicalSigmasSorted do
-		printf "%-15o", sigma;
-		for tup in topologicalSigmaToIndexList[sigma] do
-			r, nu := Explode(tup);
-			printf " = topSigma_{%-2o,%-5o}", r, nu;
-		end for;
-		printf "\n";
-	end for;
-end if;
-
-if onlyCoincidingRoots then
-	print "\n-----------------------------------------------------------------------";
-	useDefaultNus := [ false : i in [1..g] ];
-	if onlyCoincidingNonTopologicalRoots then
-		if #(&cat(coincidingNonTopologicalNus)) eq 0 then
-			printf "No coinciding non topological nus.\n";
-			quit;
-		end if;
-		printf "Selected onlyCoincidingNonTopologicalRoots\n\n";
-		nuChoices := coincidingNonTopologicalNus; // [ (#arr gt 0) select arr else [1] : arr in coincidingNonTopologicalNus];
-		printf "%o\n", nuChoices;
-	else
-		if #(&cat(coincidingNus)) eq 0 then
-			printf "No coinciding nus.\n";
-			quit;
-		end if;
-		printf "Selected onlyCoincidingRoots\n\n";
-		nuChoices := coincidingNus; // [ (#arr gt 0) select arr else [1] : arr in coincidingNus];
-		printf "%o\n", nuChoices;
-	end if;
-end if;
-
-nuChoices := [ (useDefaultNus[r]) select defaultNus[r] else nuChoices[r] : r in [1..g]];
-
+// Calculate stratification
 L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratification(
 	f, planeBranchNumbers, nuChoices :
 	invertibleVariables:=invertibleVariables,
-	verboseLevel:="default",
-	printToFile:=printToFile,
-	outFileName:=outFileName
+	verboseLevel:="default"
 	);
 
-printf "\n";
-
-if true then
-	printf "\n";
-	print "------------------------------";
-	printf "RESULTS\n";
-	print "------------------------------";
-	printf "\n";
+// Print results
+if printResults then
+	printf "\n_______________________________________________________________________\n";
+	printf "RESULTS\n\n";
 	for r in [1..g] do
 		for rootIdx in [1..#L_all[r]] do
 			printf "sigma_{%o,%o}=%o\n", sigma_all[r][rootIdx][1], sigma_all[r][rootIdx][2], sigma_all[r][rootIdx][3];
@@ -1791,48 +1802,15 @@ if true then
 end if;
 
 
-// if (printType ne "none" and printTopologial) then
-// 	if printType eq "table" then
-// 		for r in [1..g] do
-// 			if not ignoreDivisor[r] then
-// 				printf "Topological roots at divisor E_%o\n", r; 
-// 				printf " nu  │         sigma\n";
-// 				printf "─"^5*"┼";
-// 				printf "─"^22*"\n";
-// 				for tup in topologicalRoots[r] do
-// 					nu, sigma := Explode(tup);
-// 					Np := Nps[r];
-// 					printf "%4o │ %4o/%-4o = %8o\n", nu, (sigma*Np), Np, sigma;
-// 				end for;
-// 				printf "\n";
-// 			end if;
-// 		end for;
-// 	elif printType eq "Latex" then
-// 		for r in [1..g] do
-// 			if not ignoreDivisor[r] then
-// 				printf "Topological roots at divisor E_%o\n", r; 
-// 				printf "        $\\nu$&$\\sigma_{%o,\\nu}$\\\\", r;
-// 				printf "\\hline\\hline\n";
-// 				for tup in topologicalRoots[r] do
-// 					nu, sigma := Explode(tup);
-// 					Np := Nps[r];
-// 					//printf "-\\frac{%o}{%o}, ", Numerator(-sigma), Denominator(sigma);
-// 					printf "        $%4o $&$ %4o/%-4o =  %8o $\\\\\n", nu, (sigma*Np), Np, sigma;
-// 				end for;
-// 				printf "\n\n";
-// 			end if;
-// 		end for;
-// 	end if;
-// end if;
 
-// ### To do when finished ###
 
+// To do when finished
 printf "\nFinished.\n";
 if printToFile then
 	UnsetOutputFile();
 	printf "Printed to: %o\n", outFileName;
 end if;
-
 if quitWhenFinished then
 	quit;
 end if;
+
