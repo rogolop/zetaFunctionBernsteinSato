@@ -22,10 +22,6 @@ Q := RationalField();
 // Whether Magma should quit when the calculations are finished
 quitWhenFinished    := true;
 
-// Whether to print into a file, and which one
-printToFile         := false;
-outFileNamePrefix   := "./examples/2025-10-11/out_";
-outFileNameSufix    := ".txt";
 // Output format: "table", "CSV", "Latex", "none"
 printType           := "table";
 // Print settings
@@ -71,7 +67,7 @@ d := 1; // d>=1, coprime to c
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 // [36,96,292,881];
 chosenEqs_betas     := [1, 1]; // choose option for each equation
-parameters_betas    := "[2,62]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas    := "[62]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 invertibleVariables := [];
 interactive_betas   := false;
 interactive_eqs     := false;
@@ -80,11 +76,6 @@ interactive_params  := false;
 
 
 
-// Setup output
-outFileName := outFileNamePrefix*curve*outFileNameSufix;
-if printToFile and (curve notin {"deformation_restricted", "deformation_GroebnerElimination", "deformation_cassou", "deformation_cassou_mod"}) then
-	SetOutputFile(outFileName : Overwrite := true);
-end if;
 
 originalCurveString := curve;
 // Definition of:
@@ -670,10 +661,6 @@ case curve:
 		// Name
 		curve := &*[Sprint(_b)*"-" : _b in _betas];
 		curve := curve[1..#curve-1];
-		outFileName := outFileNamePrefix*curve*outFileNameSufix;
-		if printToFile then
-			SetOutputFile(outFileName : Overwrite := true);
-		end if;
 		
 		if (print_betas) then print "Semigroup:", _betas; end if;
 		
@@ -936,10 +923,6 @@ case curve:
 		// Name
 		curve := &*[Sprint(_b)*"-" : _b in _betas];
 		curve := curve[1..#curve-1];
-		outFileName := outFileNamePrefix*curve*outFileNameSufix;
-		if printToFile then
-			SetOutputFile(outFileName : Overwrite := true);
-		end if;
 		
 		if (print_betas) then print "Semigroup:", _betas; end if;
 		
@@ -1154,10 +1137,6 @@ case curve:
 		// Name
 		curve := &*[Sprint(_b)*"-" : _b in _betas];
 		curve := curve[1..#curve-1];
-		outFileName := outFileNamePrefix*curve*outFileNameSufix;
-		if printToFile then
-			SetOutputFile(outFileName : Overwrite := true);
-		end if;
 		
 		if (print_betas) then print "Semigroup:", _betas; end if;
 		
@@ -1398,10 +1377,6 @@ case curve:
 		// Name
 		curve := &*[Sprint(_b)*"-" : _b in _betas];
 		curve := curve[1..#curve-1];
-		outFileName := outFileNamePrefix*curve*outFileNameSufix;
-		if printToFile then
-			SetOutputFile(outFileName : Overwrite := true);
-		end if;
 		
 		if (print_betas) then print "Semigroup:", _betas; end if;
 		
@@ -1651,11 +1626,6 @@ elif (printType eq "Latex") then
 	if print_f then printf "f = %o\n\n", f; end if;
 end if;
 
-// Flush to file
-if printToFile then
-	UnsetOutputFile();
-	SetOutputFile(outFileName : Overwrite := false);
-end if;
 
 // Numerical invariants
 if originalCurveString in {"deformation_restricted", "deformation_GroebnerElimination", "deformation_cassou", "deformation_cassou_mod"} then
@@ -1807,10 +1777,6 @@ end if;
 
 // To do when finished
 printf "\nFinished.\n";
-if printToFile then
-	UnsetOutputFile();
-	printf "Printed to: %o\n", outFileName;
-end if;
 if quitWhenFinished then
 	quit;
 end if;
