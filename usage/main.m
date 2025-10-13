@@ -34,7 +34,7 @@ printResultsApij    := true;
 // Which set of nus should be used for each rupture divisor
 useDefaultNus       := [false, false];
 // if not useDefaultNus
-nuChoices           := [[11], [4,9]];
+nuChoices           := [[2], [5]];
 // if useDefaultNus
 includeTopological  := false; // default false
 includeUndeterminedCandidateRoots := true; // default false
@@ -47,14 +47,16 @@ curve               := "deformation_restricted";
 // "4-6-13"; "6-14-43_AM";
 
 // a,b,c pairwise coprime
-a := 2; // a>=2
-b := 3; // b>=a+1
-c := 5; // c>=2
+a := 4; // a>=2
+b := 5; // b>=a+1
+c := 7; // c>=2
 d := 1; // d>=1, coprime to c
+// 4, 5, 7, 1
+// 3, 8, 7, 1
 // 5, 7, 3, 2
 // 17, 19, 7, 6
-// _betas_betas        := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
- _betas_betas        := [15,21,175];
+_betas_betas        := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
+// _betas_betas        := [15,21,175];
 // [18,48,146,441];
 // [36,96,292,881];
 // [5,7];
@@ -67,7 +69,7 @@ d := 1; // d>=1, coprime to c
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 // [36,96,292,881];
 chosenEqs_betas     := [1, 1]; // choose option for each equation
-parameters_betas    := "[62]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas    := "[0,98]"; //"[95,96,98]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 invertibleVariables := [];
 interactive_betas   := false;
 interactive_eqs     := false;
