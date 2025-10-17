@@ -1,14 +1,13 @@
-// CURRENTLY BROKEN
-
 // units_f, units_w: multiset of terms with multiplicity
 // point types: 0 -> start, 1 -> free, 2 -> satellite
-
 
 AttachSpec("../SingularitiesDim2/IntegralClosureDim2.spec");
 AttachSpec("../ZetaFunction/ZetaFunction.spec");
 
 Q := RationalField();
-P<x,y> := LocalPolynomialRing(Q, 2);
+//P<x,y> := LocalPolynomialRing(Q, 2);
+R<t1,t2,t3> := RationalFunctionField(Q, 3);
+P<x,y> := LocalPolynomialRing(R, 2);
 
 
 // function xFactor(f)
@@ -358,9 +357,23 @@ P<x,y> := LocalPolynomialRing(Q, 2);
 // f := (y^2-x^3)^2 + x^5*y;
 // f := (y-2*x-3*x^2)^4 - x^9;
 // f := y^4 - x^9 + 17*x^5*y^2;
-f := (x^3-y^7)^2 + x*y^12 + 17*x^2*y^10;
+//f := (x^3-t1*y^7)^2 + t2*x*y^12 + 17*x^2*y^10;
+//f := (1/t1*x+y+x*y)^2 - x^5;
+f := (t2*x + 13*(t1^2+t2)*t3^2*y)^2 - x^5;
+//f := y^2-x^5;
+
+assumeNonzero := {RingOfIntegers(R)| };//t1^2+t2};
+
+
 
 printf "f = %o\n\n", f;
+print ProximityMatrix(f : ExtraPoint:=true);
+
+_betas := SemiGroup(f);
+printf "_betas = %o\n", _betas;
+planeBranchNumbers := PlaneBranchNumbers(_betas);
+g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
+printf "Nps = %o\n", Nps;
 
 strictTransform_f := f;
 xyExp_f := [0,0];
@@ -370,38 +383,31 @@ units_w := {* P!1 *};
 pointType := 0;
 PI_TOTAL := [x, y];
 
-strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType, LAMBDA, PI_blowup := Blowup(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType);
+for r in [1..g] do
+	strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType, LAMBDA, PI_blowup, assumeNonzero := Blowup(strictTransform_f, xyExp_f cat xyExp_w, units_f, units_w, pointType, assumeNonzero);
 
-PI_TOTAL := [Evaluate(t, PI_blowup) : t in PI_TOTAL];
-U := &*[t^m : t->m in units_f] * strictTransform_f;
-V := &*[t^m : t->m in units_w];
-printf "PI_TOTAL = [ %o, %o ]\n", PI_TOTAL[1], PI_TOTAL[2];
-printf "U = %o\n", U;
-printf "V = %o\n\n", V;
+	PI_TOTAL := [Evaluate(t, PI_blowup) : t in PI_TOTAL];
+	U := &*[t^m : t->m in units_f] * strictTransform_f;
+	V := &*[t^m : t->m in units_w];
+	if true then
+		printf "strictTransform_f = %o\n", strictTransform_f;
+		printf "PI_TOTAL = [ %o, %o ]\n", PI_TOTAL[1], PI_TOTAL[2];
+		printf "U = %o\n", U;
+		printf "V = %o\n", V;
+	end if;
 
+	strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center := CenterOriginOnCurve(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, LAMBDA);
 
-strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center := CenterOriginOnCurve(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, LAMBDA);
+	PI_TOTAL := [Evaluate(t, PI_center) : t in PI_TOTAL];
+	if true then
+		printf "strictTransform_f = %o\n", strictTransform_f;
+		printf "degree(strictTransform_f) = %o\n", TotalDegree(strictTransform_f);
+		printf "PI_TOTAL = [ %o, %o ]\n", PI_TOTAL[1], PI_TOTAL[2];
+	end if;
+end for;
 
-PI_TOTAL := [Evaluate(t, PI_center) : t in PI_TOTAL];
-printf "PI_TOTAL = [ %o, %o ]\n\n", PI_TOTAL[1], PI_TOTAL[2];
+printf "\nassumeNonzero =\n"; print assumeNonzero;
 
-
-
-strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType, LAMBDA, PI_blowup := Blowup(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType);
-
-PI_TOTAL := [Evaluate(t, PI_blowup) : t in PI_TOTAL];
-U := &*[t^m : t->m in units_f] * strictTransform_f;
-V := &*[t^m : t->m in units_w];
-printf "PI_TOTAL = [ %o, %o ]\n\n", PI_TOTAL[1], PI_TOTAL[2];
-printf "U = %o\n", U;
-printf "V = %o\n\n", V;
-
-
-
-strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center := CenterOriginOnCurve(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, LAMBDA);
-
-PI_TOTAL := [Evaluate(t, PI_center) : t in PI_TOTAL];
-printf "PI_TOTAL = [ %o, %o ]\n\n", PI_TOTAL[1], PI_TOTAL[2];
-
-
+printf "\nFinished.\n";
+quit;
 

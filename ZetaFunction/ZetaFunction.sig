@@ -11,12 +11,12 @@ S,E,"Gamma(l+epsilon+1) * Gamma(sigma-i+1) / Gamma(l+epsilon+sigma-i+2) * 1/ref,
 S,SeparateYTerms,"Convert each polynomial in s to a sequence of pairs [l,term], there term is the coefficient of y^l of the polynomial (as member of R[y] with the corresponding ring R)",0,2,0,0,0,0,0,0,0,83,,0,0,82,,82,-38,-38,-38,-38,-38
 S,nonconjugateResidue,"""Nonconjugate"" part of the residue of the complex zeta function, with indexing representing the derivatives of delta(x,y). Multiply the result by its conjugate to obtain the full residue (apart from the multiplying constant)",0,6,0,0,0,0,0,0,0,148,,0,0,82,,0,0,-25,,0,0,267,,0,0,83,,0,0,82,,82,83,-38,-38,-38,-38
 S,FactorizedBasis,"Get a simplified basis of polynomials, as sequences of factors without multiplicity, without denominators",0,4,0,0,0,0,0,0,0,82,,0,0,470,,0,0,83,,0,0,82,,82,-38,-38,-38,-38,-38
-S,SimplifiedBasis,Get a simplified basis of polynomials,0,4,0,0,0,0,0,0,0,82,,0,0,470,,0,0,83,,0,0,82,,82,-38,-38,-38,-38,-38
+S,SimplifiedBasis,Get a simplified basis of polynomials,0,5,0,0,0,0,0,0,0,83,,0,0,82,,0,0,470,,0,0,83,,0,0,82,,82,-38,-38,-38,-38,-38
 S,PrintStratification,print [[]] containing the polynomials where a residue is 0,1,0,1,82,0,82,4,0,0,1,0,0,0,0,-1,,0,0,-1,,0,0,-1,,0,0,82,,-38,-38,-38,-38,-38,-38
 S,PrintStratificationAsCSV,print [[]] containing the polynomials where a residue is 0,1,0,1,82,0,82,4,0,0,1,0,0,0,0,-1,,0,0,-1,,0,0,-1,,0,0,82,,-38,-38,-38,-38,-38,-38
 S,PrintStratificationAsLatex,print [[]] containing the polynomials where a residue is 0,1,0,1,82,0,82,4,0,0,1,0,0,0,0,-1,,0,0,-1,,0,0,-1,,0,0,82,,-38,-38,-38,-38,-38,-38
 S,ZetaFunctionResidue,"Return and print stratification of the residue of the complez zeta function at candidate poles corresponding to nus in rupture divisor r, each one as [[]] which is a sequence of generators of the zero ideal, represented as sequences containing their irreducible factors. 		 		verboseLevel: ""none"", ""default"", ""onlyStrata"", ""detailed1"" or ""detailed2""",0,1,0,0,0,0,0,0,0,303,,168,168,168,168,168,-38
 S,DiscardHigherPow,Discard terms with powers of var higher than var^pow,0,3,0,0,0,0,0,0,0,148,,0,0,-1,,0,0,-1,,-1,-38,-38,-38,-38,-38
 S,Evaluate,Evaluate a multivariate rational function in x_i=r 		Necessary in construction of curve from _betas,0,3,0,0,0,0,0,0,0,-45,,0,0,148,,0,0,237,,237,-38,-38,-38,-38,-38
-S,ZetaFunctionStratification,"TO DO 		 		verboseLevel: ""none"", ""default"", ""onlyStrata"", ""detailed1"" or ""detailed2""",0,3,0,0,0,0,0,0,0,82,,0,0,303,,0,0,469,,168,168,168,168,168,-38
+S,ZetaFunctionStratification,"TO DO 		 		verboseLevel: ""none"", ""default"", ""onlyStrata"", ""detailed1"" or ""detailed2""",0,3,0,0,0,0,0,0,0,82,,0,0,303,,0,0,469,,168,168,168,168,168,83
 S,ZetaFunctionStratificationDefault,"TO DO 		 		verboseLevel: ""none"", ""default"", ""onlyStrata"", ""detailed1"" or ""detailed2""",0,1,0,0,0,0,0,0,0,469,,168,168,-38,-38,-38,-38

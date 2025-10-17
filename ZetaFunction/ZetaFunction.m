@@ -362,20 +362,20 @@ intrinsic FactorizedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, invertibleVari
 end intrinsic;
 
 
-intrinsic SimplifiedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, invertibleVariables::[]) -> []
+intrinsic SimplifiedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, invertibleVariables::[], assumeNonzero::{}) -> []
 	{
 		Get a simplified basis of polynomials
 	}
-	if #indexs_Res eq 0 then return [P| 0]; end if;
+	R := BaseRing(P); // P = R[x,y]
+	if #indexs_Res eq 0 then return [R| 0]; end if;
 	
 	// Ignore which derivative of delta-function
 	listRes := [P | SeqElt(Res, ij) : ij in Sort([IJ : IJ in indexs_Res]) ];
 	
 	// Check that the residues have no terms with x,y => residues are in R
-	error if (&or[Degree(res) gt 0 : res in listRes]), "At SimplifiedBasis(Res, indexs_Res, P, invertibleVariables): Res contains x or y\nGiven arguments:", Res, ",", indexs_Res, ",", P, ",", invertibleVariables;
-
-	R := BaseRing(P); // P = R[x,y]
+	error if (&or[TotalDegree(res) gt 0 : res in listRes]), "At SimplifiedBasis(Res, indexs_Res, P, invertibleVariables): Res contains x or y\nGiven arguments:", Res, ",", indexs_Res, ",", P, ",", invertibleVariables;
 	listRes := [R| MonomialCoefficient(res, P!1) : res in listRes]; // residues are equal to the constant term in x,y
+	
 	if Type(R) eq FldFunRat then // R = Q(t_1,...,t_k)
 		nonInvertibleVariables := [ i : i in [1..Rank(R)] | i notin invertibleVariables];
 		if #invertibleVariables eq 0 then
@@ -399,18 +399,17 @@ intrinsic SimplifiedBasis(Res::[], indexs_Res::{}, P::RngMPolLoc, invertibleVari
 			newVarsInOldOrder[oldPos] := Rnew.newPos;
 		end for;
 		
-		listResNew := [Rnew| Evaluate(res, newVarsInOldOrder) : res in listRes];
-		listResNew := Reduce(listResNew);
-		listResNew := ClearDenominators(listResNew);
-		return listResNew;
-		
+		listRes := [Rnew| Evaluate(res, newVarsInOldOrder) : res in listRes];
+		listRes := Reduce(listRes);
+		listRes := ClearDenominators(listRes);
+		return listRes;
 	// elif ISA(Type(R),Fld) then
 	// 	// Can clear denominators (not taking into account invertibleVariables)
-	// 	listResNew := Reduce(listRes);
-	// 	return listResNew;
+	// 	listRes := Reduce(listRes);
+	// 	return listRes;
 	else
 		//listResNew := [P| res : res in listRes | not IsUnit(res)];
-	 	listResNew := Reduce(listRes);
+	 	listRes := Reduce(listRes);
 		return listRes;
 	end if;
 end intrinsic;
@@ -539,7 +538,7 @@ intrinsic ZetaFunctionResidue(arguments::Tup : verboseLevel:="none") -> List, Li
 	}
 	
 	// Prepare arguments
-	P, xy, pi1, pi2, u, v, lambda, ep, Np, kp, N, k, nus, r, invertibleVariables := Explode(arguments);
+	P, xy, pi1, pi2, u, v, lambda, ep, Np, kp, N, k, nus, r, invertibleVariables, assumeNonzero := Explode(arguments);
 	
 	x, y := Explode(xy);
 	R := BaseRing(P);
@@ -596,17 +595,6 @@ intrinsic ZetaFunctionResidue(arguments::Tup : verboseLevel:="none") -> List, Li
 			// Calculate residue
 			Res, indexs_Res := nonconjugateResidue(DPhi_terms, indexs_DPhi, sigma, lambda, epsilon, ep);
 			
-			// Basis of the ideal whose roots make the residue =0
-			//L := FactorizedBasis(Res, indexs_Res, P, invertibleVariables);
-			L := SimplifiedBasis(Res, indexs_Res, P, invertibleVariables);
-			
-			// Storage
-			Append(~L_all, L);
-			Append(~Res_all, Res);
-			Append(~indexs_Res_all, indexs_Res);
-			Append(~sigma_all, <r, nu,sigma>);
-			Append(~epsilon_all, epsilon);
-			
 			// print
 			if verboseLevel in {"default", "onlyStrata", "detailed1", "detailed2"} then
 				printf "sigma_{%o,%o}=%o\n", r, nu, sigma;
@@ -619,17 +607,24 @@ intrinsic ZetaFunctionResidue(arguments::Tup : verboseLevel:="none") -> List, Li
 					end for;
 					printf "Simplified:\n";
 				end if;
+			end if;
+			
+			// Basis of the ideal whose roots make the residue =0
+			//L := FactorizedBasis(Res, indexs_Res, P, invertibleVariables);
+			L := SimplifiedBasis(Res, indexs_Res, P, invertibleVariables, assumeNonzero);
+			
+			// Storage
+			Append(~L_all, L);
+			Append(~Res_all, Res);
+			Append(~indexs_Res_all, indexs_Res);
+			Append(~sigma_all, <r, nu,sigma>);
+			Append(~epsilon_all, epsilon);
+			
+			// print
+			if verboseLevel in {"default", "onlyStrata", "detailed1", "detailed2"} then
 				print L;
 				printf "\n";
 			end if;
-			// if (printType eq "table") then
-			// 	PrintStratification(L, nu, sigma, Np);
-			// elif (printType eq "CSV") then
-			// 	PrintStratificationAsCSV(L, nu, sigma, Np);
-			// elif (printType eq "Latex") then
-			// 	PrintStratificationAsLatex(L, nu, sigma, Np);
-			// end if;
-			// print Res;
 		//until true;
 	end for;
 	
@@ -660,9 +655,10 @@ end intrinsic;
 
 intrinsic ZetaFunctionStratification(
 	f::RngMPolLocElt, planeBranchNumbers::Tup, nuChoices::SeqEnum :
+	assumeNonzero:={},
 	invertibleVariables:=[],
 	verboseLevel:="none"
-) -> List, List, List, List, List
+) -> List, List, List, List, List, {}
 	{
 		TO DO
 		
@@ -673,8 +669,10 @@ intrinsic ZetaFunctionStratification(
 	P<x,y> := Parent(f);
 	R := BaseRing(P);
 	g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
-	
-	ignoreDivisor := [ nuChoices[i] eq [] : i in [1..g] ];
+	if Type(R) eq FldFunRat then
+		assumeNonzero := {RingOfIntegers(R)| tup[1] : tup in Factorization(Numerator(h)) cat Factorization(Denominator(h)), h in assumeNonzero};
+	end if;
+	//error if &or[g notin RingOfIntegers(R) : g in assumeNonzero], "At ZetaFunctionStratification(): assumeNonzero contains elements with denominators";
 	
 	// (total transform of f) = x^xExp_f * y^yExp_f * units_f * strictTransform_f
 	// (pullback of dx^dy)    = x^xExp_w * y^yExp_w * units_w
@@ -694,7 +692,7 @@ intrinsic ZetaFunctionStratification(
 	// ### For each rupture divisor ###
 	// Non-rupture divisors don't contribute (see TFG-Roger, p.28, Cor.4.2.5 or PHD-Guillem p.87 Th.8.10)
 	for r in [1..g] do
-		if (not ignoreDivisor[r] and verboseLevel in {"default", "onlyStrata", "detailed1", "detailed2"}) then
+		if (verboseLevel in {"default", "onlyStrata", "detailed1", "detailed2"}) then
 			printf "_______________________________________________________________________\n";
 			printf "Divisor E_%o\n\n", r;
 		end if;
@@ -702,7 +700,12 @@ intrinsic ZetaFunctionStratification(
 		// Blowup
 		// From: (0,0) singular point of the strict transform of the curve (starting point or a free point on the last rupture divisor)
 		// To: next rupture divisor
-		strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType, lambda, ep, PI_blowup := Blowup(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType);
+		strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType, lambda, PI_blowup, assumeNonzero := Blowup(strictTransform_f, xyExp_f cat xyExp_w, units_f, units_w, pointType, assumeNonzero);
+		if (verboseLevel in {"default", "detailed1", "detailed2"}) then
+			printf "lambda = %o\n", lambda;
+		end if;
+		
+		ep := es[r];
 		// Total blowup morphism since starting point
 		PI_TOTAL := [Evaluate(t, PI_blowup) : t in PI_TOTAL];
 		// Units
@@ -729,14 +732,11 @@ intrinsic ZetaFunctionStratification(
 		
 		nus := nuChoices[r];
 		
-		if (not ignoreDivisor[r] and verboseLevel in {"default", "detailed1", "detailed2"}) then
+		if (verboseLevel in {"default", "detailed1", "detailed2"}) then
 			printf "nus = %o\n\n", nuChoices[r];
 		end if;
-		// if (not ignoreDivisor[r] and verboseLevel in {"default", "onlyStrata", "detailed1", "detailed2"}) then
-		// 	printf "Stratification:\n\n";
-		// end if;
 		
-		L_all[r], Res_all[r], indexs_Res_all[r], sigma_all[r], epsilon_all[r] := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], u, v, lambda, ep, Np, Kp, N, k, nus, r, invertibleVariables > : verboseLevel:=verboseLevel);
+		L_all[r], Res_all[r], indexs_Res_all[r], sigma_all[r], epsilon_all[r] := ZetaFunctionResidue(< P, [x,y], PI_TOTAL[1], PI_TOTAL[2], u, v, lambda, ep, Np, Kp, N, k, nus, r, invertibleVariables, assumeNonzero > : verboseLevel:=verboseLevel);
 		
 		// Prepare next iteration
 		if r lt g then
@@ -748,20 +748,17 @@ intrinsic ZetaFunctionStratification(
 			strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center := CenterOriginOnCurve(strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, lambda);
 			// Total blowup morphism since starting point
 			PI_TOTAL := [Evaluate(t, PI_center) : t in PI_TOTAL];
-			
-			if (verboseLevel in {"default", "detailed1", "detailed2"}) then
-				printf "lambda = %o\n", lambda;
-			end if;
 		end if;
 	end for;
 	
-	return L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all;
+	return L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all, assumeNonzero;
 end intrinsic;
 
 
 
 intrinsic ZetaFunctionStratificationDefault(
-	f::RngMPolLocElt:
+	f::RngMPolLocElt :
+	assumeNonzero:={},
 	invertibleVariables:=[],
 	verboseLevel:="default"
 ) -> List, List

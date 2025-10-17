@@ -30,7 +30,7 @@ intrinsic SemiGroupInfo(_betas::[]) -> Tup
 	_ms := [_betas[i] div es[i] : i in [1..g+1]]; // _m_i=_beta_i/e_i (see PHD-Guillem, p.25)
 	qs := [0] cat [ms[i] - ns[i]*ms[i-1] : i in [2..g+1]]; // q_i=m_i-n_i*m_{i-1} (see PHD-Guillem, p.25)
 	c := ns[g+1]*_betas[g+1] - betas[g+1] - (n-1); // Conductor of the semigroup / Milnor number, c=n_g*_beta_g-beta_g-(n-1) (see PHD-Guillem, p.25)
-
+	
 	// Characteristic exponents
 	//[betas[i] / n : i in [1..g+1]];
 	//[ms[i] / &*(ns[2..i+1]) : i in [1..g+1]];
@@ -159,16 +159,16 @@ intrinsic Nus(planeBranchNumbers, r : discardTopologial:=true) -> [], []
 	
 	mu_r := ns[r+1] * _ms[r+1] - ms[r+1] - &*(ns[2..(r+1)]) + 1;
 	Gamma_r_elements := SemigroupElements(Gamma_r, mu_r - 1);
-    Gamma_r_elements := Sort([nu : nu in Gamma_r_elements]);
-    gaps := Reverse([mu_r - 1 - a : a in Gamma_r_elements]);
-    
+	Gamma_r_elements := Sort([nu : nu in Gamma_r_elements]);
+	gaps := Reverse([mu_r - 1 - a : a in Gamma_r_elements]);
+	
 	// Discard nus corresponding to the other divisors crossing the r-th exceptional divisor (they never correspond to roots of the Bernstein-Sato-polynomial, and they may give infinities and zeros at the calculation of the residue of the complex zeta function)
 	// Conditions: _beta_r*sigma not integer
 	//             e_{r-1}*sigma not integer
 	// (see TFG-Roger, p.28, Th.4.2.6)
 	Z := IntegerRing();
-    nonTopNus := [nu : nu in gaps | _betas[r+1]*Sigma(Np,kp,nu) notin Z and es[r]*Sigma(Np,kp,nu) notin Z];
-    topologicalNus := [nu : nu in (Gamma_r_elements cat [mu_r..(Np-1)]) | _betas[r+1]*Sigma(Np,kp,nu) notin Z and es[r]*Sigma(Np,kp,nu) notin Z];
+	nonTopNus := [nu : nu in gaps | _betas[r+1]*Sigma(Np,kp,nu) notin Z and es[r]*Sigma(Np,kp,nu) notin Z];
+	topologicalNus := [nu : nu in (Gamma_r_elements cat [mu_r..(Np-1)]) | _betas[r+1]*Sigma(Np,kp,nu) notin Z and es[r]*Sigma(Np,kp,nu) notin Z];
 	
 	if discardTopologial then
 		nus := nonTopNus;
@@ -290,34 +290,34 @@ function strictPart(f)
 	
 	A := xFactor(f);
 	B := yFactor(f);
-	return ExactQuotient(f, x^A*y^B), A, B;
+	g := ExactQuotient(f, x^A*y^B);
+	if TotalDegree(g) lt 1 and B gt 0 then
+		B -:= 1;
+		g *:= y;
+	end if;
+	return g, A, B;
 end function;
 
 
 function TangentTerm(f)
 	// Terms of lowest degree of f, excluding factors x,y
-	P := Parent(f); x := P.1; y := P.2;
-	
 	// assert f eq strictPart(f);
-	
-	// Simultaneously search lowest degree and store monomials of that degree
 	ms := Monomials(f);
-	tan := 0;
-	min_deg := Infinity();
+	P := Parent(f); min_deg := Infinity(); min_deg_terms := {P| };
 	for m in ms do
-		deg := Degree(m);
+		deg := TotalDegree(m);
 		if deg lt min_deg then
 			min_deg := deg;
-			tan := MonomialCoefficient(f, m) * m;
+			min_deg_terms := {P| m};
 		elif deg eq min_deg then
-			tan +:= MonomialCoefficient(f, m) * m;
+			Include(~min_deg_terms, m);
 		end if;
 	end for;
-	return tan;
+	return &+[P| MonomialCoefficient(f,m) * m : m in min_deg_terms];
 end function;
 
 
-intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyExp_w::[], units_f::SetMulti, units_w::SetMulti, pointType::RngIntElt) -> RngMPolLocElt, [], [], SetMulti, SetMulti, RngIntElt, FldElt, RngIntElt, []
+intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMulti, units_w::SetMulti, pointType::RngIntElt, assumeNonzero::{}) -> RngMPolLocElt, [], [], SetMulti, SetMulti, RngIntElt, FldElt, [], {}
 	{
 		Blowup from one rupture divisor to the next one
 		
@@ -335,113 +335,171 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyExp_w::[], uni
 		- the other crossing exceptional divsor (at satellite points): y=0
 		- strictTransform_f may have any tangent
 	}
-	P := Parent(strictTransform_f); x := P.1; y := P.2; R := BaseRing(P);
-	xExp_f, yExp_f := Explode(xyExp_f);
-	xExp_w, yExp_w := Explode(xyExp_w);
+	debugPrint := false;
 	
-	blownUpRupture := false;
+	P := Parent(strictTransform_f); x := P.1; y := P.2; R := BaseRing(P);
+	xExp_f, yExp_f, xExp_w, yExp_w := Explode(xyExp_fw);
+	
 	lambda := R!0;
 	e := 0;
 	PI_blowup := [x, y];
 	
-	while (not blownUpRupture) do
-		tan := TangentTerm(strictTransform_f);
+	if debugPrint then printf "Start Blowup\n"; end if;
+	count := 0;
+	while count lt 10 do
+		count +:= 1;
 		
-		if (Length(tan) eq 1) then
-			if (Exponents(tan)[1] gt 0) then
-				// Case tan = C * x^e
-				pi := [x*y, x];
+		tan := TangentTerm(strictTransform_f);
+		if debugPrint then
+			printf "\n--------------------\n";
+			printf "pointType = %o\n", pointType;
+			printf "strictTransform_f = %o\n", strictTransform_f;
+			printf "tan = %o\n", tan;
+		end if;
+		error if (TotalDegree(tan) le 0), "At Blowup(): Tangent term is constant\nstrictTransform_f=", strictTransform_f, "\n tangent=", tan; // Should never happen
+		
+		if pointType eq 0 then
+			if debugPrint then printf "pointType eq 0\n"; end if;
+			// Ensure x=0 not tangent at initial point
+			if Degree(tan,2) eq 0 then
+				if debugPrint then printf "Tangent=C*x^e => change of variables (y,x) to make x=0 not tangent\n"; end if;
+				// Tangent=C*x^e => change of variables (y,x) to make x=0 not tangent
+				
+				pi := [y, x];
 				PI_blowup := [Evaluate(t, pi) : t in PI_blowup];
 				
-				// x^xExp * y^yExp -> (x*y)^xExp * x^yExp = x^(xExp+yExp) * y^xExp
-				xExp_f, yExp_f := Explode(< xExp_f + yExp_f, xExp_f >);
-				xExp_w, yExp_w := Explode(< xExp_w + yExp_w, xExp_w >);
-				
-				// Blow up each term, preserve multiplicity
-				// They are units and will be units after blowups: no common x,y
+				// The following should be irrelevant:
+				xExp_f, yExp_f := Explode(< yExp_f, xExp_f >);
+				xExp_w, yExp_w := Explode(< yExp_w, xExp_w >);
 				units_f := {* Evaluate(t, pi)^^m : t -> m in units_f *};
 				units_w := {* Evaluate(t, pi)^^m : t -> m in units_w *};
 				
+				// Strict transform of f
 				strictTransform_f, A, B := strictPart(Evaluate(strictTransform_f, pi));
 				xExp_f +:= A;
 				yExp_f +:= B;
 				
-				// Pullback of dx^dy by pi
-				// Ignoring multiplicative constant (-1) in w
-				xExp_w +:= 1;
+				// dy^dx = -dx^dy
+				Include(~units_w, -1);
 				
-				if (pointType eq 0) then
-					pointType := 1;
-				else
-					pointType := 2;
-				end if;
-				
+				if debugPrint then printf "strictTransform_f = %o\n", strictTransform_f; end if;
 			else
-				// Case tan = C * y^e
-				pi := [x, x*y];
-				PI_blowup := [Evaluate(t, pi) : t in PI_blowup];
-				
-				// x^xExp * y^yExp -> x^xExp * (x*y)^yExp = x^(xExp+yExp) * y^yExp
-				xExp_f, yExp_f := Explode(< xExp_f + yExp_f, yExp_f >);
-				xExp_w, yExp_w := Explode(< xExp_w + yExp_w, yExp_w >);
-				
-				// Blow up each term, preserve multiplicity
-				// They are units and will be units after blowups: no common x,y
-				units_f := {* Evaluate(t, pi)^^m : t -> m in units_f *};
-				units_w := {* Evaluate(t, pi)^^m : t -> m in units_w *};
-				
-				strictTransform_f, A, B := strictPart(Evaluate(strictTransform_f, pi));
-				xExp_f +:= A;
-				yExp_f +:= B;
-				
-				// Pullback of dx^dy by pi
-				xExp_w +:= 1;
-				
-				if (pointType eq 2) then
-					pointType := 2;
-				else
-					pointType := 1;
+				if (Degree(tan,1) ne 0) then
+					// Not tan=C*y^e => tan=C*(a*x + b*y)^e
+					
+					// Remove common multiplicative unit
+					num := GCD([Numerator(coeff) : coeff in Coefficients(tan)]);
+					den := GCD([Denominator(coeff) : coeff in Coefficients(tan)]);
+					tan := tan * den / num;
+					// tan=(a*x + b*y)^e
+					
+					e := Degree(tan, y);
+					bToTheE := MonomialCoefficient(tan, y^e);
+					if debugPrint then
+						printf "bToTheE = %o\n", bToTheE;
+						print &*[R| tup[1] : tup in Factorization(Numerator(bToTheE))];
+						print &*[R| tup[1] : tup in Factorization(Denominator(bToTheE))];
+					end if;
+					
+					if Type(R) eq FldFunRat then // R = Q(t_1,...,t_k) 
+						if bToTheE notin BaseRing(R) then // bToTheE depends on t_i
+							bNonzeroFactors := [RingOfIntegers(R)| tup[1] : tup in Factorization(Numerator(bToTheE)) cat Factorization(Denominator(bToTheE))];
+							//bNonzeroFactors := Reduce(bNonzeroFactors);
+							firstPrint := true;
+							for h in bNonzeroFactors do
+								if h notin assumeNonzero then
+								//if h notin ideal<RingOfIntegers(R)| assumeNonzero> then
+									if firstPrint then printf "\n"; firstPrint := false; end if;
+									printf "WARNING! Assuming that the following is nonzero:\n"; print h;
+									Include(~assumeNonzero, h);
+									//assumeNonzero := Reduce(assumeNonzero);
+								end if;
+							end for;
+						end if;
+					end if;
 				end if;
-				
 			end if;
-		else
-			// Case tan = C * (x-lambda*y)^e, lambda =/= 0
+		end if;
+		
+		if (pointType ne 0) and (Length(tan) eq 1) and (Exponents(tan)[2] eq 0) and (Exponents(tan)[1] gt 0) then
+			if debugPrint then printf "Tangent=C*x^e => next point is satellite\n"; end if;
+			// Tangent=C*x^e => next point is satellite
+			pointType := 2;
 			
-			// Lambda
-			e := Degree(tan, y);
-			C := MonomialCoefficient(tan, x^e);
-			// tan = C*x^e - C*e*lambda*x^(e-1)*y + ...
-			lambda := MonomialCoefficient(tan, x^(e-1)*y) / (- C * e);
+			pi := [x*y, x];
+			PI_blowup := [Evaluate(t, pi) : t in PI_blowup];
+			
+			// x^xExp * y^yExp -> (x*y)^xExp * x^yExp = x^(xExp+yExp) * y^xExp
+			xExp_f, yExp_f := Explode(< xExp_f + yExp_f, xExp_f >);
+			xExp_w, yExp_w := Explode(< xExp_w + yExp_w, xExp_w >);
+			
+			// Blow up the units, preserve multiplicity
+			// They will continue to be units after blowup (no common x,y)
+			units_f := {* Evaluate(t, pi)^^m : t -> m in units_f *};
+			units_w := {* Evaluate(t, pi)^^m : t -> m in units_w *};
+			
+			// Blow up the strict transform of f
+			strictTransform_f, A, B := strictPart(Evaluate(strictTransform_f, pi));
+			xExp_f +:= A;
+			yExp_f +:= B;
+			
+			// Pullback of dx^dy by pi
+			// dx^dy -> d(x*y)^dx = (y dx + x dy)^dx = -x dx^dy
+			xExp_w +:= 1;
+			Include(~units_w, -1);
+		else
+			if debugPrint then printf "Case not tangent to x=0\n"; end if;
+			// Case not tangent to x=0
 			
 			pi := [x, x*y];
-			
 			PI_blowup := [Evaluate(t, pi) : t in PI_blowup];
 			
 			// x^xExp * y^yExp -> x^xExp * (x*y)^yExp = x^(xExp+yExp) * y^yExp
 			xExp_f, yExp_f := Explode(< xExp_f + yExp_f, yExp_f >);
 			xExp_w, yExp_w := Explode(< xExp_w + yExp_w, yExp_w >);
 			
-			// Blow up each term, preserve multiplicity
-			// They are units and will be units after blowups: no common x,y
+			// Blow up the units, preserve multiplicity
+			// They will continue to be units after blowup (no common x,y)
 			units_f := {* Evaluate(t, pi)^^m : t -> m in units_f *};
 			units_w := {* Evaluate(t, pi)^^m : t -> m in units_w *};
 			
+			// Blow up the strict transform of f
 			strictTransform_f, A, B := strictPart(Evaluate(strictTransform_f, pi));
 			xExp_f +:= A;
 			yExp_f +:= B;
 			
 			// Pullback of dx^dy by pi
+			// dx^dy -> dx^d(x*y) = dx^(y dx + x dy) = x dx^dy
 			xExp_w +:= 1;
 			
-			if (pointType eq 2) then
-				pointType := 1;
-				blownUpRupture := true;
+			if debugPrint then printf "strictTransform_f = %o\n", strictTransform_f; end if;
+			
+			g0y := Evaluate(strictTransform_f, [0,y]); // g(0,y) = C*(y-a)^d = C*y^d - C*d*a*y^(d-1) + ...
+			if debugPrint then printf "g0y = %o\n", g0y; end if;
+			d := TotalDegree(g0y); // >=1
+			if debugPrint then printf "d = %o\n", d; end if;
+			C := MonomialCoefficient(g0y, y^d);
+			if debugPrint then printf "C = %o\n", C; end if;
+			Cda := MonomialCoefficient(g0y, y^(d-1));
+			a := (-1/d) * Cda / C;
+			if debugPrint then printf "a = %o\n", a; end if;
+			
+			if pointType eq 2 then
+				if a eq 0 then
+					if debugPrint then printf "Satellite to satellite\n"; end if;
+					pointType := 2;
+				else
+					if debugPrint then printf "Free point on a rupture divisor\n"; end if;
+					// Free point on a rupture divisor
+					pointType := 1;
+					break;
+				end if;
 			else
+				if debugPrint then printf "Free point\nCenter the point\n"; end if;
+				// Free point
 				pointType := 1;
 				
-				// Center intersecion with current exceptional divisor to (0,0)
-				
-				pi := [x, (1-y)/lambda];
+				pi := [x, a + y];
 				PI_blowup := [Evaluate(t, pi) : t in PI_blowup];
 				
 				// Change variables of each term, preserve multiplicity
@@ -450,7 +508,7 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyExp_w::[], uni
 				units_f := {* Evaluate(t, pi)^^m : t -> m in units_f *};
 				units_w := {* Evaluate(t, pi)^^m : t -> m in units_w *};
 				
-				// x^xExp * y^yExp -> x^xExp * ((1-y)/lambda)^yExp
+				// x^xExp * y^yExp -> x^xExp * (y-a)^yExp
 				Include(~units_f, (pi[2])^^yExp_f);
 				Include(~units_w, (pi[2])^^yExp_w);
 				yExp_f := 0;
@@ -460,13 +518,23 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyExp_w::[], uni
 				xExp_f +:= A;
 				yExp_f +:= B;
 				
-				// Pullback of dx^dy by pi
-				// Ignoring multiplicative constant (-1/lambda) in w
+				// dx^d(y-a) = dx^dy
+				
+				if debugPrint then printf "strictTransform_f = %o\n", strictTransform_f; end if;
 			end if;
 		end if;
 	end while;
 	
-	return strictTransform_f, [xExp_f,yExp_f], [xExp_w,yExp_w], units_f, units_w, pointType, lambda, e, PI_blowup;
+	if debugPrint then printf "strictTransform_f = %o\n", strictTransform_f; end if;
+	// Free point on a rupture divisor (not centered)
+	// y-a=...*(1-lambda*y) => lambda=1/a
+	lambda := 1 / a; // "a" better be invertible or we have a problem
+	if debugPrint then printf "lambda = %o\n", lambda; end if;
+	
+	if debugPrint then printf "\n"; end if;
+	if debugPrint then printf "End Blowup\n"; end if;
+	
+	return strictTransform_f, [xExp_f,yExp_f], [xExp_w,yExp_w], units_f, units_w, pointType, lambda, PI_blowup, assumeNonzero;
 end intrinsic;
 
 
@@ -476,11 +544,20 @@ intrinsic CenterOriginOnCurve(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyE
 		
 		Sends (0,0) to (0,1), (0,infinity) to (0,infinity)
 	}
+	debugPrint := false;
+	
 	P := Parent(strictTransform_f); x := P.1; y := P.2; R := BaseRing(P);
 	xExp_f, yExp_f := Explode(xyExp_f);
 	xExp_w, yExp_w := Explode(xyExp_w);
 	
 	// Center intersecion with current exceptional divisor to (0,0)
+	if debugPrint then
+		printf "\n";
+		printf "--------------------\n";
+		printf "Start CenterOriginOnCurve\n";
+		printf "\n";
+		printf "strictTransform_f = %o\n", strictTransform_f;
+	end if;
 	
 	pi := [x, (1-y)/lambda];
 	
@@ -501,7 +578,13 @@ intrinsic CenterOriginOnCurve(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyE
 	yExp_f +:= B;
 	
 	// Pullback of dx^dy by pi
-	// Ignoring multiplicative constant (-1/lambda) in w
+	// dx^d((1-y)/lambda) = -1/lambda dx^dy
+	Include(~units_w, -1/lambda);
+	
+	if debugPrint then
+		printf "\nstrictTransform_f = %o\n", strictTransform_f;
+		printf "\nEnd CenterOriginOnCurve\n";
+	end if;
 	
 	return strictTransform_f, [xExp_f,yExp_f], [xExp_w,yExp_w], units_f, units_w, pi;
 end intrinsic;

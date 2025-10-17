@@ -28,7 +28,7 @@ printType           := "table";
 print_betas         := true;
 print_f             := true;
 printCandidatesLong := false;
-printResults        := true;
+printResults        := false;
 printResultsApij    := true;
 
 // Which set of nus should be used for each rupture divisor
@@ -69,7 +69,7 @@ _betas_betas        := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 // [36,96,292,881];
 chosenEqs_betas     := [1, 1]; // choose option for each equation
-parameters_betas    := "[0,98]"; //"[95,96,98]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+parameters_betas    := "[0]"; //"[95,96,98]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
 invertibleVariables := [];
 interactive_betas   := false;
 interactive_eqs     := false;
@@ -1628,6 +1628,45 @@ elif (printType eq "Latex") then
 	if print_f then printf "f = %o\n\n", f; end if;
 end if;
 
+// print proximity matrix
+printf "Proximity:\n";
+proxMat := ProximityMatrix(_betas : ExtraPoint:=true);
+//print proxMat;
+proxMatSize := Nrows(proxMat);
+//if proxMatSize ge 100 then printf "   "; for col in [1..proxMatSize] do printf "%1o", col div 100; end for; printf "\n"; end if;
+//printf "    "; for col in [1..proxMatSize] do printf "%1o", (col ge 10) select col div 10 else " "; end for; printf "\n";
+//printf "    "; for col in [1..proxMatSize] do printf "%1o", col mod 10; end for; printf "\n";
+for row in [1..proxMatSize] do
+	//printf "%3o ", row;
+	for col in [1..row] do
+		case proxMat[row,col]:
+			when -1:
+				if &+[Z| proxMat[row2,col]:row2 in [row+1..proxMatSize]] eq 0 then
+					if &+[Z| proxMat[row,col2]:col2 in [1..col-1]] eq 0 then
+						printf "└";
+					else
+						printf "┴";
+					end if;
+				else
+					if &+[Z| proxMat[row,col2]:col2 in [1..col-1]] eq 0 then
+						printf "├";
+					else
+						printf "┼";
+					end if;//├└L┴┼
+				end if;
+			when 1: printf "%o", row-1;
+			else:
+				if &+[Z| proxMat[row,col2]:col2 in [1..col-1]] eq 0 then
+					printf " ";
+				else
+					printf "─"; //─├└L
+				end if;
+		end case;
+	end for;
+	printf "\n";
+end for;
+printf "\n";
+
 
 // Numerical invariants
 if originalCurveString in {"deformation_restricted", "deformation_GroebnerElimination", "deformation_cassou", "deformation_cassou_mod"} then
@@ -1743,8 +1782,9 @@ end for;
 printf "\n";
 
 // Calculate stratification
-L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratification(
+L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all, assumeNonzero := ZetaFunctionStratification(
 	f, planeBranchNumbers, nuChoices :
+	assumeNonzero:={},
 	invertibleVariables:=invertibleVariables,
 	verboseLevel:="default"
 	);
