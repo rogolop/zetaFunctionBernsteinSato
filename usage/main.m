@@ -22,9 +22,10 @@ Q := RationalField();
 // Whether Magma should quit when the calculations are finished
 quitWhenFinished    := true;
 
+// Print settings
 // Output format: "table", "CSV", "Latex", "none"
 printType           := "table";
-// Print settings
+verboseLevel        := "default"; // "none", "default", "onlyStrata", or "detailed"
 print_betas         := true;
 print_f             := true;
 printCandidatesLong := false;
@@ -32,9 +33,9 @@ printResults        := false;
 printResultsApij    := true;
 
 // Which set of nus should be used for each rupture divisor
-useDefaultNus       := [false, false];
+useDefaultNus       := [true, true];
 // if not useDefaultNus
-nuChoices           := [[2], [5]];
+nuChoices           := [[2], [2,3,4,5]];
 // if useDefaultNus
 includeTopological  := false; // default false
 includeUndeterminedCandidateRoots := true; // default false
@@ -55,8 +56,9 @@ d := 1; // d>=1, coprime to c
 // 3, 8, 7, 1
 // 5, 7, 3, 2
 // 17, 19, 7, 6
-_betas_betas        := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
-// _betas_betas        := [15,21,175];
+//_betas_betas        := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
+_betas_betas        := [6,14,43];
+// [15,21,175];
 // [18,48,146,441];
 // [36,96,292,881];
 // [5,7];
@@ -69,8 +71,8 @@ _betas_betas        := [a*c,b*c,a*b*(c+d)]; //[7*4,9*4,7*9*4+7*9*3];
 // [18,45,93,281]; -> 2-5|3-4|3-5 t=[1,73,235] nus=[[], [1,3,4], [2,3,5]]; 
 // [36,96,292,881];
 chosenEqs_betas     := [1, 1]; // choose option for each equation
-parameters_betas    := "[0]"; //"[95,96,98]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
-invertibleVariables := [];
+parameters_betas    := "[17]"; //"[0,2,95,96,98]"; //"[95,96,98]"; //"[17]"; //"[4,5]"; //"[7]"; //"[32]"; //"[35,36,37,38]"; // "all"; // "[]";
+assumeNonzero       := {};
 interactive_betas   := false;
 interactive_eqs     := false;
 interactive_params  := false;
@@ -903,7 +905,8 @@ case curve:
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
 			j := Position(parameters, i);
-			Append(~invertibleVariables, j);
+			//Append(~invertibleVariables, j);
+			Include(~assumeNonzero, R.j);
 		end for;
 
 
@@ -1126,7 +1129,8 @@ case curve:
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
 			j := Position(parameters, i);
-			Append(~invertibleVariables, j);
+			//Append(~invertibleVariables, j);
+			Include(~assumeNonzero, R.j);
 		end for;
 
 
@@ -1366,7 +1370,8 @@ case curve:
 		// Save needed non-zero parameters as variables
 		for i in neededParams do
 			j := Position(parameters, i);
-			Append(~invertibleVariables, j);
+			//Append(~invertibleVariables, j);
+			Include(~assumeNonzero, R.j);
 		end for;
 		
 
@@ -1607,7 +1612,8 @@ case curve:
 		// Save needed non-zero parameters as variables
 		//for i in neededParams do
 		for i in [1..numL] do
-			Append(~invertibleVariables, (T+i));
+			//Append(~invertibleVariables, (T+i));
+			Include(~assumeNonzero, R.(T+i));
 		end for;
 		
 
@@ -1784,9 +1790,8 @@ printf "\n";
 // Calculate stratification
 L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all, assumeNonzero := ZetaFunctionStratification(
 	f, planeBranchNumbers, nuChoices :
-	assumeNonzero:={},
-	invertibleVariables:=invertibleVariables,
-	verboseLevel:="default"
+	assumeNonzero:=assumeNonzero,
+	verboseLevel:=verboseLevel
 	);
 
 // Print results

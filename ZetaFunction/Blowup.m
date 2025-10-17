@@ -340,15 +340,12 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 	P := Parent(strictTransform_f); x := P.1; y := P.2; R := BaseRing(P);
 	xExp_f, yExp_f, xExp_w, yExp_w := Explode(xyExp_fw);
 	
-	lambda := R!0;
+	a := R!0;
 	e := 0;
 	PI_blowup := [x, y];
 	
 	if debugPrint then printf "Start Blowup\n"; end if;
-	count := 0;
-	while count lt 10 do
-		count +:= 1;
-		
+	while true do
 		tan := TangentTerm(strictTransform_f);
 		if debugPrint then
 			printf "\n--------------------\n";
@@ -388,8 +385,8 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 					// Not tan=C*y^e => tan=C*(a*x + b*y)^e
 					
 					// Remove common multiplicative unit
-					num := GCD([Numerator(coeff) : coeff in Coefficients(tan)]);
-					den := GCD([Denominator(coeff) : coeff in Coefficients(tan)]);
+					num := GCD([RingOfIntegers(R)| Numerator(coeff) : coeff in Coefficients(tan)]);
+					den := GCD([RingOfIntegers(R)| Denominator(coeff) : coeff in Coefficients(tan)]);
 					tan := tan * den / num;
 					// tan=(a*x + b*y)^e
 					
@@ -403,10 +400,10 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 					
 					if Type(R) eq FldFunRat then // R = Q(t_1,...,t_k) 
 						if bToTheE notin BaseRing(R) then // bToTheE depends on t_i
-							bNonzeroFactors := [RingOfIntegers(R)| tup[1] : tup in Factorization(Numerator(bToTheE)) cat Factorization(Denominator(bToTheE))];
+							nonzeroFactors := [RingOfIntegers(R)| tup[1] : tup in Factorization(Numerator(bToTheE)) cat Factorization(Denominator(bToTheE))];
 							//bNonzeroFactors := Reduce(bNonzeroFactors);
 							firstPrint := true;
-							for h in bNonzeroFactors do
+							for h in nonzeroFactors do
 								if h notin assumeNonzero then
 								//if h notin ideal<RingOfIntegers(R)| assumeNonzero> then
 									if firstPrint then printf "\n"; firstPrint := false; end if;
@@ -477,9 +474,26 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 			g0y := Evaluate(strictTransform_f, [0,y]); // g(0,y) = C*(y-a)^d = C*y^d - C*d*a*y^(d-1) + ...
 			if debugPrint then printf "g0y = %o\n", g0y; end if;
 			d := TotalDegree(g0y); // >=1
+			error if (d lt 1), "At Blowup(): Strict transform does not intersect the exceptional divisor. Strict transform = ", strictTransform_f, ", at x=0: ", g0y, ", degree=", d;
 			if debugPrint then printf "d = %o\n", d; end if;
 			C := MonomialCoefficient(g0y, y^d);
 			if debugPrint then printf "C = %o\n", C; end if;
+			
+			// C != 0
+			if Type(R) eq FldFunRat then // R = Q(t_1,...,t_k) 
+				if C notin BaseRing(R) then // C depends on t_i
+					nonzeroFactors := [RingOfIntegers(R)| tup[1] : tup in Factorization(Numerator(C)) cat Factorization(Denominator(C))];
+					firstPrint := true;
+					for h in nonzeroFactors do
+						if h notin assumeNonzero then
+							if firstPrint then printf "\n"; firstPrint := false; end if;
+							printf "WARNING! Assuming that the following is nonzero:\n"; print h;
+							Include(~assumeNonzero, h);
+						end if;
+					end for;
+				end if;
+			end if;
+			
 			Cda := MonomialCoefficient(g0y, y^(d-1));
 			a := (-1/d) * Cda / C;
 			if debugPrint then printf "a = %o\n", a; end if;
@@ -527,18 +541,35 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 	
 	if debugPrint then printf "strictTransform_f = %o\n", strictTransform_f; end if;
 	// Free point on a rupture divisor (not centered)
-	// y-a=...*(1-lambda*y) => lambda=1/a
-	lambda := 1 / a; // "a" better be invertible or we have a problem
-	if debugPrint then printf "lambda = %o\n", lambda; end if;
 	
-	if debugPrint then printf "\n"; end if;
-	if debugPrint then printf "End Blowup\n"; end if;
+	// a != 0
+	if Type(R) eq FldFunRat then // R = Q(t_1,...,t_k) 
+		if a notin BaseRing(R) then // a depends on t_i
+			nonzeroFactors := [RingOfIntegers(R)| tup[1] : tup in Factorization(Numerator(a)) cat Factorization(Denominator(a))];
+			firstPrint := true;
+			for h in nonzeroFactors do
+				if h notin assumeNonzero then
+					if firstPrint then printf "\n"; firstPrint := false; end if;
+					printf "WARNING! Assuming that the following is nonzero:\n"; print h;
+					Include(~assumeNonzero, h);
+				end if;
+			end for;
+		end if;
+	end if;
+	
+	// y-a=...*(1-lambda*y) => lambda=1/a
+	lambda := 1 / a;
+	
+	if debugPrint then
+		printf "lambda = %o\n", lambda;
+		printf "\nEnd Blowup\n";
+	end if;
 	
 	return strictTransform_f, [xExp_f,yExp_f], [xExp_w,yExp_w], units_f, units_w, pointType, lambda, PI_blowup, assumeNonzero;
 end intrinsic;
 
 
-intrinsic CenterOriginOnCurve(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyExp_w::[], units_f::SetMulti, units_w::SetMulti, lambda::FldElt) -> RngMPolLocElt, [], [], SetMulti, SetMulti, []
+intrinsic CenterOriginOnCurve(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMulti, units_w::SetMulti, lambda::FldElt, assumeNonzero::{}) -> RngMPolLocElt, [], [], SetMulti, SetMulti, []
 	{
 		Change y variable moving (0, 1/lambda) to (0,0)
 		
@@ -547,8 +578,7 @@ intrinsic CenterOriginOnCurve(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyE
 	debugPrint := false;
 	
 	P := Parent(strictTransform_f); x := P.1; y := P.2; R := BaseRing(P);
-	xExp_f, yExp_f := Explode(xyExp_f);
-	xExp_w, yExp_w := Explode(xyExp_w);
+	xExp_f, yExp_f, xExp_w, yExp_w := Explode(xyExp_fw);
 	
 	// Center intersecion with current exceptional divisor to (0,0)
 	if debugPrint then
@@ -559,7 +589,24 @@ intrinsic CenterOriginOnCurve(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyE
 		printf "strictTransform_f = %o\n", strictTransform_f;
 	end if;
 	
-	pi := [x, (1-y)/lambda];
+	// lambda != 0
+	// This should not trigger because it has been performed in Blowup() for a=1/lambda
+	if Type(R) eq FldFunRat then // R = Q(t_1,...,t_k) 
+		if lambda notin BaseRing(R) then // a depends on t_i
+			nonzeroFactors := [RingOfIntegers(R)| tup[1] : tup in Factorization(Numerator(lambda)) cat Factorization(Denominator(lambda))];
+			firstPrint := true;
+			for h in nonzeroFactors do
+				if h notin assumeNonzero then
+					if firstPrint then printf "\n"; firstPrint := false; end if;
+					printf "WARNING! Assuming that the following is nonzero:\n"; print h;
+					Include(~assumeNonzero, h);
+				end if;
+			end for;
+		end if;
+	end if;
+	
+	//pi := [x, (1-y)/lambda];
+	pi := [x, 1/lambda + y];
 	
 	// Change variables of each term, preserve multiplicity
 	// They are units and will be units after change of variables
@@ -578,15 +625,16 @@ intrinsic CenterOriginOnCurve(strictTransform_f::RngMPolLocElt, xyExp_f::[], xyE
 	yExp_f +:= B;
 	
 	// Pullback of dx^dy by pi
-	// dx^d((1-y)/lambda) = -1/lambda dx^dy
-	Include(~units_w, -1/lambda);
+	//// dx^d((1-y)/lambda) = -1/lambda dx^dy
+	//Include(~units_w, -1/lambda);
+	// dx^d(1/lambda + y) = dx^dy
 	
 	if debugPrint then
 		printf "\nstrictTransform_f = %o\n", strictTransform_f;
 		printf "\nEnd CenterOriginOnCurve\n";
 	end if;
 	
-	return strictTransform_f, [xExp_f,yExp_f], [xExp_w,yExp_w], units_f, units_w, pi;
+	return strictTransform_f, [xExp_f,yExp_f], [xExp_w,yExp_w], units_f, units_w, pi, assumeNonzero;
 end intrinsic;
 
 
