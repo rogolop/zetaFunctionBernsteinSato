@@ -1788,11 +1788,7 @@ end for;
 printf "\n";
 
 // Calculate stratification
-L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all, assumeNonzero := ZetaFunctionStratification(
-	f, planeBranchNumbers, nuChoices :
-	assumeNonzero:=assumeNonzero,
-	verboseLevel:=verboseLevel
-	);
+L_all, sigma_all, assumeNonzero, Res_all, indexs_Res_all, epsilon_all := ZetaFunctionStratification(f : nuChoices:=nuChoices, assumeNonzero:=assumeNonzero, verboseLevel:=verboseLevel, planeBranchNumbers:=planeBranchNumbers);
 
 // Print results
 if printResults then

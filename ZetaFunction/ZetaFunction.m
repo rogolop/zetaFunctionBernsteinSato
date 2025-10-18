@@ -559,14 +559,11 @@ end intrinsic;
 
 // Full stratification
 
-intrinsic ZetaFunctionStratification(
-	f::RngMPolLocElt, planeBranchNumbers::Tup, nuChoices::SeqEnum :
-	assumeNonzero:={},
-	verboseLevel:="default"
-) -> List, List, List, List, List, {}
+intrinsic ZetaFunctionStratification(f::RngMPolLocElt : nuChoices:=[], assumeNonzero:={}, verboseLevel:="default", planeBranchNumbers:=<>) -> List, List, List, List, List, {}
 	{
 		TO DO
 		
+		assumeNonzero (if f is defined over a field of rational functions): a list of polynomials that can be assumed to not take the value zero,
 		verboseLevel: "none", "default", "onlyStrata", or "detailed"
 	}
 	debugPrint := false;
@@ -574,11 +571,20 @@ intrinsic ZetaFunctionStratification(
 	// Prepare arguments
 	P<x,y> := Parent(f);
 	R := BaseRing(P);
+	if #planeBranchNumbers eq 0 then // if not provided
+		_betas := SemiGroup(f);
+		planeBranchNumbers := PlaneBranchNumbers(_betas);
+	end if;
 	g, c, betas, es, ms, ns, qs, _betas, _ms, Nps, kps, Ns, ks := Explode(planeBranchNumbers);
+	if #nuChoices eq 0 then // if not provided
+		nusForPoleCandidates, nusForRootCandidatesIncludingUndetermined, nusIncludingTopological, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList, trueNonTopSigmasCoincidences, otherTopologicalSigmasCoincidences := CandidatesData(planeBranchNumbers);
+		nuChoices := nusForPoleCandidates;
+		delete nusForPoleCandidates, nusForRootCandidatesIncludingUndetermined, nusIncludingTopological, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList, trueNonTopSigmasCoincidences, otherTopologicalSigmasCoincidences;
+	end if;
 	if Type(R) eq FldFunRat then
 		assumeNonzero := {RingOfIntegers(R)| tup[1] : tup in Factorization(Numerator(h)) cat Factorization(Denominator(h)), h in assumeNonzero};
 	end if;
-	if debugPrint then printf "assumeNonzero =\n"; print assumeNonzero; end if;
+	if verboseLevel in {"default", "detailed"} then printf "assumeNonzero =\n"; print assumeNonzero; end if;
 	//error if &or[g notin RingOfIntegers(R) : g in assumeNonzero], "At ZetaFunctionStratification(): assumeNonzero contains elements with denominators";
 	
 	// (total transform of f) = x^xExp_f * y^yExp_f * units_f * strictTransform_f
@@ -660,33 +666,10 @@ intrinsic ZetaFunctionStratification(
 		end if;
 	end for;
 	
-	return L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all, assumeNonzero;
+	return L_all, sigma_all, assumeNonzero, Res_all, indexs_Res_all, epsilon_all;
 end intrinsic;
 
 
 
-intrinsic ZetaFunctionStratificationDefault(
-	f::RngMPolLocElt :
-	assumeNonzero:={},
-	verboseLevel:="default"
-) -> List, List
-	{
-		TO DO
-		
-		verboseLevel: "none", "default", "onlyStrata", or "detailed"
-	}
-	_betas := SemiGroup(f);
-	planeBranchNumbers := PlaneBranchNumbers(_betas);
-	nusForPoleCandidates, nusForRootCandidatesIncludingUndetermined, nusIncludingTopological, trueNonTopSigmas, coincidingTopAndNonTopSigmas, otherTopologicalSigmas, nonTopSigmaToIndexList, topologicalSigmaToIndexList, trueNonTopSigmasCoincidences, otherTopologicalSigmasCoincidences := CandidatesData(planeBranchNumbers);
-	nuChoices := nusForPoleCandidates;
-	
-	L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratification(
-		f, planeBranchNumbers, nuChoices :
-		assumeNonzero:=assumeNonzero,
-		verboseLevel:=verboseLevel
-		);
-	
-	return L_all, sigma_all;
-end intrinsic;
 
 

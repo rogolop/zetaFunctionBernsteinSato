@@ -19,7 +19,7 @@ f := y^6 - x^7 + A_52*x^5*y^2 + A_43*x^4*y^3 + A_34*x^3*y^4 + A_44*x^4*y^4 + A_5
 //invertibleVariables:=[Z| 1];
 //f :=  (-x^5*y^4 + t17*x^3*y^5)*(t0 + t3*x + t6*x^2 + t9*x^3 + t11*x^4 + t13*x^5 + t7*y + t10*x*y + t12*x^2*y + t14*x^3*y + t15*x^4*y + t16*x^5*y)^2 + (-x^7 + t1*x^5*y + t4*x^6*y + t2*x^3*y^2 + t5*x^4*y^2 + t8*x^5*y^2 + y^3)^2;
 
-L_all, sigma_all := ZetaFunctionStratificationDefault(f : assumeNonzero:=assumeNonzero, verboseLevel:="detailed");
+L_all, sigma_all := ZetaFunctionStratification(f : assumeNonzero:=assumeNonzero, verboseLevel:="default");
 
 printf "Finished\n";
 quit;
