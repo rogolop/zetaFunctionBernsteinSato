@@ -562,7 +562,7 @@ end intrinsic;
 intrinsic ZetaFunctionStratification(
 	f::RngMPolLocElt, planeBranchNumbers::Tup, nuChoices::SeqEnum :
 	assumeNonzero:={},
-	verboseLevel:="none"
+	verboseLevel:="default"
 ) -> List, List, List, List, List, {}
 	{
 		TO DO
@@ -607,7 +607,7 @@ intrinsic ZetaFunctionStratification(
 		// Blowup
 		// From: (0,0) singular point of the strict transform of the curve (starting point or a free point on the last rupture divisor)
 		// To: next rupture divisor
-		strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType, lambda, PI_blowup, assumeNonzero := Blowup(strictTransform_f, xyExp_f cat xyExp_w, units_f, units_w, pointType, assumeNonzero);
+		strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, pointType, lambda, PI_blowup, assumeNonzero := Blowup(strictTransform_f, xyExp_f cat xyExp_w, units_f, units_w, pointType, assumeNonzero : verboseLevel:=verboseLevel);
 		if debugPrint then printf "assumeNonzero =\n"; print assumeNonzero; end if;
 		if (verboseLevel in {"default", "detailed"}) then
 			printf "lambda = %o\n", lambda;
@@ -648,12 +648,12 @@ intrinsic ZetaFunctionStratification(
 		
 		// Prepare next iteration
 		if r lt g then
-			if (verboseLevel in {"default", "detailed"}) then
+			if (verboseLevel in {"detailed"}) then
 				printf "_______________________________________________________________________\n";
 				printf "Centering the singular point\n";
 			end if;
 			
-			strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center, assumeNonzero := CenterOriginOnCurve(strictTransform_f, xyExp_f cat xyExp_w, units_f, units_w, lambda, assumeNonzero);
+			strictTransform_f, xyExp_f, xyExp_w, units_f, units_w, PI_center, assumeNonzero := CenterOriginOnCurve(strictTransform_f, xyExp_f cat xyExp_w, units_f, units_w, lambda, assumeNonzero : verboseLevel:=verboseLevel);
 			if debugPrint then printf "assumeNonzero =\n"; print assumeNonzero; end if;
 			// Total blowup morphism since starting point
 			PI_TOTAL := [Evaluate(t, PI_center) : t in PI_TOTAL];
@@ -683,7 +683,7 @@ intrinsic ZetaFunctionStratificationDefault(
 	L_all, Res_all, indexs_Res_all, sigma_all, epsilon_all := ZetaFunctionStratification(
 		f, planeBranchNumbers, nuChoices :
 		assumeNonzero:=assumeNonzero,
-		verboseLevel:="default"
+		verboseLevel:=verboseLevel
 		);
 	
 	return L_all, sigma_all;

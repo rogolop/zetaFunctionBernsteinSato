@@ -317,7 +317,7 @@ function TangentTerm(f)
 end function;
 
 
-intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMulti, units_w::SetMulti, pointType::RngIntElt, assumeNonzero::{}) -> RngMPolLocElt, [], [], SetMulti, SetMulti, RngIntElt, FldElt, [], {}
+intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMulti, units_w::SetMulti, pointType::RngIntElt, assumeNonzero::{} : verboseLevel:="default") -> RngMPolLocElt, [], [], SetMulti, SetMulti, RngIntElt, FldElt, [], {}
 	{
 		Blowup from one rupture divisor to the next one
 		
@@ -344,10 +344,10 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 	e := 0;
 	PI_blowup := [x, y];
 	
-	if debugPrint then printf "Start Blowup\n"; end if;
+	if verboseLevel in {"detailed"} then printf "Start Blowup\n"; end if;
 	while true do
 		tan := TangentTerm(strictTransform_f);
-		if debugPrint then
+		if verboseLevel in {"detailed"} then
 			printf "\n--------------------\n";
 			printf "pointType = %o\n", pointType;
 			printf "strictTransform_f = %o\n", strictTransform_f;
@@ -356,10 +356,10 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 		error if (TotalDegree(tan) le 0), "At Blowup(): Tangent term is constant\nstrictTransform_f=", strictTransform_f, "\n tangent=", tan; // Should never happen
 		
 		if pointType eq 0 then
-			if debugPrint then printf "pointType eq 0\n"; end if;
+			if verboseLevel in {"detailed"} then printf "pointType eq 0\n"; end if;
 			// Ensure x=0 not tangent at initial point
 			if Degree(tan,2) eq 0 then
-				if debugPrint then printf "Tangent=C*x^e => change of variables (y,x) to make x=0 not tangent\n"; end if;
+				if verboseLevel in {"detailed"} then printf "Tangent=C*x^e => change of variables (y,x) to make x=0 not tangent\n"; end if;
 				// Tangent=C*x^e => change of variables (y,x) to make x=0 not tangent
 				
 				pi := [y, x];
@@ -379,7 +379,7 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 				// dy^dx = -dx^dy
 				Include(~units_w, -1);
 				
-				if debugPrint then printf "strictTransform_f = %o\n", strictTransform_f; end if;
+				if verboseLevel in {"detailed"} then printf "strictTransform_f = %o\n", strictTransform_f; end if;
 			else
 				if (Degree(tan,1) ne 0) then
 					// Not tan=C*y^e => tan=C*(a*x + b*y)^e
@@ -392,7 +392,7 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 					
 					e := Degree(tan, y);
 					bToTheE := MonomialCoefficient(tan, y^e);
-					if debugPrint then
+					if verboseLevel in {"detailed"} then
 						printf "bToTheE = %o\n", bToTheE;
 						print &*[R| tup[1] : tup in Factorization(Numerator(bToTheE))];
 						print &*[R| tup[1] : tup in Factorization(Denominator(bToTheE))];
@@ -419,7 +419,7 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 		end if;
 		
 		if (pointType ne 0) and (Length(tan) eq 1) and (Exponents(tan)[2] eq 0) and (Exponents(tan)[1] gt 0) then
-			if debugPrint then printf "Tangent=C*x^e => next point is satellite\n"; end if;
+			if verboseLevel in {"detailed"} then printf "Tangent=C*x^e => next point is satellite\n"; end if;
 			// Tangent=C*x^e => next point is satellite
 			pointType := 2;
 			
@@ -445,7 +445,7 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 			xExp_w +:= 1;
 			Include(~units_w, -1);
 		else
-			if debugPrint then printf "Case not tangent to x=0\n"; end if;
+			if verboseLevel in {"detailed"} then printf "Case not tangent to x=0\n"; end if;
 			// Case not tangent to x=0
 			
 			pi := [x, x*y];
@@ -469,15 +469,15 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 			// dx^dy -> dx^d(x*y) = dx^(y dx + x dy) = x dx^dy
 			xExp_w +:= 1;
 			
-			if debugPrint then printf "strictTransform_f = %o\n", strictTransform_f; end if;
+			if verboseLevel in {"detailed"} then printf "strictTransform_f = %o\n", strictTransform_f; end if;
 			
 			g0y := Evaluate(strictTransform_f, [0,y]); // g(0,y) = C*(y-a)^d = C*y^d - C*d*a*y^(d-1) + ...
-			if debugPrint then printf "g0y = %o\n", g0y; end if;
+			if verboseLevel in {"detailed"} then printf "g0y = %o\n", g0y; end if;
 			d := TotalDegree(g0y); // >=1
 			error if (d lt 1), "At Blowup(): Strict transform does not intersect the exceptional divisor. Strict transform = ", strictTransform_f, ", at x=0: ", g0y, ", degree=", d;
-			if debugPrint then printf "d = %o\n", d; end if;
+			if verboseLevel in {"detailed"} then printf "d = %o\n", d; end if;
 			C := MonomialCoefficient(g0y, y^d);
-			if debugPrint then printf "C = %o\n", C; end if;
+			if verboseLevel in {"detailed"} then printf "C = %o\n", C; end if;
 			
 			// C != 0
 			if Type(R) eq FldFunRat then // R = Q(t_1,...,t_k) 
@@ -496,20 +496,20 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 			
 			Cda := MonomialCoefficient(g0y, y^(d-1));
 			a := (-1/d) * Cda / C;
-			if debugPrint then printf "a = %o\n", a; end if;
+			if verboseLevel in {"detailed"} then printf "a = %o\n", a; end if;
 			
 			if pointType eq 2 then
 				if a eq 0 then
-					if debugPrint then printf "Satellite to satellite\n"; end if;
+					if verboseLevel in {"detailed"} then printf "Satellite to satellite\n"; end if;
 					pointType := 2;
 				else
-					if debugPrint then printf "Free point on a rupture divisor\n"; end if;
+					if verboseLevel in {"detailed"} then printf "Free point on a rupture divisor\n"; end if;
 					// Free point on a rupture divisor
 					pointType := 1;
 					break;
 				end if;
 			else
-				if debugPrint then printf "Free point\nCenter the point\n"; end if;
+				if verboseLevel in {"detailed"} then printf "Free point\nCenter the point\n"; end if;
 				// Free point
 				pointType := 1;
 				
@@ -534,12 +534,12 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 				
 				// dx^d(y-a) = dx^dy
 				
-				if debugPrint then printf "strictTransform_f = %o\n", strictTransform_f; end if;
+				if verboseLevel in {"detailed"} then printf "strictTransform_f = %o\n", strictTransform_f; end if;
 			end if;
 		end if;
 	end while;
 	
-	if debugPrint then printf "strictTransform_f = %o\n", strictTransform_f; end if;
+	if verboseLevel in {"detailed"} then printf "strictTransform_f = %o\n", strictTransform_f; end if;
 	// Free point on a rupture divisor (not centered)
 	
 	// a != 0
@@ -560,8 +560,13 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 	// y-a=...*(1-lambda*y) => lambda=1/a
 	lambda := 1 / a;
 	
-	if debugPrint then
+	if verboseLevel in {"detailed"} then
+		printf "\n";
 		printf "lambda = %o\n", lambda;
+		printf "total mophism = %o\n", PI_blowup;
+		printf "strict transform = %o\n", strictTransform_f;
+		printf "total transform of f has x^%o y^%o %o\n", xExp_f, yExp_f, &cat[Sprintf("(%o) ",u):u in units_f];
+		printf "total transform of w has x^%o y^%o %o\n", xExp_w, yExp_w, &cat[Sprintf("(%o) ",u):u in units_w];;
 		printf "\nEnd Blowup\n";
 	end if;
 	
@@ -569,7 +574,7 @@ intrinsic Blowup(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMul
 end intrinsic;
 
 
-intrinsic CenterOriginOnCurve(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMulti, units_w::SetMulti, lambda::FldElt, assumeNonzero::{}) -> RngMPolLocElt, [], [], SetMulti, SetMulti, []
+intrinsic CenterOriginOnCurve(strictTransform_f::RngMPolLocElt, xyExp_fw::[], units_f::SetMulti, units_w::SetMulti, lambda::FldElt, assumeNonzero::{} : verboseLevel:="default") -> RngMPolLocElt, [], [], SetMulti, SetMulti, []
 	{
 		Change y variable moving (0, 1/lambda) to (0,0)
 		
@@ -581,7 +586,7 @@ intrinsic CenterOriginOnCurve(strictTransform_f::RngMPolLocElt, xyExp_fw::[], un
 	xExp_f, yExp_f, xExp_w, yExp_w := Explode(xyExp_fw);
 	
 	// Center intersecion with current exceptional divisor to (0,0)
-	if debugPrint then
+	if verboseLevel in {"detailed"} then
 		printf "\n";
 		printf "--------------------\n";
 		printf "Start CenterOriginOnCurve\n";
@@ -629,7 +634,7 @@ intrinsic CenterOriginOnCurve(strictTransform_f::RngMPolLocElt, xyExp_fw::[], un
 	//Include(~units_w, -1/lambda);
 	// dx^d(1/lambda + y) = dx^dy
 	
-	if debugPrint then
+	if verboseLevel in {"detailed"} then
 		printf "\nstrictTransform_f = %o\n", strictTransform_f;
 		printf "\nEnd CenterOriginOnCurve\n";
 	end if;
